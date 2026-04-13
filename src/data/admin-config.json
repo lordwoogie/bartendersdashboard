@@ -1,0 +1,22 @@
+{
+  "sports": {
+    "leagues": {
+      "nba": true,
+      "nfl": true,
+      "mlb": true,
+      "nhl": true,
+      "cfb": true,
+      "cbb": true,
+      "mls": false,
+      "mma": false
+    },
+    "favoriteTeams": [
+      "OKC Thunder",
+      "OU Sooners",
+      "OSU Cowboys",
+      "Dallas Cowboys"
+    ]
+  },
+  "emailRecipients": [],
+  "manualEvents": []
+}

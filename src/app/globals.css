@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+:root {
+  --background: #1a1410;
+  --foreground: #f5e6d3;
+  --card-bg: #231c14;
+  --card-border: #3d3225;
+  --amber: #d4a056;
+  --copper: #b87333;
+  --thunder-blue: #007ac1;
+  --thunder-orange: #ef6100;
+  --muted: #8b7d6b;
+  --surface: #2a2218;
+  --accent-glow: rgba(212, 160, 86, 0.15);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card-bg: var(--card-bg);
+  --color-card-border: var(--card-border);
+  --color-amber: var(--amber);
+  --color-copper: var(--copper);
+  --color-thunder-blue: var(--thunder-blue);
+  --color-thunder-orange: var(--thunder-orange);
+  --color-muted: var(--muted);
+  --color-surface: var(--surface);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.animate-pulse-live {
+  animation: pulse-live 1.5s ease-in-out infinite;
+}
+
+@keyframes glow-new {
+  0%, 100% { box-shadow: 0 0 8px rgba(212, 160, 86, 0.3); }
+  50% { box-shadow: 0 0 16px rgba(212, 160, 86, 0.6); }
+}
+
+.animate-glow-new {
+  animation: glow-new 2s ease-in-out infinite;
+}
+
+/* Print styles */
+@media print {
+  body { background: white; color: black; }
+  .no-print { display: none !important; }
+}

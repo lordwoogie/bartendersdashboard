@@ -123,7 +123,7 @@ export function SchedulePage() {
             <p className="text-muted">{error}</p>
           </div>
         ) : (
-          <>
+          <div>
             {latestPost && (
               <div className="rounded-xl border border-amber/30 bg-gradient-to-r from-amber/10 to-surface mb-6 p-4">
                 <div className="flex items-start gap-3">
@@ -198,7 +198,7 @@ export function SchedulePage() {
               </div>
             </div>
           ))}
-          </>
+          </div>
         )}
       </main>
     </div>

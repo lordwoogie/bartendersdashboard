@@ -16,6 +16,9 @@ const ESPN_LEAGUES: Record<string, { sport: string; slug: string }> = {
   cfb: { sport: "football", slug: "college-football" },
   cbb: { sport: "basketball", slug: "mens-college-basketball" },
   mls: { sport: "soccer", slug: "usa.1" },
+  epl: { sport: "soccer", slug: "eng.1" },
+  ucl: { sport: "soccer", slug: "uefa.champions" },
+  fifawc: { sport: "soccer", slug: "fifa.world" },
 };
 
 const FAVORITE_KEYWORDS = [

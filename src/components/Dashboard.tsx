@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { format } from "date-fns";
 import type {
   SportsGame,
@@ -55,7 +55,6 @@ export function Dashboard() {
         setAllGames(games);
         setThunderGame(games.find((g: SportsGame) => g.isThunder));
 
-        // Today's non-Thunder games
         const todayStart = new Date(today);
         const todayEnd = new Date(today);
         todayEnd.setDate(todayEnd.getDate() + 1);
@@ -72,10 +71,8 @@ export function Dashboard() {
       if (calendarRes.status === "fulfilled") {
         const events: CalendarEvent[] = calendarRes.value.events || [];
         setAllCalendarEvents(events);
-        const todayStr = today;
-        setCalendarEvents(
-          events.filter((e: CalendarEvent) => e.start.startsWith(todayStr))
-        );
+        // Keep all upcoming events (not just today) so we can pick nearest 2
+        setCalendarEvents(events);
       }
 
       if (eventsRes.status === "fulfilled") {
@@ -116,45 +113,67 @@ export function Dashboard() {
 
   useEffect(() => {
     fetchData();
-    // Auto-refresh every 5 minutes
     const interval = setInterval(fetchData, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [fetchData]);
 
+  // Get the 2 nearest upcoming events
+  const nearestEvents = useMemo(() => {
+    const now = new Date();
+    return calendarEvents
+      .filter((e) => new Date(e.start) >= now)
+      .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+      .slice(0, 2);
+  }, [calendarEvents]);
+
+  const hasHolidays = holidays.length > 0;
   const now = new Date();
   const dateStr = format(now, "EEEE, MMMM d, yyyy");
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Holiday Banner — only shows on holidays, always at top */}
+      {hasHolidays && (
+        <div className="bg-gradient-to-r from-copper/30 via-amber/20 to-copper/30 border-b border-amber/30">
+          <div className="max-w-3xl mx-auto px-4 py-3 text-center">
+            {holidays.map((h, i) => (
+              <div key={i} className="text-lg font-bold text-amber">
+                <span className="text-2xl mr-2">{h.emoji}</span>
+                {h.name}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-card-border px-4 py-4 no-print">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-foreground tracking-tight">
-              Cowboy Cold Daily Briefing
-            </h1>
-            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-              <p className="text-sm text-muted">{dateStr}</p>
-              {weather && (
-                <span className="text-xs bg-surface px-2 py-0.5 rounded text-amber">
-                  {weather.temp}°F &middot; {weather.condition}
-                </span>
-              )}
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-xl font-bold text-foreground tracking-tight">
+                Cowboy Cold Daily Briefing
+              </h1>
+              <p className="text-sm text-muted mt-0.5">{dateStr}</p>
             </div>
-            {holidays.length > 0 && (
-              <div className="flex gap-2 mt-1 flex-wrap">
-                {holidays.map((h, i) => (
-                  <span
-                    key={i}
-                    className="text-xs bg-copper/20 text-copper px-2 py-0.5 rounded-full font-medium"
-                  >
-                    {h.emoji} {h.name}
-                  </span>
-                ))}
+            {weather && (
+              <div className="bg-surface border border-card-border rounded-lg px-3 py-2 text-center">
+                <div className="text-2xl leading-none">{weather.icon}</div>
+                <div className="text-lg font-bold text-foreground mt-0.5">{weather.temp}°F</div>
+                <div className="text-[10px] text-amber leading-tight mt-0.5">
+                  H:{weather.high}° L:{weather.low}°
+                </div>
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <a
+              href="/beers"
+              className="text-xs text-muted hover:text-amber transition-colors no-print"
+              title="Full beer list"
+            >
+              🍺
+            </a>
             <a
               href="/print"
               className="text-xs text-muted hover:text-amber transition-colors no-print"
@@ -184,11 +203,11 @@ export function Dashboard() {
           </div>
         ) : (
           <>
-            <ThunderSection game={thunderGame} />
-            <TVGamesSection games={tvGames} />
-            <CalendarSection events={calendarEvents} />
+            <CalendarSection events={nearestEvents} />
             <MenuSection menuData={menuData} />
             <LocalEventsSection events={localEvents} />
+            <ThunderSection game={thunderGame} />
+            <TVGamesSection games={tvGames} />
             <WeekAhead
               games={allGames}
               calendarEvents={allCalendarEvents}

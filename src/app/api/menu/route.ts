@@ -7,6 +7,9 @@ import path from "path";
 const CACHE_KEY = "menu-data";
 const CACHE_TTL = 600; // 10 minutes
 const SNAPSHOT_PATH = path.join(process.cwd(), "src/data/menu-snapshot.json");
+const VENUE_URL =
+  process.env.UNTAPPD_VENUE_URL ||
+  "https://untappd.com/v/lively-beerworks/9555097";
 
 interface MenuSnapshot {
   lastFetched: string | null;
@@ -30,39 +33,89 @@ async function writeSnapshot(snapshot: MenuSnapshot) {
   }
 }
 
-async function fetchUntappdMenu(): Promise<MenuItem[]> {
-  const apiUrl = process.env.UNTAPPD_API_URL;
-  const apiKey = process.env.UNTAPPD_API_KEY;
-  if (!apiUrl || !apiKey) return [];
+function stripHtml(str: string): string {
+  return str.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+}
 
+async function fetchUntappdMenu(): Promise<MenuItem[]> {
   try {
-    // Untappd for Business API - fetch menu sections and items
-    const res = await fetch(`${apiUrl}/sections`, {
+    const res = await fetch(VENUE_URL, {
       headers: {
-        Authorization: `Basic ${apiKey}`,
-        "Content-Type": "application/json",
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
       },
     });
-    if (!res.ok) return [];
-    const data = await res.json();
-
+    if (!res.ok) {
+      console.error("Untappd fetch failed:", res.status);
+      return [];
+    }
+    const html = await res.text();
     const items: MenuItem[] = [];
-    for (const section of data.sections || []) {
-      for (const item of section.items || []) {
+
+    // Split by menu-section divs
+    const sectionSplits = html.split(/<div class="menu-section" id="section_/);
+
+    for (let i = 1; i < sectionSplits.length; i++) {
+      const sectionBlock = sectionSplits[i];
+
+      // Get section name from <h4> tag
+      const sectionNameMatch = sectionBlock.match(
+        /<h4>\s*([\s\S]*?)\s*<span/
+      );
+      const sectionName = sectionNameMatch
+        ? stripHtml(sectionNameMatch[1])
+        : "On Tap";
+
+      // Split by menu-item entries
+      const itemBlocks = sectionBlock.split(/<li class="menu-item"/);
+
+      for (let j = 1; j < itemBlocks.length; j++) {
+        const block = itemBlocks[j];
+
+        // Beer name: inside <h5><a ...>NAME</a>
+        const nameMatch = block.match(
+          /<h5>\s*<a[^>]*>([\s\S]*?)<\/a>/
+        );
+        if (!nameMatch) continue;
+        let name = stripHtml(nameMatch[1]);
+        // Remove leading number prefix like "20."
+        name = name.replace(/^\d+\.\s*/, "");
+
+        // Style: inside <em>STYLE</em> after the name link
+        const styleMatch = block.match(/<em>(.*?)<\/em>/);
+        const style = styleMatch ? stripHtml(styleMatch[1]) : undefined;
+
+        // ABV: "X.X% ABV"
+        const abvMatch = block.match(/([\d.]+)%\s*ABV/);
+        const abv = abvMatch ? parseFloat(abvMatch[1]) : undefined;
+
+        // Brewery: inside the brewery link
+        const breweryMatch = block.match(
+          /data-href=":brewery"[^>]*>([\s\S]*?)<\/a>/
+        );
+        const brewery = breweryMatch
+          ? stripHtml(breweryMatch[1])
+          : undefined;
+
+        // Beer ID from the URL
+        const bidMatch = block.match(/href="\/b\/[^"]*\/(\d+)"/);
+        const bid = bidMatch ? bidMatch[1] : `${i}-${j}`;
+
         items.push({
-          id: String(item.id),
-          name: item.name || "Unknown",
-          style: item.style || undefined,
-          abv: item.abv ? parseFloat(item.abv) : undefined,
-          brewery: item.brewery || undefined,
-          description: item.description || undefined,
-          section: section.name || undefined,
+          id: bid,
+          name,
+          style,
+          abv,
+          brewery,
+          description: undefined,
+          section: sectionName,
         });
       }
     }
+
     return items;
   } catch (err) {
-    console.error("Untappd API error:", err);
+    console.error("Untappd scrape error:", err);
     return [];
   }
 }
@@ -73,33 +126,18 @@ function detectChanges(
   timestamp: string
 ): MenuChange[] {
   const changes: MenuChange[] = [];
-  const prevMap = new Map(previous.map((i) => [i.id, i]));
-  const currMap = new Map(current.map((i) => [i.id, i]));
+  const prevMap = new Map(previous.map((i) => [i.name.toLowerCase(), i]));
+  const currMap = new Map(current.map((i) => [i.name.toLowerCase(), i]));
 
-  // New items
-  for (const [id, item] of currMap) {
-    if (!prevMap.has(id)) {
+  for (const [name, item] of currMap) {
+    if (!prevMap.has(name)) {
       changes.push({ type: "added", item, timestamp });
     }
   }
 
-  // Removed items
-  for (const [id, item] of prevMap) {
-    if (!currMap.has(id)) {
+  for (const [name, item] of prevMap) {
+    if (!currMap.has(name)) {
       changes.push({ type: "removed", item, timestamp });
-    }
-  }
-
-  // Changed items (name or section changed = tap swap)
-  for (const [id, curr] of currMap) {
-    const prev = prevMap.get(id);
-    if (prev && (prev.name !== curr.name || prev.section !== curr.section)) {
-      changes.push({
-        type: "changed",
-        item: curr,
-        timestamp,
-        detail: `Was: ${prev.name} (${prev.section})`,
-      });
     }
   }
 
@@ -110,13 +148,6 @@ export async function GET() {
   const cached = getCached<MenuData>(CACHE_KEY);
   if (cached) return NextResponse.json({ menu: cached, cached: true });
 
-  if (!process.env.UNTAPPD_API_URL || !process.env.UNTAPPD_API_KEY) {
-    return NextResponse.json({
-      menu: { items: [], changes: [], lastUpdated: null },
-      error: "Configure UNTAPPD_API_URL and UNTAPPD_API_KEY",
-    });
-  }
-
   const currentItems = await fetchUntappdMenu();
   const snapshot = await readSnapshot();
   const now = new Date().toISOString();
@@ -125,7 +156,6 @@ export async function GET() {
     ? detectChanges(snapshot.items, currentItems, now)
     : [];
 
-  // Update snapshot
   await writeSnapshot({ lastFetched: now, items: currentItems });
 
   const menuData: MenuData = {

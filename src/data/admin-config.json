@@ -8,6 +8,9 @@
       "cfb": true,
       "cbb": true,
       "mls": false,
+      "epl": true,
+      "ucl": true,
+      "fifawc": true,
       "mma": false
     },
     "favoriteTeams": [

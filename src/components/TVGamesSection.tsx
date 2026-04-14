@@ -11,6 +11,9 @@ const SPORT_ICONS: Record<string, string> = {
   "college-football": "🏈",
   "mens-college-basketball": "🏀",
   "usa.1": "⚽",
+  "eng.1": "⚽",
+  "uefa.champions": "⚽",
+  "fifa.world": "⚽",
 };
 
 export function TVGamesSection({ games }: { games: SportsGame[] }) {
@@ -54,7 +57,13 @@ export function TVGamesSection({ games }: { games: SportsGame[] }) {
                   {game.awayTeam} @ {game.homeTeam}
                 </p>
                 <p className="text-xs text-muted">
-                  {game.league.replace("COLLEGE-FOOTBALL", "CFB").replace("MENS-COLLEGE-BASKETBALL", "CBB")}
+                  {game.league
+                    .replace("COLLEGE-FOOTBALL", "CFB")
+                    .replace("MENS-COLLEGE-BASKETBALL", "CBB")
+                    .replace("ENG.1", "EPL")
+                    .replace("UEFA.CHAMPIONS", "UCL")
+                    .replace("FIFA.WORLD", "World Cup")
+                    .replace("USA.1", "MLS")}
                 </p>
               </div>
               <div className="text-right shrink-0">

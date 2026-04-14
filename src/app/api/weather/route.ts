@@ -4,40 +4,67 @@ import type { WeatherData } from "@/lib/types";
 
 const CACHE_KEY = "weather";
 const CACHE_TTL = 1800; // 30 minutes
-const OKC_LAT = 35.4634;
-const OKC_LNG = -97.5151;
+
+// NWS grid point for Cowboy Cold (815 SW 2nd St, OKC)
+// To find yours: https://api.weather.gov/points/LAT,LNG
+const NWS_OFFICE = "OUN"; // Norman, OK forecast office
+const NWS_GRID_X = 41;
+const NWS_GRID_Y = 35;
+
+const UA = "CowboyColdBriefing/1.0 (cowboycold@livelybeer.com)";
+
+function weatherEmoji(forecast: string): string {
+  const f = forecast.toLowerCase();
+  if (f.includes("thunder") || f.includes("storm")) return "⛈️";
+  if (f.includes("rain") || f.includes("shower") || f.includes("drizzle")) return "🌧️";
+  if (f.includes("snow") || f.includes("sleet") || f.includes("ice")) return "🌨️";
+  if (f.includes("fog") || f.includes("mist") || f.includes("haze")) return "🌫️";
+  if (f.includes("cloud") || f.includes("overcast")) return "☁️";
+  if (f.includes("partly")) return "⛅";
+  if (f.includes("wind")) return "💨";
+  if (f.includes("hot")) return "🔥";
+  if (f.includes("sunny") || f.includes("clear")) return "☀️";
+  return "🌤️";
+}
 
 export async function GET() {
   const cached = getCached<WeatherData>(CACHE_KEY);
   if (cached) return NextResponse.json({ weather: cached, cached: true });
 
-  const key = process.env.OPENWEATHERMAP_API_KEY;
-  if (!key) {
-    return NextResponse.json({
-      weather: null,
-      error: "Configure OPENWEATHERMAP_API_KEY",
-    });
-  }
-
   try {
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${OKC_LAT}&lon=${OKC_LNG}&appid=${key}&units=imperial`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`OpenWeather API ${res.status}`);
+    // NWS forecast endpoint — no API key needed
+    const forecastUrl = `https://api.weather.gov/gridpoints/${NWS_OFFICE}/${NWS_GRID_X},${NWS_GRID_Y}/forecast`;
+    const res = await fetch(forecastUrl, {
+      headers: { "User-Agent": UA, Accept: "application/geo+json" },
+    });
+    if (!res.ok) throw new Error(`NWS API ${res.status}`);
     const data = await res.json();
 
+    const periods = data.properties?.periods || [];
+    if (periods.length === 0) throw new Error("No forecast periods");
+
+    // Current period (today daytime or tonight)
+    const current = periods[0];
+    // Find today's daytime and tonight for high/low
+    const daytime = periods.find((p: { isDaytime: boolean }) => p.isDaytime);
+    const nighttime = periods.find((p: { isDaytime: boolean }) => !p.isDaytime);
+
     const weather: WeatherData = {
-      temp: Math.round(data.main.temp),
-      high: Math.round(data.main.temp_max),
-      low: Math.round(data.main.temp_min),
-      condition: data.weather[0]?.main || "Unknown",
-      icon: data.weather[0]?.icon || "01d",
-      description: data.weather[0]?.description || "",
+      temp: current.temperature,
+      high: daytime?.temperature ?? current.temperature,
+      low: nighttime?.temperature ?? current.temperature,
+      condition: current.shortForecast || "Unknown",
+      icon: weatherEmoji(current.shortForecast || ""),
+      description: current.detailedForecast || current.shortForecast || "",
     };
 
     setCache(CACHE_KEY, weather, CACHE_TTL);
     return NextResponse.json({ weather });
   } catch (err) {
-    console.error("Weather API error:", err);
-    return NextResponse.json({ weather: null, error: "Failed to fetch weather" }, { status: 500 });
+    console.error("NWS Weather API error:", err);
+    return NextResponse.json(
+      { weather: null, error: "Failed to fetch weather" },
+      { status: 500 }
+    );
   }
 }

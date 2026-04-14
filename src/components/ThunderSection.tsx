@@ -43,8 +43,8 @@ export function ThunderSection({ game }: { game?: SportsGame }) {
               : `@ ${game.homeTeam}`}
           </p>
           <p className="text-gray-400 text-sm mt-1">
-            {isHome ? "Home" : "Away"} &middot; {timeStr}
-            {game.channel && ` &middot; ${game.channel}`}
+            {isHome ? "Home" : "Away"} · {timeStr}
+            {game.channel && ` · ${game.channel}`}
           </p>
         </div>
 

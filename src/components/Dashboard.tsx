@@ -157,11 +157,19 @@ export function Dashboard() {
               <p className="text-sm text-muted mt-0.5">{dateStr}</p>
             </div>
             {weather && (
-              <div className="bg-surface border border-card-border rounded-lg px-3 py-2 text-center">
-                <div className="text-2xl leading-none">{weather.icon}</div>
-                <div className="text-lg font-bold text-foreground mt-0.5">{weather.temp}°F</div>
-                <div className="text-[10px] text-amber leading-tight mt-0.5">
-                  H:{weather.high}° L:{weather.low}°
+              <div className="bg-surface border border-card-border rounded-lg px-3 py-2 flex items-center gap-3">
+                <div className="text-center">
+                  <div className="text-2xl leading-none">{weather.icon}</div>
+                  <div className="text-lg font-bold text-foreground mt-0.5">{weather.temp}°F</div>
+                  <div className="text-[10px] text-amber leading-tight mt-0.5">
+                    H:{weather.high}° L:{weather.low}°
+                  </div>
+                </div>
+                <div className="hidden sm:block max-w-[200px]">
+                  <p className="text-xs text-foreground font-medium">{weather.condition}</p>
+                  <p className="text-[10px] text-muted leading-snug mt-0.5 line-clamp-3">
+                    {weather.description}
+                  </p>
                 </div>
               </div>
             )}

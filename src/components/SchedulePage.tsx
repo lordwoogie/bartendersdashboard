@@ -14,6 +14,13 @@ interface Shift {
   published: boolean;
 }
 
+interface Memo {
+  id: number;
+  content: string;
+  creator: string;
+  created: string;
+}
+
 const AREA_COLORS: Record<string, string> = {
   manager: "bg-amber/20 text-amber",
   "bar shift": "bg-copper/20 text-copper",
@@ -34,6 +41,7 @@ function formatDayLabel(dateStr: string): string {
 
 export function SchedulePage() {
   const [shifts, setShifts] = useState<Shift[]>([]);
+  const [latestPost, setLatestPost] = useState<Memo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,6 +51,7 @@ export function SchedulePage() {
       const res = await fetch("/api/schedule?days=7");
       const data = await res.json();
       if (data.shifts) setShifts(data.shifts);
+      if (data.latestPost) setLatestPost(data.latestPost);
       if (data.error) setError(data.error);
     } catch {
       setError("Failed to load schedule");
@@ -114,7 +123,28 @@ export function SchedulePage() {
             <p className="text-muted">{error}</p>
           </div>
         ) : (
-          Array.from(shiftsByDate.entries()).map(([dateKey, dayShifts]) => (
+          <>
+            {latestPost && (
+              <div className="rounded-xl border border-amber/30 bg-gradient-to-r from-amber/10 to-surface mb-6 p-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-xl shrink-0 mt-0.5">📢</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-semibold text-amber uppercase tracking-wider">
+                        Latest Post
+                      </span>
+                      <span className="text-[10px] text-muted">
+                        {format(new Date(latestPost.created), "MMM d")} by {latestPost.creator}
+                      </span>
+                    </div>
+                    <p className="text-sm text-foreground/90 whitespace-pre-line leading-relaxed">
+                      {latestPost.content}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            {Array.from(shiftsByDate.entries()).map(([dateKey, dayShifts]) => (
             <div key={dateKey} className="mb-6">
               <h2 className="text-sm font-semibold text-copper mb-3 flex items-center gap-2">
                 <span className="text-base">📅</span>
@@ -167,7 +197,8 @@ export function SchedulePage() {
                 })}
               </div>
             </div>
-          ))
+          ))}
+          </>
         )}
       </main>
     </div>

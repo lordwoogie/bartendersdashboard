@@ -15,10 +15,28 @@ export interface DeputyShift {
   published: boolean;
 }
 
+export interface DeputyMemo {
+  id: number;
+  content: string;
+  creator: string;
+  created: string;
+}
+
+interface ScheduleData {
+  shifts: DeputyShift[];
+  latestPost: DeputyMemo | null;
+}
+
+function getAuthHeaders(): Record<string, string> {
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${process.env.DEPUTY_ACCESS_TOKEN}`,
+  };
+}
+
 async function fetchDeputyRoster(days: number): Promise<DeputyShift[]> {
   const baseUrl = process.env.DEPUTY_BASE_URL;
-  const token = process.env.DEPUTY_ACCESS_TOKEN;
-  if (!baseUrl || !token) return [];
+  if (!baseUrl) return [];
 
   try {
     const now = Math.floor(Date.now() / 1000);
@@ -26,10 +44,7 @@ async function fetchDeputyRoster(days: number): Promise<DeputyShift[]> {
 
     const res = await fetch(`${baseUrl}/api/v1/resource/Roster/QUERY`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify({
         search: {
           s1: { field: "StartTime", data: now, type: "ge" },
@@ -42,7 +57,7 @@ async function fetchDeputyRoster(days: number): Promise<DeputyShift[]> {
     });
 
     if (!res.ok) {
-      console.error("Deputy API error:", res.status, await res.text());
+      console.error("Deputy roster error:", res.status);
       return [];
     }
 
@@ -64,8 +79,50 @@ async function fetchDeputyRoster(days: number): Promise<DeputyShift[]> {
       };
     });
   } catch (err) {
-    console.error("Deputy fetch error:", err);
+    console.error("Deputy roster fetch error:", err);
     return [];
+  }
+}
+
+async function fetchLatestMemo(): Promise<DeputyMemo | null> {
+  const baseUrl = process.env.DEPUTY_BASE_URL;
+  if (!baseUrl) return null;
+
+  try {
+    const res = await fetch(`${baseUrl}/api/v1/resource/Memo/QUERY`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        sort: { Created: "desc" },
+        max: 1,
+      }),
+    });
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) return null;
+
+    const memo = data[0];
+    const created = memo.Created as string;
+
+    // Check if the memo is within 10 days
+    const memoDate = new Date(created);
+    const tenDaysAgo = new Date();
+    tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+
+    if (memoDate < tenDaysAgo) return null;
+
+    const creatorInfo = memo._DPMetaData?.CreatorInfo as Record<string, unknown> | undefined;
+
+    return {
+      id: memo.Id as number,
+      content: (memo.Content as string) || "",
+      creator: (creatorInfo?.DisplayName as string) || "Unknown",
+      created,
+    };
+  } catch (err) {
+    console.error("Deputy memo fetch error:", err);
+    return null;
   }
 }
 
@@ -74,17 +131,23 @@ export async function GET(request: Request) {
   const days = parseInt(searchParams.get("days") || "7", 10);
 
   const cacheKey = `${CACHE_KEY}-${days}`;
-  const cached = getCached<DeputyShift[]>(cacheKey);
-  if (cached) return NextResponse.json({ shifts: cached, cached: true });
+  const cached = getCached<ScheduleData>(cacheKey);
+  if (cached) return NextResponse.json(cached);
 
   if (!process.env.DEPUTY_BASE_URL || !process.env.DEPUTY_ACCESS_TOKEN) {
     return NextResponse.json({
       shifts: [],
+      latestPost: null,
       error: "Configure DEPUTY_BASE_URL and DEPUTY_ACCESS_TOKEN",
     });
   }
 
-  const shifts = await fetchDeputyRoster(days);
-  setCache(cacheKey, shifts, CACHE_TTL);
-  return NextResponse.json({ shifts });
+  const [shifts, latestPost] = await Promise.all([
+    fetchDeputyRoster(days),
+    fetchLatestMemo(),
+  ]);
+
+  const result: ScheduleData = { shifts, latestPost };
+  setCache(cacheKey, result, CACHE_TTL);
+  return NextResponse.json(result);
 }

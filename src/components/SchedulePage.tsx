@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { format, isToday, isTomorrow, parseISO } from "date-fns";
 
 interface Shift {
@@ -93,12 +94,12 @@ export function SchedulePage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <a
+            <Link
               href="/"
               className="text-xs text-muted hover:text-amber transition-colors"
             >
               Dashboard
-            </a>
+            </Link>
             <button
               onClick={fetchSchedule}
               disabled={loading}

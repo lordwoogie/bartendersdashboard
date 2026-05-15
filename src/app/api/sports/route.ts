@@ -6,8 +6,6 @@ import { format } from "date-fns";
 const CACHE_KEY = "sports-games";
 const CACHE_TTL = 900; // 15 minutes
 
-const THUNDER_TEAM_ID = "22"; // OKC Thunder NBA team ID
-
 const ESPN_LEAGUES: Record<string, { sport: string; slug: string }> = {
   nba: { sport: "basketball", slug: "nba" },
   nfl: { sport: "football", slug: "nfl" },

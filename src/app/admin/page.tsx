@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
+import Link from "next/link";
 
 interface Holiday {
   date: string;
@@ -124,9 +125,9 @@ export default function AdminPage() {
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <h1 className="text-xl font-bold text-amber">Admin</h1>
           <div className="flex gap-3">
-            <a href="/" className="text-sm text-muted hover:text-foreground">
+            <Link href="/" className="text-sm text-muted hover:text-foreground">
               Dashboard
-            </a>
+            </Link>
           </div>
         </div>
       </header>

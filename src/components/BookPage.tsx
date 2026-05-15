@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import bookData from "@/data/the-book.json";
 
@@ -45,13 +45,10 @@ type DayData = {
 };
 
 export function BookPage() {
-  const [selectedDay, setSelectedDay] = useState<DayKey>("monday");
+  const [selectedDay, setSelectedDay] = useState<DayKey>(
+    () => DAYS[new Date().getDay()],
+  );
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    const today = DAYS[new Date().getDay()];
-    setSelectedDay(today);
-  }, []);
 
   const dayData = (bookData as Record<string, DayData>)[selectedDay];
   const isToday = DAYS[new Date().getDay()] === selectedDay;

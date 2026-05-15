@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import type { MenuItem, MenuChange } from "@/lib/types";
 import { getStyleDescription, getBjcpStyleName } from "@/lib/style-matcher";
 
@@ -58,12 +59,12 @@ export function BeerList() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <a
+            <Link
               href="/"
               className="text-xs text-muted hover:text-amber transition-colors"
             >
               Dashboard
-            </a>
+            </Link>
             <button
               onClick={fetchMenu}
               disabled={loading}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { format } from "date-fns";
 import type {
   SportsGame,
@@ -100,9 +101,9 @@ export function PrintSheet() {
         >
           Print This Sheet
         </button>
-        <a href="/" className="text-sm text-gray-600 hover:text-black">
+        <Link href="/" className="text-sm text-gray-600 hover:text-black">
           Back to Dashboard
-        </a>
+        </Link>
       </div>
 
       <div className="p-6 max-w-[8in] mx-auto" style={{ fontSize: "11px" }}>

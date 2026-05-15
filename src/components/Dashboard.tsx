@@ -174,31 +174,31 @@ export function Dashboard() {
               </div>
             )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <a
               href="/book"
-              className="text-xs text-muted hover:text-amber transition-colors no-print"
+              className="text-2xl leading-none text-muted hover:text-amber transition-colors no-print"
               title="The Book - daily duties"
             >
               📖
             </a>
             <a
               href="/schedule"
-              className="text-xs text-muted hover:text-amber transition-colors no-print"
+              className="text-2xl leading-none text-muted hover:text-amber transition-colors no-print"
               title="Staff schedule"
             >
               📋
             </a>
             <a
               href="/beers"
-              className="text-xs text-muted hover:text-amber transition-colors no-print"
+              className="text-2xl leading-none text-muted hover:text-amber transition-colors no-print"
               title="Full beer list"
             >
               🍺
             </a>
             <a
               href="/print"
-              className="text-xs text-muted hover:text-amber transition-colors no-print"
+              className="text-2xl leading-none text-muted hover:text-amber transition-colors no-print"
               title="Print today's sheet"
             >
               🖨️
@@ -206,7 +206,7 @@ export function Dashboard() {
             <button
               onClick={fetchData}
               disabled={loading}
-              className="text-xs bg-surface hover:bg-card-border text-foreground px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+              className="text-sm bg-surface hover:bg-card-border text-foreground px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
             >
               {loading ? "..." : "Refresh"}
             </button>

@@ -1,3 +1,4 @@
+import { APP_TIMEZONE, dateKeyInZone } from "./timezone";
 import type {
   BriefingData,
   SportsGame,
@@ -10,8 +11,13 @@ import type {
 
 export async function fetchBriefingData(baseUrl: string): Promise<BriefingData> {
   const now = new Date();
-  const dateStr = now.toISOString().split("T")[0];
-  const dayOfWeek = now.toLocaleDateString("en-US", { weekday: "long" });
+  // "Today" is the Central calendar day so an opener sees the whole day's
+  // events, including the evening, regardless of the server's timezone.
+  const dateStr = dateKeyInZone(now);
+  const dayOfWeek = now.toLocaleDateString("en-US", {
+    weekday: "long",
+    timeZone: APP_TIMEZONE,
+  });
 
   const [sportsRes, calendarRes, eventsRes, holidaysRes, menuRes, weatherRes] =
     await Promise.allSettled([
@@ -40,29 +46,18 @@ export async function fetchBriefingData(baseUrl: string): Promise<BriefingData> 
 
   const thunderGame = games.find((g) => g.isThunder);
 
-  // Filter today's games only (not thunder — that's separate)
-  const todayStart = new Date(dateStr);
-  const todayEnd = new Date(dateStr);
-  todayEnd.setDate(todayEnd.getDate() + 1);
+  // Everything below is "today" in Central terms: an event/game belongs to
+  // today when its Central calendar date matches today's.
+  const isToday = (instant: string) => dateKeyInZone(new Date(instant)) === dateStr;
 
-  const tvGames = games.filter(
-    (g) =>
-      !g.isThunder &&
-      new Date(g.time) >= todayStart &&
-      new Date(g.time) < todayEnd
-  );
+  // Filter today's games only (not thunder — that's separate)
+  const tvGames = games.filter((g) => !g.isThunder && isToday(g.time));
 
   // Filter today's calendar events
-  const todayCalendarEvents = calendarEvents.filter((e) => {
-    const start = new Date(e.start);
-    return start >= todayStart && start < todayEnd;
-  });
+  const todayCalendarEvents = calendarEvents.filter((e) => isToday(e.start));
 
   // Filter today's local events
-  const todayLocalEvents = localEvents.filter((e) => {
-    const start = new Date(e.start);
-    return start >= todayStart && start < todayEnd;
-  });
+  const todayLocalEvents = localEvents.filter((e) => isToday(e.start));
 
   return {
     date: dateStr,

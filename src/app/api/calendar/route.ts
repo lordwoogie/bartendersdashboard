@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
 import { getCached, setCache } from "@/lib/cache";
+import { startOfDayInZone, zonedWallTimeToUtc } from "@/lib/timezone";
 import type { CalendarEvent } from "@/lib/types";
 import ICAL from "ical.js";
 
@@ -32,11 +33,9 @@ async function fetchManualEvents(days: number): Promise<CalendarEvent[]> {
     const manual: ManualEvent[] = config.manualEvents || [];
 
     const now = new Date();
-    const todayStart = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate()
-    );
+    // Day boundaries and event times are interpreted in the app timezone
+    // (Central), since staff enter wall-clock times for the OKC venue.
+    const todayStart = startOfDayInZone(now);
     const future = new Date(now);
     future.setDate(future.getDate() + days);
 
@@ -44,7 +43,7 @@ async function fetchManualEvents(days: number): Promise<CalendarEvent[]> {
     for (const e of manual) {
       if (!e.date) continue;
       const time = /^\d{2}:\d{2}$/.test(e.time) ? e.time : "00:00";
-      const start = new Date(`${e.date}T${time}`);
+      const start = zonedWallTimeToUtc(e.date, time);
       if (isNaN(start.getTime())) continue;
       // Keep events from the start of today through the requested window so
       // today's events stay visible even after their start time has passed.
@@ -52,7 +51,7 @@ async function fetchManualEvents(days: number): Promise<CalendarEvent[]> {
 
       const end =
         e.endTime && /^\d{2}:\d{2}$/.test(e.endTime)
-          ? new Date(`${e.date}T${e.endTime}`)
+          ? zonedWallTimeToUtc(e.date, e.endTime)
           : start;
 
       // Fold the optional link into the description, since CalendarEvent has

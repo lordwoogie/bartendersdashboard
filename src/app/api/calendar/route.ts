@@ -1,10 +1,85 @@
 import { NextResponse } from "next/server";
+import fs from "fs/promises";
+import path from "path";
 import { getCached, setCache } from "@/lib/cache";
 import type { CalendarEvent } from "@/lib/types";
 import ICAL from "ical.js";
 
 const CACHE_KEY = "calendar-events";
 const CACHE_TTL = 300; // 5 minutes
+
+const CONFIG_PATH = path.join(process.cwd(), "src/data/admin-config.json");
+
+interface ManualEvent {
+  id: string;
+  name: string;
+  date: string;
+  time: string;
+  endTime?: string;
+  venue?: string;
+  url?: string;
+  description?: string;
+}
+
+// Manually-added events live in admin-config.json and are surfaced here as
+// "Our Events" alongside the iCal feeds. They are read fresh on every request
+// (not cached) so newly added events show up immediately, and they appear even
+// when no iCal feeds are configured.
+async function fetchManualEvents(days: number): Promise<CalendarEvent[]> {
+  try {
+    const raw = await fs.readFile(CONFIG_PATH, "utf-8");
+    const config = JSON.parse(raw);
+    const manual: ManualEvent[] = config.manualEvents || [];
+
+    const now = new Date();
+    const todayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
+    const future = new Date(now);
+    future.setDate(future.getDate() + days);
+
+    const events: CalendarEvent[] = [];
+    for (const e of manual) {
+      if (!e.date) continue;
+      const time = /^\d{2}:\d{2}$/.test(e.time) ? e.time : "00:00";
+      const start = new Date(`${e.date}T${time}`);
+      if (isNaN(start.getTime())) continue;
+      // Keep events from the start of today through the requested window so
+      // today's events stay visible even after their start time has passed.
+      if (start < todayStart || start > future) continue;
+
+      const end =
+        e.endTime && /^\d{2}:\d{2}$/.test(e.endTime)
+          ? new Date(`${e.date}T${e.endTime}`)
+          : start;
+
+      // Fold the optional link into the description, since CalendarEvent has
+      // no dedicated URL field.
+      const description = [e.description, e.url].filter(Boolean).join("\n") || undefined;
+
+      events.push({
+        id: e.id,
+        summary: e.name,
+        description,
+        start: start.toISOString(),
+        end: end.toISOString(),
+        location: e.venue || undefined,
+      });
+    }
+    return events;
+  } catch (err) {
+    console.error("Manual events read error:", err);
+    return [];
+  }
+}
+
+function sortByStart(events: CalendarEvent[]): CalendarEvent[] {
+  return events.sort(
+    (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
+  );
+}
 
 // iCal feed URLs (secret address in iCal format from Google Calendar settings)
 // Set these as comma-separated URLs in the env var
@@ -90,15 +165,25 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const days = parseInt(searchParams.get("days") || "7", 10);
 
+  // Manual events are always read fresh and merged into every response path.
+  const manualEvents = await fetchManualEvents(days);
+
   const cached = getCached<CalendarEvent[]>(CACHE_KEY);
-  if (cached) return NextResponse.json({ events: cached, cached: true });
+  if (cached) {
+    return NextResponse.json({
+      events: sortByStart([...cached, ...manualEvents]),
+      cached: true,
+    });
+  }
 
   const icalUrls = getIcalUrls();
 
   if (icalUrls.length === 0) {
     return NextResponse.json({
-      events: [],
-      error: "Configure GOOGLE_ICAL_URLS with your calendar iCal feed URLs",
+      events: sortByStart([...manualEvents]),
+      ...(manualEvents.length === 0 && {
+        error: "Configure GOOGLE_ICAL_URLS with your calendar iCal feed URLs",
+      }),
     });
   }
 
@@ -107,19 +192,17 @@ export async function GET(request: Request) {
     const results = await Promise.all(
       icalUrls.map((url) => fetchIcalEvents(url, days))
     );
-    const allEvents = results.flat();
+    const icalEvents = results.flat();
 
-    // Sort by start time
-    allEvents.sort(
-      (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
-    );
-
-    setCache(CACHE_KEY, allEvents, CACHE_TTL);
-    return NextResponse.json({ events: allEvents });
+    // Cache only the iCal events; manual events are merged in fresh each time.
+    setCache(CACHE_KEY, icalEvents, CACHE_TTL);
+    return NextResponse.json({
+      events: sortByStart([...icalEvents, ...manualEvents]),
+    });
   } catch (err) {
     console.error("Calendar fetch error:", err);
     return NextResponse.json(
-      { events: [], error: "Failed to fetch calendar events" },
+      { events: sortByStart([...manualEvents]), error: "Failed to fetch calendar events" },
       { status: 500 }
     );
   }

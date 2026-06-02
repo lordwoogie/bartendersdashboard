@@ -45,7 +45,9 @@ export function CalendarSection({ events }: { events: CalendarEvent[] }) {
           const dayLabel = formatEventDate(event.start);
           const startTime = format(startDate, "h:mm a");
           const endTime = event.end ? format(new Date(event.end), "h:mm a") : null;
-          const hasDetails = Boolean(event.description || event.location);
+          const hasDetails = Boolean(
+            event.description || event.location || event.url
+          );
           const isOpen = expanded.has(event.id);
 
           return (
@@ -103,6 +105,16 @@ export function CalendarSection({ events }: { events: CalendarEvent[] }) {
                     <p className="text-xs text-copper mt-1.5 flex items-center gap-1">
                       📍 {event.location}
                     </p>
+                  )}
+                  {event.url && (
+                    <a
+                      href={event.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 mt-2 text-xs font-medium bg-amber/20 text-amber hover:bg-amber/30 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      🔗 More info
+                    </a>
                   )}
                 </div>
               )}

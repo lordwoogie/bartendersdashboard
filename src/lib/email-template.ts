@@ -140,6 +140,8 @@ export function generateEmailHtml(data: BriefingData): string {
           ${formatTimeInZone(new Date(e.start))}${e.end ? ` — ${formatTimeInZone(new Date(e.end))}` : ""}
         </div>
         ${e.description ? `<div class="muted" style="font-size: 12px; margin-top: 4px;">${e.description}</div>` : ""}
+        ${e.location ? `<div class="muted" style="font-size: 12px; margin-top: 4px;">📍 ${e.location}</div>` : ""}
+        ${e.url ? `<div style="margin-top: 8px;"><a href="${e.url}" style="display: inline-block; font-size: 12px; font-weight: 600; color: #d4a056; text-decoration: none; background: rgba(212, 160, 86, 0.15); padding: 6px 12px; border-radius: 6px;">🔗 More info</a></div>` : ""}
       </div>`;
     }
     html += `</div>`;

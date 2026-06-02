@@ -54,17 +54,14 @@ async function fetchManualEvents(days: number): Promise<CalendarEvent[]> {
           ? zonedWallTimeToUtc(e.date, e.endTime)
           : start;
 
-      // Fold the optional link into the description, since CalendarEvent has
-      // no dedicated URL field.
-      const description = [e.description, e.url].filter(Boolean).join("\n") || undefined;
-
       events.push({
         id: e.id,
         summary: e.name,
-        description,
+        description: e.description || undefined,
         start: start.toISOString(),
         end: end.toISOString(),
         location: e.venue || undefined,
+        url: e.url || undefined,
       });
     }
     return events;

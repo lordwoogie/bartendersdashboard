@@ -22,6 +22,7 @@ export interface CalendarEvent {
   start: string;
   end: string;
   location?: string;
+  url?: string;
 }
 
 export interface LocalEvent {

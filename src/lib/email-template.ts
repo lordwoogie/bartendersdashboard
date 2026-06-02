@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { formatDateLabel, formatTimeInZone } from "./timezone";
 import type { BriefingData } from "./types";
 
 function weatherEmoji(condition?: string): string {
@@ -50,7 +50,7 @@ export function generateEmailHtml(data: BriefingData): string {
   <div class="container">
     <div class="header">
       <h1>🤠 Cowboy Cold Briefing</h1>
-      <div class="date">${format(new Date(data.date), "EEEE, MMMM d, yyyy")}</div>`;
+      <div class="date">${formatDateLabel(data.date, "long")}</div>`;
 
   // Weather
   if (data.weather) {
@@ -102,7 +102,7 @@ export function generateEmailHtml(data: BriefingData): string {
           ${isHome ? `vs ${g.awayTeam}` : `@ ${g.homeTeam}`}
         </div>
         <div class="muted" style="margin-top: 4px;">
-          ${isHome ? "Home" : "Away"} &middot; ${format(new Date(g.time), "h:mm a")}${g.channel ? ` &middot; ${g.channel}` : ""}
+          ${isHome ? "Home" : "Away"} &middot; ${formatTimeInZone(new Date(g.time))}${g.channel ? ` &middot; ${g.channel}` : ""}
         </div>
       </div>
     </div>`;
@@ -119,7 +119,7 @@ export function generateEmailHtml(data: BriefingData): string {
     for (const g of data.tvGames.slice(0, 15)) {
       html += `
           <tr>
-            <td class="amber" style="white-space: nowrap;">${format(new Date(g.time), "h:mm a")}</td>
+            <td class="amber" style="white-space: nowrap;">${formatTimeInZone(new Date(g.time))}</td>
             <td>${g.awayTeam} @ ${g.homeTeam}</td>
             <td class="muted">${g.channel || "—"}</td>
           </tr>`;
@@ -137,9 +137,11 @@ export function generateEmailHtml(data: BriefingData): string {
       <div class="card">
         <strong>${e.summary}</strong>
         <div class="amber" style="font-size: 13px; margin-top: 4px;">
-          ${format(new Date(e.start), "h:mm a")}${e.end ? ` — ${format(new Date(e.end), "h:mm a")}` : ""}
+          ${formatTimeInZone(new Date(e.start))}${e.end ? ` — ${formatTimeInZone(new Date(e.end))}` : ""}
         </div>
         ${e.description ? `<div class="muted" style="font-size: 12px; margin-top: 4px;">${e.description}</div>` : ""}
+        ${e.location ? `<div class="muted" style="font-size: 12px; margin-top: 4px;">📍 ${e.location}</div>` : ""}
+        ${e.url ? `<div style="margin-top: 8px;"><a href="${e.url}" style="display: inline-block; font-size: 12px; font-weight: 600; color: #d4a056; text-decoration: none; background: rgba(212, 160, 86, 0.15); padding: 6px 12px; border-radius: 6px;">🔗 More info</a></div>` : ""}
       </div>`;
     }
     html += `</div>`;
@@ -155,7 +157,7 @@ export function generateEmailHtml(data: BriefingData): string {
       <div style="padding: 4px 0; border-bottom: 1px solid #2a2218; font-size: 13px;">
         <strong>${e.name}</strong>
         ${e.venue ? `<span class="muted"> @ ${e.venue}</span>` : ""}
-        ${e.start ? `<span class="amber" style="float: right;">${format(new Date(e.start), "h:mm a")}</span>` : ""}
+        ${e.start ? `<span class="amber" style="float: right;">${formatTimeInZone(new Date(e.start))}</span>` : ""}
       </div>`;
     }
     html += `</div>`;
@@ -184,7 +186,7 @@ export function generateEmailHtml(data: BriefingData): string {
 
   html += `
     <div style="text-align: center; color: #8b7d6b; font-size: 11px; margin-top: 32px; padding-top: 16px; border-top: 1px solid #3d3225;">
-      Cowboy Cold &middot; 815 SW 2nd St, OKC &middot; Generated ${format(new Date(), "h:mm a")}
+      Cowboy Cold &middot; 815 SW 2nd St, OKC &middot; Generated ${formatTimeInZone(new Date())}
     </div>
   </div>
 </body>
@@ -195,5 +197,5 @@ export function generateEmailHtml(data: BriefingData): string {
 
 export function generateEmailSubject(data: BriefingData): string {
   const emoji = weatherEmoji(data.weather?.condition);
-  return `${emoji} Cowboy Cold Briefing — ${format(new Date(data.date), "EEEE, MMM d")}`;
+  return `${emoji} Cowboy Cold Briefing — ${formatDateLabel(data.date, "short")}`;
 }

@@ -14,10 +14,18 @@ interface ManualEvent {
   name: string;
   date: string;
   time: string;
+  endTime?: string;
+  venue?: string;
+  url?: string;
   description?: string;
 }
 
+type Role = "admin" | "editor";
+
 interface AdminConfig {
+  // For editors, the server returns a trimmed config containing only
+  // manualEvents; the sports/email sections are never rendered for them, so
+  // these fields are typed as present for the admin code paths that use them.
   sports: {
     leagues: Record<string, boolean>;
     favoriteTeams: string[];
@@ -26,9 +34,20 @@ interface AdminConfig {
   manualEvents: ManualEvent[];
 }
 
+const EMPTY_EVENT = {
+  name: "",
+  date: "",
+  time: "",
+  endTime: "",
+  venue: "",
+  url: "",
+  description: "",
+};
+
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
+  const [role, setRole] = useState<Role | null>(null);
   const [config, setConfig] = useState<AdminConfig | null>(null);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [loading, setLoading] = useState(false);
@@ -40,11 +59,10 @@ export default function AdminPage() {
   const [newHolidayEmoji, setNewHolidayEmoji] = useState("");
   const [newHolidayRecurring, setNewHolidayRecurring] = useState(true);
 
-  // New event form
-  const [newEventName, setNewEventName] = useState("");
-  const [newEventDate, setNewEventDate] = useState("");
-  const [newEventTime, setNewEventTime] = useState("");
-  const [newEventDesc, setNewEventDesc] = useState("");
+  // Event details form — used for both adding a new event and editing an
+  // existing one. `editingId` is null when adding, or the event id when editing.
+  const [eventForm, setEventForm] = useState(EMPTY_EVENT);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // New recipient
   const [newEmail, setNewEmail] = useState("");
@@ -65,7 +83,8 @@ export default function AdminPage() {
       }
       const data = await res.json();
       setConfig(data.config);
-      setHolidays(data.holidays);
+      setHolidays(data.holidays || []);
+      setRole(data.role ?? "admin");
       setAuthenticated(true);
       setMessage("");
     } catch {
@@ -122,8 +141,15 @@ export default function AdminPage() {
     <div className="min-h-screen bg-background">
       <header className="bg-card-bg border-b border-card-border px-4 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <h1 className="text-xl font-bold text-amber">Admin</h1>
-          <div className="flex gap-3">
+          <h1 className="text-xl font-bold text-amber">
+            {role === "editor" ? "Event Editor" : "Admin"}
+          </h1>
+          <div className="flex items-center gap-3">
+            {role === "editor" && (
+              <span className="text-xs text-muted border border-card-border rounded px-2 py-0.5">
+                events only
+              </span>
+            )}
             <a href="/" className="text-sm text-muted hover:text-foreground">
               Dashboard
             </a>
@@ -141,6 +167,7 @@ export default function AdminPage() {
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         {/* Custom Holidays */}
+        {role === "admin" && (
         <section className="bg-card-bg border border-card-border rounded-xl p-6">
           <h2 className="text-lg font-semibold text-amber mb-4">
             Custom Holidays & Observances
@@ -226,9 +253,10 @@ export default function AdminPage() {
             Add Holiday
           </button>
         </section>
+        )}
 
         {/* TV Priority / Leagues */}
-        {config && (
+        {role === "admin" && config && (
           <section className="bg-card-bg border border-card-border rounded-xl p-6">
             <h2 className="text-lg font-semibold text-amber mb-4">
               TV Sports Settings
@@ -324,7 +352,7 @@ export default function AdminPage() {
         )}
 
         {/* Email Recipients */}
-        {config && (
+        {role === "admin" && config && (
           <section className="bg-card-bg border border-card-border rounded-xl p-6">
             <h2 className="text-lg font-semibold text-amber mb-4">
               Email Recipients
@@ -379,95 +407,206 @@ export default function AdminPage() {
           </section>
         )}
 
-        {/* Manual Event Add */}
+        {/* Event Details */}
         <section className="bg-card-bg border border-card-border rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-amber mb-4">
-            Quick Add Event
+          <h2 className="text-lg font-semibold text-amber mb-1">
+            Event Details
           </h2>
+          <p className="text-xs text-muted mb-4">
+            Add or edit events that appear on the dashboard.
+          </p>
           {config?.manualEvents && config.manualEvents.length > 0 && (
-            <div className="space-y-1 mb-4">
+            <div className="space-y-2 mb-4">
               {config.manualEvents.map((evt) => (
-                <div key={evt.id} className="flex items-center justify-between bg-surface rounded px-2 py-1 text-sm">
-                  <span>
-                    {evt.name} — {evt.date} {evt.time}
-                  </span>
-                  <button
-                    onClick={async () => {
-                      await adminPost({
-                        action: "remove-manual-event",
-                        eventId: evt.id,
-                      });
-                      setConfig({
-                        ...config!,
-                        manualEvents: config!.manualEvents.filter(
-                          (e) => e.id !== evt.id
-                        ),
-                      });
-                      flash("Event removed");
-                    }}
-                    className="text-red-400 text-xs"
-                  >
-                    Remove
-                  </button>
+                <div
+                  key={evt.id}
+                  className="bg-surface rounded-lg px-3 py-2 text-sm"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="font-medium text-foreground">
+                        {evt.name}
+                      </div>
+                      <div className="text-xs text-muted">
+                        {evt.date}
+                        {evt.time ? ` · ${evt.time}` : ""}
+                        {evt.endTime ? `–${evt.endTime}` : ""}
+                        {evt.venue ? ` · ${evt.venue}` : ""}
+                      </div>
+                      {evt.description && (
+                        <div className="text-xs text-muted mt-1">
+                          {evt.description}
+                        </div>
+                      )}
+                      {evt.url && (
+                        <a
+                          href={evt.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs text-copper hover:text-amber break-all"
+                        >
+                          {evt.url}
+                        </a>
+                      )}
+                    </div>
+                    <div className="flex gap-2 shrink-0">
+                      <button
+                        onClick={() => {
+                          setEditingId(evt.id);
+                          setEventForm({
+                            name: evt.name,
+                            date: evt.date,
+                            time: evt.time === "TBD" ? "" : evt.time,
+                            endTime: evt.endTime || "",
+                            venue: evt.venue || "",
+                            url: evt.url || "",
+                            description: evt.description || "",
+                          });
+                        }}
+                        className="text-copper text-xs hover:text-amber"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={async () => {
+                          const result = await adminPost({
+                            action: "remove-manual-event",
+                            eventId: evt.id,
+                          });
+                          if (result.config) setConfig(result.config);
+                          if (editingId === evt.id) {
+                            setEditingId(null);
+                            setEventForm(EMPTY_EVENT);
+                          }
+                          flash("Event removed");
+                        }}
+                        className="text-red-400 text-xs hover:text-red-300"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           )}
+
+          <h3 className="text-sm font-semibold text-copper mb-2">
+            {editingId ? "Edit Event" : "Add Event"}
+          </h3>
           <div className="grid grid-cols-2 gap-2">
             <input
               type="text"
-              value={newEventName}
-              onChange={(e) => setNewEventName(e.target.value)}
+              value={eventForm.name}
+              onChange={(e) =>
+                setEventForm({ ...eventForm, name: e.target.value })
+              }
               placeholder="Event name"
               className="bg-surface border border-card-border rounded px-2 py-1 text-sm text-foreground col-span-2"
             />
             <input
               type="date"
-              value={newEventDate}
-              onChange={(e) => setNewEventDate(e.target.value)}
+              value={eventForm.date}
+              onChange={(e) =>
+                setEventForm({ ...eventForm, date: e.target.value })
+              }
               className="bg-surface border border-card-border rounded px-2 py-1 text-sm text-foreground"
             />
             <input
               type="time"
-              value={newEventTime}
-              onChange={(e) => setNewEventTime(e.target.value)}
+              value={eventForm.time}
+              onChange={(e) =>
+                setEventForm({ ...eventForm, time: e.target.value })
+              }
               className="bg-surface border border-card-border rounded px-2 py-1 text-sm text-foreground"
             />
+            <label className="text-xs text-muted flex flex-col gap-1">
+              End time (optional)
+              <input
+                type="time"
+                value={eventForm.endTime}
+                onChange={(e) =>
+                  setEventForm({ ...eventForm, endTime: e.target.value })
+                }
+                className="bg-surface border border-card-border rounded px-2 py-1 text-sm text-foreground"
+              />
+            </label>
             <input
               type="text"
-              value={newEventDesc}
-              onChange={(e) => setNewEventDesc(e.target.value)}
+              value={eventForm.venue}
+              onChange={(e) =>
+                setEventForm({ ...eventForm, venue: e.target.value })
+              }
+              placeholder="Venue / location (optional)"
+              className="bg-surface border border-card-border rounded px-2 py-1 text-sm text-foreground self-end"
+            />
+            <input
+              type="url"
+              value={eventForm.url}
+              onChange={(e) =>
+                setEventForm({ ...eventForm, url: e.target.value })
+              }
+              placeholder="Link / tickets URL (optional)"
+              className="bg-surface border border-card-border rounded px-2 py-1 text-sm text-foreground col-span-2"
+            />
+            <textarea
+              value={eventForm.description}
+              onChange={(e) =>
+                setEventForm({ ...eventForm, description: e.target.value })
+              }
               placeholder="Description (optional)"
+              rows={2}
               className="bg-surface border border-card-border rounded px-2 py-1 text-sm text-foreground col-span-2"
             />
           </div>
-          <button
-            onClick={async () => {
-              if (!newEventName || !newEventDate) return;
-              const event = {
-                name: newEventName,
-                date: newEventDate,
-                time: newEventTime || "TBD",
-                description: newEventDesc || undefined,
-              };
-              const result = await adminPost({
-                action: "add-manual-event",
-                event,
-              });
-              if (result.config) setConfig(result.config);
-              setNewEventName("");
-              setNewEventDate("");
-              setNewEventTime("");
-              setNewEventDesc("");
-              flash("Event added");
-            }}
-            className="mt-2 bg-amber text-background text-sm font-medium px-4 py-1.5 rounded-lg"
-          >
-            Add Event
-          </button>
+          <div className="flex gap-2 mt-2">
+            <button
+              onClick={async () => {
+                if (!eventForm.name || !eventForm.date) return;
+                const event = {
+                  name: eventForm.name,
+                  date: eventForm.date,
+                  time: eventForm.time || "TBD",
+                  endTime: eventForm.endTime || undefined,
+                  venue: eventForm.venue || undefined,
+                  url: eventForm.url || undefined,
+                  description: eventForm.description || undefined,
+                };
+                const result = await adminPost(
+                  editingId
+                    ? {
+                        action: "update-manual-event",
+                        eventId: editingId,
+                        event,
+                      }
+                    : { action: "add-manual-event", event }
+                );
+                if (result.config) setConfig(result.config);
+                const wasEditing = editingId !== null;
+                setEventForm(EMPTY_EVENT);
+                setEditingId(null);
+                flash(wasEditing ? "Event updated" : "Event added");
+              }}
+              className="bg-amber text-background text-sm font-medium px-4 py-1.5 rounded-lg"
+            >
+              {editingId ? "Save Changes" : "Add Event"}
+            </button>
+            {editingId && (
+              <button
+                onClick={() => {
+                  setEditingId(null);
+                  setEventForm(EMPTY_EVENT);
+                }}
+                className="bg-surface text-foreground text-sm px-4 py-1.5 rounded-lg hover:bg-card-border transition-colors"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
         </section>
 
         {/* Preview & Test */}
+        {role === "admin" && (
         <section className="bg-card-bg border border-card-border rounded-xl p-6">
           <h2 className="text-lg font-semibold text-amber mb-4">
             Email Preview & Test
@@ -503,6 +642,7 @@ export default function AdminPage() {
             </button>
           </div>
         </section>
+        )}
       </main>
     </div>
   );

@@ -177,28 +177,28 @@ export function Dashboard() {
           <div className="flex items-center gap-3">
             <a
               href="/book"
-              className="text-xs text-muted hover:text-amber transition-colors no-print"
+              className="text-3xl text-muted hover:text-amber transition-colors no-print"
               title="The Book - daily duties"
             >
               📖
             </a>
             <a
               href="/schedule"
-              className="text-xs text-muted hover:text-amber transition-colors no-print"
+              className="text-3xl text-muted hover:text-amber transition-colors no-print"
               title="Staff schedule"
             >
               📋
             </a>
             <a
               href="/beers"
-              className="text-xs text-muted hover:text-amber transition-colors no-print"
+              className="text-3xl text-muted hover:text-amber transition-colors no-print"
               title="Full beer list"
             >
               🍺
             </a>
             <a
               href="/print"
-              className="text-xs text-muted hover:text-amber transition-colors no-print"
+              className="text-3xl text-muted hover:text-amber transition-colors no-print"
               title="Print today's sheet"
             >
               🖨️

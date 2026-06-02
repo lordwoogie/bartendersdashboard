@@ -5,11 +5,39 @@ import path from "path";
 const CONFIG_PATH = path.join(process.cwd(), "src/data/admin-config.json");
 const HOLIDAYS_PATH = path.join(process.cwd(), "src/data/drinking-holidays.json");
 
-function checkAuth(request: Request): boolean {
-  const password = process.env.ADMIN_PASSWORD;
-  if (!password) return false;
+type Role = "admin" | "editor";
+
+// Actions an "editor" is allowed to perform. Editors can manage event
+// details only — everything else requires full admin access.
+const EVENT_DETAIL_ACTIONS = new Set([
+  "add-manual-event",
+  "update-manual-event",
+  "remove-manual-event",
+]);
+
+// Resolve the caller's role from the password header. Returns null when the
+// supplied password matches neither the admin nor the event-editor password.
+// The editor role is only available when EVENT_EDITOR_PASSWORD is configured.
+function getRole(request: Request): Role | null {
   const auth = request.headers.get("x-admin-password");
-  return auth === password;
+  if (!auth) return null;
+
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (adminPassword && auth === adminPassword) return "admin";
+
+  const editorPassword = process.env.EVENT_EDITOR_PASSWORD;
+  if (editorPassword && auth === editorPassword) return "editor";
+
+  return null;
+}
+
+// Shape the config returned to a caller so editors never receive admin-only
+// fields (sports settings, email recipients) in a response body.
+function configForRole(config: { manualEvents?: unknown }, role: Role) {
+  if (role === "editor") {
+    return { manualEvents: config.manualEvents || [] };
+  }
+  return config;
 }
 
 async function readJson(filePath: string) {
@@ -21,31 +49,51 @@ async function writeJson(filePath: string, data: unknown) {
   await fs.writeFile(filePath, JSON.stringify(data, null, 2));
 }
 
-// GET: fetch admin config and holidays
+// GET: fetch admin config and holidays. Admins get the full config; editors
+// only receive the event data they are allowed to manage.
 export async function GET(request: Request) {
-  if (!checkAuth(request)) {
+  const role = getRole(request);
+  if (!role) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const config = await readJson(CONFIG_PATH);
+
+    if (role === "editor") {
+      return NextResponse.json({
+        role,
+        config: { manualEvents: config.manualEvents || [] },
+        holidays: [],
+      });
+    }
+
     const holidays = await readJson(HOLIDAYS_PATH);
-    return NextResponse.json({ config, holidays });
+    return NextResponse.json({ role, config, holidays });
   } catch (err) {
     console.error("Admin GET error:", err);
     return NextResponse.json({ error: "Failed to read config" }, { status: 500 });
   }
 }
 
-// POST: update config
+// POST: update config. Event-detail actions are available to admins and
+// editors; all other actions require full admin access.
 export async function POST(request: Request) {
-  if (!checkAuth(request)) {
+  const role = getRole(request);
+  if (!role) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const body = await request.json();
     const { action } = body;
+
+    if (role === "editor" && !EVENT_DETAIL_ACTIONS.has(action)) {
+      return NextResponse.json(
+        { error: "Forbidden: editors may only manage event details" },
+        { status: 403 }
+      );
+    }
 
     if (action === "update-config") {
       const config = await readJson(CONFIG_PATH);
@@ -85,7 +133,30 @@ export async function POST(request: Request) {
         createdAt: new Date().toISOString(),
       });
       await writeJson(CONFIG_PATH, config);
-      return NextResponse.json({ success: true, config });
+      return NextResponse.json({ success: true, config: configForRole(config, role) });
+    }
+
+    if (action === "update-manual-event") {
+      const config = await readJson(CONFIG_PATH);
+      const events = config.manualEvents || [];
+      const index = events.findIndex(
+        (e: { id: string }) => e.id === body.eventId
+      );
+      if (index === -1) {
+        return NextResponse.json({ error: "Event not found" }, { status: 404 });
+      }
+      const existing = events[index];
+      events[index] = {
+        ...existing,
+        ...body.event,
+        // Preserve immutable identity/audit fields.
+        id: existing.id,
+        createdAt: existing.createdAt,
+        updatedAt: new Date().toISOString(),
+      };
+      config.manualEvents = events;
+      await writeJson(CONFIG_PATH, config);
+      return NextResponse.json({ success: true, config: configForRole(config, role) });
     }
 
     if (action === "remove-manual-event") {
@@ -94,7 +165,7 @@ export async function POST(request: Request) {
         (e: { id: string }) => e.id !== body.eventId
       );
       await writeJson(CONFIG_PATH, config);
-      return NextResponse.json({ success: true, config });
+      return NextResponse.json({ success: true, config: configForRole(config, role) });
     }
 
     if (action === "update-recipients") {

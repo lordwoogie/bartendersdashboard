@@ -70,6 +70,9 @@ export default function AdminPage() {
   // New favorite team
   const [newTeam, setNewTeam] = useState("");
 
+  // TV settings are staged locally and persisted via the Save button.
+  const [tvDirty, setTvDirty] = useState(false);
+
   const fetchConfig = useCallback(async () => {
     setLoading(true);
     try {
@@ -85,6 +88,7 @@ export default function AdminPage() {
       setConfig(data.config);
       setHolidays(data.holidays || []);
       setRole(data.role ?? "admin");
+      setTvDirty(false);
       setAuthenticated(true);
       setMessage("");
     } catch {
@@ -267,7 +271,7 @@ export default function AdminPage() {
                   <input
                     type="checkbox"
                     checked={enabled}
-                    onChange={async () => {
+                    onChange={() => {
                       const updated = {
                         ...config,
                         sports: {
@@ -279,10 +283,7 @@ export default function AdminPage() {
                         },
                       };
                       setConfig(updated);
-                      await adminPost({
-                        action: "update-config",
-                        config: updated,
-                      });
+                      setTvDirty(true);
                     }}
                   />
                   {league.toUpperCase()}
@@ -298,7 +299,7 @@ export default function AdminPage() {
                 <div key={i} className="flex items-center justify-between bg-surface rounded px-2 py-1 text-sm">
                   <span>{team}</span>
                   <button
-                    onClick={async () => {
+                    onClick={() => {
                       const updated = {
                         ...config,
                         sports: {
@@ -309,10 +310,7 @@ export default function AdminPage() {
                         },
                       };
                       setConfig(updated);
-                      await adminPost({
-                        action: "update-config",
-                        config: updated,
-                      });
+                      setTvDirty(true);
                     }}
                     className="text-red-400 text-xs"
                   >
@@ -330,7 +328,7 @@ export default function AdminPage() {
                 className="flex-1 bg-surface border border-card-border rounded px-2 py-1 text-sm text-foreground"
               />
               <button
-                onClick={async () => {
+                onClick={() => {
                   if (!newTeam) return;
                   const updated = {
                     ...config,
@@ -340,13 +338,30 @@ export default function AdminPage() {
                     },
                   };
                   setConfig(updated);
-                  await adminPost({ action: "update-config", config: updated });
+                  setTvDirty(true);
                   setNewTeam("");
                 }}
                 className="bg-amber text-background text-sm px-3 py-1 rounded"
               >
                 Add
               </button>
+            </div>
+
+            <div className="flex items-center gap-3 mt-4 pt-4 border-t border-card-border">
+              <button
+                onClick={async () => {
+                  await adminPost({ action: "update-config", config });
+                  setTvDirty(false);
+                  flash("TV settings saved");
+                }}
+                disabled={!tvDirty}
+                className="bg-amber text-background text-sm font-medium px-4 py-1.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Save TV Settings
+              </button>
+              {tvDirty && (
+                <span className="text-xs text-copper">Unsaved changes</span>
+              )}
             </div>
           </section>
         )}

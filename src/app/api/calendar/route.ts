@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
 import { getCached, setCache } from "@/lib/cache";
+import { readData } from "@/lib/storage";
 import { startOfDayInZone, zonedWallTimeToUtc } from "@/lib/timezone";
 import type { CalendarEvent } from "@/lib/types";
 import ICAL from "ical.js";
@@ -9,7 +8,7 @@ import ICAL from "ical.js";
 const CACHE_KEY = "calendar-events";
 const CACHE_TTL = 300; // 5 minutes
 
-const CONFIG_PATH = path.join(process.cwd(), "src/data/admin-config.json");
+const CONFIG_DOC = "admin-config.json";
 
 interface ManualEvent {
   id: string;
@@ -28,8 +27,7 @@ interface ManualEvent {
 // when no iCal feeds are configured.
 async function fetchManualEvents(days: number): Promise<CalendarEvent[]> {
   try {
-    const raw = await fs.readFile(CONFIG_PATH, "utf-8");
-    const config = JSON.parse(raw);
+    const config = await readData<{ manualEvents?: ManualEvent[] }>(CONFIG_DOC);
     const manual: ManualEvent[] = config.manualEvents || [];
 
     const now = new Date();

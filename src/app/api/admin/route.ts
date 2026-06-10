@@ -1,11 +1,29 @@
 import { NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
+import { readData, writeData } from "@/lib/storage";
 
-const CONFIG_PATH = path.join(process.cwd(), "src/data/admin-config.json");
-const HOLIDAYS_PATH = path.join(process.cwd(), "src/data/drinking-holidays.json");
+const CONFIG_DOC = "admin-config.json";
+const HOLIDAYS_DOC = "drinking-holidays.json";
 
 type Role = "admin" | "editor";
+
+interface ManualEvent {
+  id: string;
+  createdAt?: string;
+  [key: string]: unknown;
+}
+
+interface AdminConfig {
+  manualEvents?: ManualEvent[];
+  emailRecipients?: string[];
+  [key: string]: unknown;
+}
+
+interface Holiday {
+  date: string;
+  name: string;
+  emoji?: string;
+  recurring?: boolean;
+}
 
 // Actions an "editor" is allowed to perform. Editors can manage event
 // details only — everything else requires full admin access.
@@ -33,20 +51,11 @@ function getRole(request: Request): Role | null {
 
 // Shape the config returned to a caller so editors never receive admin-only
 // fields (sports settings, email recipients) in a response body.
-function configForRole(config: { manualEvents?: unknown }, role: Role) {
+function configForRole(config: AdminConfig, role: Role) {
   if (role === "editor") {
     return { manualEvents: config.manualEvents || [] };
   }
   return config;
-}
-
-async function readJson(filePath: string) {
-  const raw = await fs.readFile(filePath, "utf-8");
-  return JSON.parse(raw);
-}
-
-async function writeJson(filePath: string, data: unknown) {
-  await fs.writeFile(filePath, JSON.stringify(data, null, 2));
 }
 
 // GET: fetch admin config and holidays. Admins get the full config; editors
@@ -58,7 +67,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const config = await readJson(CONFIG_PATH);
+    const config = await readData<AdminConfig>(CONFIG_DOC);
 
     if (role === "editor") {
       return NextResponse.json({
@@ -68,7 +77,7 @@ export async function GET(request: Request) {
       });
     }
 
-    const holidays = await readJson(HOLIDAYS_PATH);
+    const holidays = await readData<Holiday[]>(HOLIDAYS_DOC);
     return NextResponse.json({ role, config, holidays });
   } catch (err) {
     console.error("Admin GET error:", err);
@@ -96,52 +105,49 @@ export async function POST(request: Request) {
     }
 
     if (action === "update-config") {
-      const config = await readJson(CONFIG_PATH);
+      const config = await readData<AdminConfig>(CONFIG_DOC);
       Object.assign(config, body.config);
-      await writeJson(CONFIG_PATH, config);
+      await writeData(CONFIG_DOC, config);
       return NextResponse.json({ success: true, config });
     }
 
     if (action === "update-holidays") {
-      await writeJson(HOLIDAYS_PATH, body.holidays);
+      await writeData(HOLIDAYS_DOC, body.holidays);
       return NextResponse.json({ success: true });
     }
 
     if (action === "add-holiday") {
-      const holidays = await readJson(HOLIDAYS_PATH);
+      const holidays = await readData<Holiday[]>(HOLIDAYS_DOC);
       holidays.push(body.holiday);
-      await writeJson(HOLIDAYS_PATH, holidays);
+      await writeData(HOLIDAYS_DOC, holidays);
       return NextResponse.json({ success: true, holidays });
     }
 
     if (action === "remove-holiday") {
-      const holidays = await readJson(HOLIDAYS_PATH);
+      const holidays = await readData<Holiday[]>(HOLIDAYS_DOC);
       const filtered = holidays.filter(
-        (h: { date: string; name: string }) =>
-          !(h.date === body.date && h.name === body.name)
+        (h) => !(h.date === body.date && h.name === body.name)
       );
-      await writeJson(HOLIDAYS_PATH, filtered);
+      await writeData(HOLIDAYS_DOC, filtered);
       return NextResponse.json({ success: true, holidays: filtered });
     }
 
     if (action === "add-manual-event") {
-      const config = await readJson(CONFIG_PATH);
+      const config = await readData<AdminConfig>(CONFIG_DOC);
       if (!config.manualEvents) config.manualEvents = [];
       config.manualEvents.push({
         ...body.event,
         id: `manual-${Date.now()}`,
         createdAt: new Date().toISOString(),
       });
-      await writeJson(CONFIG_PATH, config);
+      await writeData(CONFIG_DOC, config);
       return NextResponse.json({ success: true, config: configForRole(config, role) });
     }
 
     if (action === "update-manual-event") {
-      const config = await readJson(CONFIG_PATH);
+      const config = await readData<AdminConfig>(CONFIG_DOC);
       const events = config.manualEvents || [];
-      const index = events.findIndex(
-        (e: { id: string }) => e.id === body.eventId
-      );
+      const index = events.findIndex((e) => e.id === body.eventId);
       if (index === -1) {
         return NextResponse.json({ error: "Event not found" }, { status: 404 });
       }
@@ -155,23 +161,23 @@ export async function POST(request: Request) {
         updatedAt: new Date().toISOString(),
       };
       config.manualEvents = events;
-      await writeJson(CONFIG_PATH, config);
+      await writeData(CONFIG_DOC, config);
       return NextResponse.json({ success: true, config: configForRole(config, role) });
     }
 
     if (action === "remove-manual-event") {
-      const config = await readJson(CONFIG_PATH);
+      const config = await readData<AdminConfig>(CONFIG_DOC);
       config.manualEvents = (config.manualEvents || []).filter(
-        (e: { id: string }) => e.id !== body.eventId
+        (e) => e.id !== body.eventId
       );
-      await writeJson(CONFIG_PATH, config);
+      await writeData(CONFIG_DOC, config);
       return NextResponse.json({ success: true, config: configForRole(config, role) });
     }
 
     if (action === "update-recipients") {
-      const config = await readJson(CONFIG_PATH);
+      const config = await readData<AdminConfig>(CONFIG_DOC);
       config.emailRecipients = body.recipients;
-      await writeJson(CONFIG_PATH, config);
+      await writeData(CONFIG_DOC, config);
       return NextResponse.json({ success: true, config });
     }
 

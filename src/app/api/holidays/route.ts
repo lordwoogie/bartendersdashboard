@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import { getCached, setCache } from "@/lib/cache";
+import { readData } from "@/lib/storage";
 import { format } from "date-fns";
 import type { Holiday } from "@/lib/types";
-import drinkingHolidays from "@/data/drinking-holidays.json";
+
+interface CustomHoliday {
+  date: string;
+  name: string;
+  emoji?: string;
+  recurring?: boolean;
+}
 
 const CACHE_KEY = "holidays";
 const CACHE_TTL = 86400; // 24 hours
@@ -24,9 +31,9 @@ async function fetchPublicHolidays(year: number): Promise<Holiday[]> {
   }
 }
 
-function getCustomHolidays(dateStr: string): Holiday[] {
+function getCustomHolidays(dateStr: string, customHolidays: CustomHoliday[]): Holiday[] {
   const mmdd = dateStr.slice(5); // "MM-DD" from "YYYY-MM-DD"
-  return (drinkingHolidays as Array<{ date: string; name: string; emoji?: string; recurring?: boolean }>)
+  return customHolidays
     .filter((h) => h.date === mmdd)
     .map((h) => ({
       date: dateStr,
@@ -52,8 +59,10 @@ export async function GET(request: Request) {
     setCache(cacheKey, publicHolidays, CACHE_TTL);
   }
 
+  const customHolidays = await readData<CustomHoliday[]>("drinking-holidays.json");
+
   const todaysPublic = publicHolidays.filter((h) => h.date === dateStr);
-  const todaysCustom = getCustomHolidays(dateStr);
+  const todaysCustom = getCustomHolidays(dateStr, customHolidays);
 
   const allHolidays = [...todaysPublic, ...todaysCustom];
 
@@ -65,7 +74,7 @@ export async function GET(request: Request) {
     const ds = format(d, "yyyy-MM-dd");
     weekHolidays.push(
       ...publicHolidays.filter((h) => h.date === ds),
-      ...getCustomHolidays(ds)
+      ...getCustomHolidays(ds, customHolidays)
     );
   }
 

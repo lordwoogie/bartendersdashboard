@@ -183,6 +183,13 @@ export function Dashboard() {
               🛢
             </a>
             <a
+              href="/supplies"
+              className="text-3xl text-muted hover:text-amber transition-colors no-print"
+              title="Supplies - to buy list and shift notes"
+            >
+              🛒
+            </a>
+            <a
               href="/book"
               className="text-3xl text-muted hover:text-amber transition-colors no-print"
               title="The Book - daily duties"
@@ -202,6 +209,13 @@ export function Dashboard() {
               title="Full beer list"
             >
               🍺
+            </a>
+            <a
+              href="/wines"
+              className="text-3xl text-muted hover:text-amber transition-colors no-print"
+              title="Wine list"
+            >
+              🍷
             </a>
             <a
               href="/print"

@@ -1,1 +1,172 @@
-[]
+[
+  {
+    "id": "seed-keg-000",
+    "name": "Amber Lager",
+    "format": "keg"
+  },
+  {
+    "id": "seed-keg-001",
+    "name": "Anniversary Imperial Stout",
+    "format": "keg"
+  },
+  {
+    "id": "seed-keg-002",
+    "name": "Blonde Ale",
+    "format": "keg"
+  },
+  {
+    "id": "seed-keg-003",
+    "name": "Cowboy Cold",
+    "format": "keg"
+  },
+  {
+    "id": "seed-keg-004",
+    "name": "Double IPA",
+    "format": "keg"
+  },
+  {
+    "id": "seed-keg-005",
+    "name": "Dry Stout",
+    "format": "keg"
+  },
+  {
+    "id": "seed-keg-006",
+    "name": "Festbier",
+    "format": "keg"
+  },
+  {
+    "id": "seed-keg-007",
+    "name": "Grapefruit IPA",
+    "format": "keg"
+  },
+  {
+    "id": "seed-keg-008",
+    "name": "Hazy Pale Ale",
+    "format": "keg"
+  },
+  {
+    "id": "seed-keg-009",
+    "name": "Hefeweizen",
+    "format": "keg"
+  },
+  {
+    "id": "seed-keg-010",
+    "name": "IPA",
+    "format": "keg"
+  },
+  {
+    "id": "seed-keg-011",
+    "name": "Kolsch",
+    "format": "keg"
+  },
+  {
+    "id": "seed-keg-012",
+    "name": "Lively Light",
+    "format": "keg"
+  },
+  {
+    "id": "seed-keg-013",
+    "name": "Mexican Lager",
+    "format": "keg"
+  },
+  {
+    "id": "seed-keg-014",
+    "name": "Milk Stout",
+    "format": "keg"
+  },
+  {
+    "id": "seed-keg-015",
+    "name": "Passionfruit Tart",
+    "format": "keg"
+  },
+  {
+    "id": "seed-keg-016",
+    "name": "Rice Lager",
+    "format": "keg"
+  },
+  {
+    "id": "seed-keg-017",
+    "name": "Tangerine Cream Ale",
+    "format": "keg"
+  },
+  {
+    "id": "seed-can-018",
+    "name": "Amber Lager",
+    "format": "can"
+  },
+  {
+    "id": "seed-can-019",
+    "name": "Anniversary Imperial Stout",
+    "format": "can"
+  },
+  {
+    "id": "seed-can-020",
+    "name": "Blonde Ale",
+    "format": "can"
+  },
+  {
+    "id": "seed-can-021",
+    "name": "Concert Beer",
+    "format": "can"
+  },
+  {
+    "id": "seed-can-022",
+    "name": "Cowboy Cold",
+    "format": "can"
+  },
+  {
+    "id": "seed-can-023",
+    "name": "Deadcenter",
+    "format": "can"
+  },
+  {
+    "id": "seed-can-024",
+    "name": "Festbier",
+    "format": "can"
+  },
+  {
+    "id": "seed-can-025",
+    "name": "Grapefruit IPA",
+    "format": "can"
+  },
+  {
+    "id": "seed-can-026",
+    "name": "Hazy Pale Ale",
+    "format": "can"
+  },
+  {
+    "id": "seed-can-027",
+    "name": "IPA",
+    "format": "can"
+  },
+  {
+    "id": "seed-can-028",
+    "name": "Mexican Lager",
+    "format": "can"
+  },
+  {
+    "id": "seed-can-029",
+    "name": "Passionfruit Tart",
+    "format": "can"
+  },
+  {
+    "id": "seed-can-030",
+    "name": "Per Annum 21’ 12 pack",
+    "format": "can"
+  },
+  {
+    "id": "seed-can-031",
+    "name": "Rice Lager",
+    "format": "can"
+  },
+  {
+    "id": "seed-can-032",
+    "name": "Softball Light",
+    "format": "can"
+  },
+  {
+    "id": "seed-can-033",
+    "name": "Tangerine Cream Ale",
+    "format": "can"
+  }
+]

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { CatalogBeer } from "@/lib/inventory";
+import type { Wine, WineCategory } from "@/lib/wine";
 
 interface Holiday {
   date: string;
@@ -81,6 +82,11 @@ export default function AdminPage() {
   const [newBeerBrewery, setNewBeerBrewery] = useState("");
   const [newBeerFormat, setNewBeerFormat] = useState<CatalogBeer["format"]>("keg");
 
+  // Wine list is loaded separately and saved in bulk. Each row is edited in
+  // place; add/remove rows below.
+  const [wines, setWines] = useState<Wine[]>([]);
+  const [winesDirty, setWinesDirty] = useState(false);
+
   const fetchConfig = useCallback(async () => {
     setLoading(true);
     try {
@@ -100,15 +106,19 @@ export default function AdminPage() {
       setAuthenticated(true);
       setMessage("");
 
-      // Catalog is a separate public endpoint; load it for admins only.
+      // Catalog + wines are separate public endpoints; load for admins only.
       if ((data.role ?? "admin") === "admin") {
         try {
-          const catRes = await fetch("/api/inventory/catalog");
-          const catData = await catRes.json();
-          setCatalog(catData.catalog || []);
+          const [catRes, wineRes] = await Promise.all([
+            fetch("/api/inventory/catalog").then((r) => r.json()),
+            fetch("/api/wines").then((r) => r.json()),
+          ]);
+          setCatalog(catRes.catalog || []);
           setCatalogDirty(false);
+          setWines(wineRes.wines || []);
+          setWinesDirty(false);
         } catch {
-          // non-fatal; leave catalog empty
+          // non-fatal; leave lists empty
         }
       }
     } catch {
@@ -756,6 +766,186 @@ export default function AdminPage() {
               Save Catalog
             </button>
             {catalogDirty && (
+              <span className="text-xs text-copper">Unsaved changes</span>
+            )}
+          </div>
+        </section>
+        )}
+
+        {/* Wine List */}
+        {role === "admin" && (
+        <section className="bg-card-bg border border-card-border rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-amber mb-1">
+            Wine List
+          </h2>
+          <p className="text-xs text-muted mb-4">
+            Shown at <a href="/wines" className="text-amber underline">/wines</a>
+            . Prices are dollars (leave blank if the wine isn&apos;t sold that way).
+          </p>
+
+          {wines.length > 0 && (
+            <div className="space-y-3 mb-4">
+              {wines.map((w, i) => {
+                const update = (patch: Partial<Wine>) => {
+                  const next = [...wines];
+                  next[i] = { ...w, ...patch };
+                  setWines(next);
+                  setWinesDirty(true);
+                };
+                return (
+                  <div
+                    key={w.id}
+                    className="bg-surface rounded-lg border border-card-border p-3"
+                  >
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        value={w.name}
+                        onChange={(e) => update({ name: e.target.value })}
+                        placeholder="Name"
+                        className="bg-background border border-card-border rounded px-2 py-1 text-sm text-foreground col-span-2 font-medium"
+                      />
+                      <input
+                        type="text"
+                        value={w.producer || ""}
+                        onChange={(e) => update({ producer: e.target.value || undefined })}
+                        placeholder="Producer / winery"
+                        className="bg-background border border-card-border rounded px-2 py-1 text-sm text-foreground"
+                      />
+                      <select
+                        value={w.category}
+                        onChange={(e) => update({ category: e.target.value as WineCategory })}
+                        className="bg-background border border-card-border rounded px-2 py-1 text-sm text-foreground"
+                      >
+                        <option value="red">Red</option>
+                        <option value="white">White</option>
+                        <option value="rose">Rosé</option>
+                        <option value="sparkling">Sparkling</option>
+                        <option value="orange">Orange</option>
+                        <option value="dessert">Dessert</option>
+                      </select>
+                      <input
+                        type="text"
+                        value={w.varietal || ""}
+                        onChange={(e) => update({ varietal: e.target.value || undefined })}
+                        placeholder="Varietal (Pinot Noir…)"
+                        className="bg-background border border-card-border rounded px-2 py-1 text-sm text-foreground"
+                      />
+                      <input
+                        type="text"
+                        value={w.region || ""}
+                        onChange={(e) => update({ region: e.target.value || undefined })}
+                        placeholder="Region"
+                        className="bg-background border border-card-border rounded px-2 py-1 text-sm text-foreground"
+                      />
+                      <input
+                        type="text"
+                        value={w.vintage || ""}
+                        onChange={(e) => update({ vintage: e.target.value || undefined })}
+                        placeholder="Vintage (2022 or NV)"
+                        className="bg-background border border-card-border rounded px-2 py-1 text-sm text-foreground"
+                      />
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        value={w.abv ?? ""}
+                        onChange={(e) =>
+                          update({ abv: e.target.value === "" ? undefined : Number(e.target.value) })
+                        }
+                        placeholder="ABV %"
+                        className="bg-background border border-card-border rounded px-2 py-1 text-sm text-foreground"
+                      />
+                      <input
+                        type="number"
+                        step="0.5"
+                        min="0"
+                        value={w.glassPrice ?? ""}
+                        onChange={(e) =>
+                          update({ glassPrice: e.target.value === "" ? undefined : Number(e.target.value) })
+                        }
+                        placeholder="Glass $"
+                        className="bg-background border border-card-border rounded px-2 py-1 text-sm text-foreground"
+                      />
+                      <input
+                        type="number"
+                        step="0.5"
+                        min="0"
+                        value={w.bottlePrice ?? ""}
+                        onChange={(e) =>
+                          update({ bottlePrice: e.target.value === "" ? undefined : Number(e.target.value) })
+                        }
+                        placeholder="Bottle $"
+                        className="bg-background border border-card-border rounded px-2 py-1 text-sm text-foreground"
+                      />
+                      <textarea
+                        value={w.notes || ""}
+                        onChange={(e) => update({ notes: e.target.value || undefined })}
+                        placeholder="Tasting notes / description (optional)"
+                        rows={2}
+                        className="bg-background border border-card-border rounded px-2 py-1 text-sm text-foreground col-span-2"
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        setWines(wines.filter((_, j) => j !== i));
+                        setWinesDirty(true);
+                      }}
+                      className="mt-2 text-red-400 text-xs hover:text-red-300"
+                    >
+                      Remove wine
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <button
+            onClick={() => {
+              setWines([
+                ...wines,
+                {
+                  id: `wine-${Date.now()}`,
+                  name: "",
+                  category: "red",
+                },
+              ]);
+              setWinesDirty(true);
+            }}
+            className="bg-surface hover:bg-card-border text-foreground text-sm px-4 py-1.5 rounded-lg transition-colors"
+          >
+            + Add wine
+          </button>
+
+          <div className="flex items-center gap-3 mt-4 pt-4 border-t border-card-border">
+            <button
+              onClick={async () => {
+                // Drop blank rows before saving so accidental empties don't stick.
+                const filtered = wines.filter((w) => w.name.trim() !== "");
+                const res = await fetch("/api/wines", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "x-admin-password": password,
+                  },
+                  body: JSON.stringify({ wines: filtered }),
+                });
+                const data = await res.json();
+                if (res.ok) {
+                  setWines(data.wines || filtered);
+                  setWinesDirty(false);
+                  flash("Wine list saved");
+                } else {
+                  flash(data.error || "Save failed");
+                }
+              }}
+              disabled={!winesDirty}
+              className="bg-amber text-background text-sm font-medium px-4 py-1.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Save Wine List
+            </button>
+            {winesDirty && (
               <span className="text-xs text-copper">Unsaved changes</span>
             )}
           </div>

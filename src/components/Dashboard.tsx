@@ -176,6 +176,13 @@ export function Dashboard() {
           </div>
           <div className="flex items-center gap-3">
             <a
+              href="/inventory"
+              className="text-3xl text-muted hover:text-amber transition-colors no-print"
+              title="Inventory - log kegs and cases"
+            >
+              🛢
+            </a>
+            <a
               href="/book"
               className="text-3xl text-muted hover:text-amber transition-colors no-print"
               title="The Book - daily duties"

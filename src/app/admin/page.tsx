@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import type { CatalogBeer } from "@/lib/inventory";
 
 interface Holiday {
   date: string;
@@ -73,6 +74,13 @@ export default function AdminPage() {
   // TV settings are staged locally and persisted via the Save button.
   const [tvDirty, setTvDirty] = useState(false);
 
+  // Inventory catalog is loaded separately and saved in bulk.
+  const [catalog, setCatalog] = useState<CatalogBeer[]>([]);
+  const [catalogDirty, setCatalogDirty] = useState(false);
+  const [newBeerName, setNewBeerName] = useState("");
+  const [newBeerBrewery, setNewBeerBrewery] = useState("");
+  const [newBeerFormat, setNewBeerFormat] = useState<CatalogBeer["format"]>("keg");
+
   const fetchConfig = useCallback(async () => {
     setLoading(true);
     try {
@@ -91,6 +99,18 @@ export default function AdminPage() {
       setTvDirty(false);
       setAuthenticated(true);
       setMessage("");
+
+      // Catalog is a separate public endpoint; load it for admins only.
+      if ((data.role ?? "admin") === "admin") {
+        try {
+          const catRes = await fetch("/api/inventory/catalog");
+          const catData = await catRes.json();
+          setCatalog(catData.catalog || []);
+          setCatalogDirty(false);
+        } catch {
+          // non-fatal; leave catalog empty
+        }
+      }
     } catch {
       setMessage("Failed to load config");
     } finally {
@@ -619,6 +639,128 @@ export default function AdminPage() {
             )}
           </div>
         </section>
+
+        {/* Inventory Catalog */}
+        {role === "admin" && (
+        <section className="bg-card-bg border border-card-border rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-amber mb-1">
+            Inventory Catalog
+          </h2>
+          <p className="text-xs text-muted mb-4">
+            Beers/cans that appear in the /inventory picker. Bartenders can
+            still type in a beer that&apos;s not on this list.
+          </p>
+
+          {catalog.length > 0 && (
+            <div className="space-y-1 mb-4 max-h-72 overflow-y-auto">
+              {catalog.map((b) => (
+                <div
+                  key={b.id}
+                  className="flex items-center justify-between bg-surface rounded px-2 py-1.5 text-sm"
+                >
+                  <div className="min-w-0 flex-1">
+                    <span className="text-foreground">{b.name}</span>
+                    {b.brewery && (
+                      <span className="text-muted"> · {b.brewery}</span>
+                    )}
+                    <span className="text-xs text-copper ml-2 uppercase">
+                      {b.format}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setCatalog(catalog.filter((x) => x.id !== b.id));
+                      setCatalogDirty(true);
+                    }}
+                    className="text-red-400 text-xs hover:text-red-300 shrink-0"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              type="text"
+              value={newBeerName}
+              onChange={(e) => setNewBeerName(e.target.value)}
+              placeholder="Beer name"
+              className="bg-surface border border-card-border rounded px-2 py-1 text-sm text-foreground col-span-2"
+            />
+            <input
+              type="text"
+              value={newBeerBrewery}
+              onChange={(e) => setNewBeerBrewery(e.target.value)}
+              placeholder="Brewery (optional)"
+              className="bg-surface border border-card-border rounded px-2 py-1 text-sm text-foreground"
+            />
+            <select
+              value={newBeerFormat}
+              onChange={(e) =>
+                setNewBeerFormat(e.target.value as CatalogBeer["format"])
+              }
+              className="bg-surface border border-card-border rounded px-2 py-1 text-sm text-foreground"
+            >
+              <option value="keg">Keg</option>
+              <option value="can">Can</option>
+              <option value="bottle">Bottle</option>
+            </select>
+          </div>
+          <button
+            onClick={() => {
+              const name = newBeerName.trim();
+              if (!name) return;
+              setCatalog([
+                ...catalog,
+                {
+                  id: `beer-${Date.now()}`,
+                  name,
+                  brewery: newBeerBrewery.trim() || undefined,
+                  format: newBeerFormat,
+                },
+              ]);
+              setCatalogDirty(true);
+              setNewBeerName("");
+              setNewBeerBrewery("");
+            }}
+            className="mt-2 bg-surface hover:bg-card-border text-foreground text-sm px-4 py-1.5 rounded-lg transition-colors"
+          >
+            Add to catalog
+          </button>
+
+          <div className="flex items-center gap-3 mt-4 pt-4 border-t border-card-border">
+            <button
+              onClick={async () => {
+                const res = await fetch("/api/inventory/catalog", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "x-admin-password": password,
+                  },
+                  body: JSON.stringify({ catalog }),
+                });
+                const data = await res.json();
+                if (res.ok) {
+                  setCatalog(data.catalog || catalog);
+                  setCatalogDirty(false);
+                  flash("Catalog saved");
+                } else {
+                  flash(data.error || "Save failed");
+                }
+              }}
+              disabled={!catalogDirty}
+              className="bg-amber text-background text-sm font-medium px-4 py-1.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Save Catalog
+            </button>
+            {catalogDirty && (
+              <span className="text-xs text-copper">Unsaved changes</span>
+            )}
+          </div>
+        </section>
+        )}
 
         {/* Preview & Test */}
         {role === "admin" && (

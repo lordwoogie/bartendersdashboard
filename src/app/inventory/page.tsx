@@ -5,6 +5,7 @@ import type {
   CatalogBeer,
   InventoryEntry,
   KegSize,
+  PackSize,
 } from "@/lib/inventory";
 import { formatTimeInZone } from "@/lib/timezone";
 import { format, isToday, isYesterday } from "date-fns";
@@ -51,6 +52,7 @@ export default function InventoryPage() {
   const [beerSelect, setBeerSelect] = useState<string>("");
   const [beerCustom, setBeerCustom] = useState("");
   const [size, setSize] = useState<KegSize>("1/2");
+  const [packSize, setPackSize] = useState<PackSize>("6-pack");
   const [quantity, setQuantity] = useState(1);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
@@ -89,6 +91,7 @@ export default function InventoryPage() {
     setBeerSelect("");
     setBeerCustom("");
     setSize("1/2");
+    setPackSize("6-pack");
     setQuantity(1);
     setNote("");
   };
@@ -114,8 +117,12 @@ export default function InventoryPage() {
         beerName: resolvedBeerName,
         note: note.trim() || undefined,
       };
-      if (mode === "case-added") payload.quantity = quantity;
-      else payload.size = size;
+      if (mode === "case-added") {
+        payload.quantity = quantity;
+        payload.packSize = packSize;
+      } else {
+        payload.size = size;
+      }
 
       const res = await fetch("/api/inventory", {
         method: "POST",
@@ -263,26 +270,48 @@ export default function InventoryPage() {
 
             {/* Size (keg) or quantity (case) */}
             {mode === "case-added" ? (
-              <div className="mt-4">
-                <label className="block text-sm text-muted mb-1">Cases</label>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="bg-surface border border-card-border rounded-lg w-14 h-14 text-2xl font-bold hover:border-amber"
-                  >
-                    −
-                  </button>
-                  <div className="flex-1 text-center text-3xl font-bold text-amber">
-                    {quantity}
+              <>
+                <div className="mt-4">
+                  <label className="block text-sm text-muted mb-1">Pack size</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(["4-pack", "6-pack", "12-pack"] as PackSize[]).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setPackSize(p)}
+                        className={`rounded-lg border py-3 text-lg font-semibold transition-colors ${
+                          packSize === p
+                            ? "bg-amber text-background border-amber"
+                            : "bg-surface text-foreground border-card-border hover:border-amber"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
                   </div>
-                  <button
-                    onClick={() => setQuantity((q) => Math.min(999, q + 1))}
-                    className="bg-surface border border-card-border rounded-lg w-14 h-14 text-2xl font-bold hover:border-amber"
-                  >
-                    +
-                  </button>
                 </div>
-              </div>
+                <div className="mt-4">
+                  <label className="block text-sm text-muted mb-1">
+                    How many {packSize}s?
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      className="bg-surface border border-card-border rounded-lg w-14 h-14 text-2xl font-bold hover:border-amber"
+                    >
+                      −
+                    </button>
+                    <div className="flex-1 text-center text-3xl font-bold text-amber">
+                      {quantity}
+                    </div>
+                    <button
+                      onClick={() => setQuantity((q) => Math.min(999, q + 1))}
+                      className="bg-surface border border-card-border rounded-lg w-14 h-14 text-2xl font-bold hover:border-amber"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </>
             ) : (
               <div className="mt-4">
                 <label className="block text-sm text-muted mb-1">Size</label>
@@ -360,7 +389,9 @@ export default function InventoryPage() {
                               {e.type === "case-added" ? (
                                 <span className="text-muted">
                                   {" "}
-                                  · {e.quantity} case{e.quantity === 1 ? "" : "s"}
+                                  · {e.quantity} ×{" "}
+                                  {e.packSize || "case"}
+                                  {!e.packSize && e.quantity !== 1 ? "s" : ""}
                                 </span>
                               ) : (
                                 <span className="text-muted"> · {e.size} bbl</span>

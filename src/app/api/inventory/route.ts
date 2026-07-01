@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { readData, writeData } from "@/lib/storage";
-import type { InventoryEntry, KegSize } from "@/lib/inventory";
+import type { InventoryEntry, KegSize, PackSize } from "@/lib/inventory";
 
 const LOG_DOC = "inventory-log.json";
 const MAX_ENTRIES = 500; // hard cap to keep the doc small
 
 const VALID_SIZES: KegSize[] = ["1/2", "1/6"];
+const VALID_PACKS: PackSize[] = ["4-pack", "6-pack", "12-pack"];
 
 function badRequest(message: string) {
   return NextResponse.json({ error: message }, { status: 400 });
@@ -29,7 +30,10 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") return badRequest("Invalid body");
 
-  const { type, beerName, size, quantity, note } = body as Record<string, unknown>;
+  const { type, beerName, size, packSize, quantity, note } = body as Record<
+    string,
+    unknown
+  >;
   const trimmedName = typeof beerName === "string" ? beerName.trim() : "";
   if (!trimmedName) return badRequest("beerName is required");
 
@@ -56,12 +60,16 @@ export async function POST(request: Request) {
     if (!Number.isFinite(qtyNum) || qtyNum < 1 || qtyNum > 999) {
       return badRequest("quantity must be between 1 and 999");
     }
+    if (typeof packSize !== "string" || !VALID_PACKS.includes(packSize as PackSize)) {
+      return badRequest("packSize must be 4-pack, 6-pack, or 12-pack");
+    }
     entry = {
       id,
       type,
       timestamp: now,
       beerName: trimmedName,
       quantity: qtyNum,
+      packSize: packSize as PackSize,
       ...(typeof note === "string" && note.trim() ? { note: note.trim() } : {}),
     };
   } else {

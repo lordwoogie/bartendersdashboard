@@ -152,7 +152,7 @@ export function Dashboard() {
           <div className="flex items-center gap-4">
             <div>
               <h1 className="text-xl font-bold text-foreground tracking-tight">
-                Cowboy Cold Daily Briefing
+                Daily Briefing
               </h1>
               <p className="text-sm text-muted mt-0.5">{dateStr}</p>
             </div>

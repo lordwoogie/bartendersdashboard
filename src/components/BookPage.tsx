@@ -44,24 +44,64 @@ type DayData = {
   closingMoney: string[];
 };
 
+// YYYY-MM-DD in the browser's local timezone — the tablet lives at the venue,
+// so local date is the right day boundary.
+function todayLocalIso(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// Storage key is scoped to date + day tab so:
+//  - progress persists across close/refresh/navigate,
+//  - a new day naturally starts fresh (no manual reset needed),
+//  - previewing another day's tab doesn't clobber today's checks.
+function storageKey(day: DayKey): string {
+  return `book-checks:${todayLocalIso()}:${day}`;
+}
+
 export function BookPage() {
   const [selectedDay, setSelectedDay] = useState<DayKey>("monday");
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
 
+  // Pick today's tab on first render.
   useEffect(() => {
     const today = DAYS[new Date().getDay()];
     setSelectedDay(today);
   }, []);
 
+  // Hydrate/reload checks whenever the selected day changes.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(storageKey(selectedDay));
+      setCheckedItems(raw ? JSON.parse(raw) : {});
+    } catch {
+      setCheckedItems({});
+    }
+  }, [selectedDay]);
+
   const dayData = (bookData as Record<string, DayData>)[selectedDay];
   const isToday = DAYS[new Date().getDay()] === selectedDay;
 
   const toggleCheck = (key: string) => {
-    setCheckedItems((prev) => ({ ...prev, [key]: !prev[key] }));
+    setCheckedItems((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try {
+        window.localStorage.setItem(storageKey(selectedDay), JSON.stringify(next));
+      } catch {
+        // storage full or disabled — state still updates in memory
+      }
+      return next;
+    });
   };
 
   const resetChecks = () => {
     setCheckedItems({});
+    try {
+      window.localStorage.removeItem(storageKey(selectedDay));
+    } catch {
+      // ignore
+    }
   };
 
   return (
@@ -97,10 +137,7 @@ export function BookPage() {
               return (
                 <button
                   key={day}
-                  onClick={() => {
-                    setSelectedDay(day);
-                    setCheckedItems({});
-                  }}
+                  onClick={() => setSelectedDay(day)}
                   className={`
                     flex-shrink-0 px-3 py-2 rounded-lg text-sm font-medium transition-all
                     ${
@@ -138,7 +175,12 @@ export function BookPage() {
 
         {/* Opening Special Task */}
         <Section title="Opening Special Task" icon="&#9733;">
-          <SpecialBox text={dayData.specialTask} />
+          <SpecialBox
+            text={dayData.specialTask}
+            checkKey="special-opening"
+            checked={!!checkedItems["special-opening"]}
+            onToggle={toggleCheck}
+          />
         </Section>
 
         {/* Opening Duties */}
@@ -163,7 +205,13 @@ export function BookPage() {
 
         {/* Closing Special Task */}
         <Section title="Closing Special Task" icon="&#9733;">
-          <SpecialBox text={dayData.specialClosingTask} variant="closing" />
+          <SpecialBox
+            text={dayData.specialClosingTask}
+            variant="closing"
+            checkKey="special-closing"
+            checked={!!checkedItems["special-closing"]}
+            onToggle={toggleCheck}
+          />
         </Section>
 
         {/* Closing Duties */}
@@ -216,9 +264,15 @@ function Section({
 function SpecialBox({
   text,
   variant = "opening",
+  checkKey,
+  checked,
+  onToggle,
 }: {
   text: string;
   variant?: "opening" | "closing";
+  checkKey: string;
+  checked: boolean;
+  onToggle: (key: string) => void;
 }) {
   const borderColor =
     variant === "opening" ? "border-amber-500/40" : "border-orange-600/40";
@@ -226,18 +280,53 @@ function SpecialBox({
     variant === "opening" ? "bg-amber-500/10" : "bg-orange-600/10";
   const accentColor =
     variant === "opening" ? "text-amber-400" : "text-orange-400";
+  const accentBorder =
+    variant === "opening" ? "border-amber-500" : "border-orange-600";
+  const accentFill =
+    variant === "opening" ? "bg-amber-500" : "bg-orange-600";
 
   return (
-    <div
-      className={`rounded-lg border ${borderColor} ${bgColor} p-4 relative overflow-hidden`}
+    <button
+      type="button"
+      onClick={() => onToggle(checkKey)}
+      aria-pressed={checked}
+      className={`w-full text-left rounded-lg border ${borderColor} ${bgColor} p-4 relative overflow-hidden flex items-start gap-3 transition-opacity ${
+        checked ? "opacity-50" : "hover:brightness-110"
+      }`}
     >
       <div
-        className={`absolute left-0 top-0 bottom-0 w-1 ${
-          variant === "opening" ? "bg-amber-500" : "bg-orange-600"
-        }`}
+        className={`absolute left-0 top-0 bottom-0 w-1 ${accentFill}`}
+        aria-hidden="true"
       />
-      <p className={`${accentColor} text-sm leading-relaxed pl-2`}>{text}</p>
-    </div>
+      <div
+        className={`flex-shrink-0 w-5 h-5 rounded border-2 mt-0.5 flex items-center justify-center transition-colors ${
+          checked ? `${accentFill} ${accentBorder}` : `${accentBorder}/60`
+        }`}
+      >
+        {checked && (
+          <svg
+            className="w-3 h-3 text-black"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={3}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        )}
+      </div>
+      <p
+        className={`${accentColor} text-sm leading-relaxed pl-1 ${
+          checked ? "line-through" : ""
+        }`}
+      >
+        {text}
+      </p>
+    </button>
   );
 }
 

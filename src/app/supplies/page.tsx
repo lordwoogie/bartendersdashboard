@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { SupplyItem } from "@/lib/supplies";
 import { formatTimeInZone } from "@/lib/timezone";
 import { format, isToday, isYesterday } from "date-fns";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 function dayLabel(iso: string): string {
   const d = new Date(iso);
@@ -121,8 +122,9 @@ export default function SuppliesPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-card-border px-4 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div>
+        <div className="max-w-3xl mx-auto flex items-center gap-3">
+          <BackToDashboard />
+          <div className="min-w-0">
             <h1 className="text-2xl font-bold text-amber tracking-tight">
               🛒 Supplies
             </h1>
@@ -130,9 +132,6 @@ export default function SuppliesPage() {
               Things to buy and shift notes for non-beer stuff.
             </p>
           </div>
-          <a href="/" className="text-sm text-muted hover:text-amber">
-            ← Dashboard
-          </a>
         </div>
       </header>
 

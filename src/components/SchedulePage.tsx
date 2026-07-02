@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { format, isToday, isTomorrow, parseISO } from "date-fns";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 interface Shift {
   id: number;
@@ -83,8 +84,9 @@ export function SchedulePage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-card-border px-4 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div>
+        <div className="max-w-3xl mx-auto flex items-center gap-3">
+          <BackToDashboard />
+          <div className="min-w-0 flex-1">
             <h1 className="text-xl font-bold text-foreground tracking-tight">
               Staff Schedule
             </h1>
@@ -92,21 +94,13 @@ export function SchedulePage() {
               {shifts.length} shifts this week
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <a
-              href="/"
-              className="text-xs text-muted hover:text-amber transition-colors"
-            >
-              Dashboard
-            </a>
-            <button
-              onClick={fetchSchedule}
-              disabled={loading}
-              className="text-xs bg-surface hover:bg-card-border text-foreground px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
-            >
-              {loading ? "..." : "Refresh"}
-            </button>
-          </div>
+          <button
+            onClick={fetchSchedule}
+            disabled={loading}
+            className="text-xs bg-surface hover:bg-card-border text-foreground px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 shrink-0"
+          >
+            {loading ? "..." : "Refresh"}
+          </button>
         </div>
       </header>
 

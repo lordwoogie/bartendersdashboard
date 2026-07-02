@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import bookData from "@/data/the-book.json";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 const DAYS = [
   "sunday",
@@ -109,12 +109,7 @@ export function BookPage() {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-card-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="mx-auto max-w-3xl px-4 py-3 flex items-center justify-between">
-          <Link
-            href="/"
-            className="text-amber-500/70 hover:text-amber-500 text-sm transition-colors"
-          >
-            &larr; Dashboard
-          </Link>
+          <BackToDashboard />
           <h1 className="text-xl font-bold tracking-wide text-amber-500 uppercase">
             The Book
           </h1>

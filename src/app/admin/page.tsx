@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import type { CatalogBeer } from "@/lib/inventory";
 import type { Wine, WineCategory } from "@/lib/wine";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 interface Holiday {
   date: string;
@@ -174,20 +175,16 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-card-bg border-b border-card-border px-4 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <h1 className="text-xl font-bold text-amber">
+        <div className="max-w-3xl mx-auto flex items-center gap-3">
+          <BackToDashboard />
+          <h1 className="text-xl font-bold text-amber flex-1 min-w-0">
             {role === "editor" ? "Event Editor" : "Admin"}
           </h1>
-          <div className="flex items-center gap-3">
-            {role === "editor" && (
-              <span className="text-xs text-muted border border-card-border rounded px-2 py-0.5">
-                events only
-              </span>
-            )}
-            <a href="/" className="text-sm text-muted hover:text-foreground">
-              Dashboard
-            </a>
-          </div>
+          {role === "editor" && (
+            <span className="text-xs text-muted border border-card-border rounded px-2 py-0.5 shrink-0">
+              events only
+            </span>
+          )}
         </div>
       </header>
 

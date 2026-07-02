@@ -9,6 +9,7 @@ import type {
 } from "@/lib/inventory";
 import { formatTimeInZone } from "@/lib/timezone";
 import { format, isToday, isYesterday } from "date-fns";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 type Mode = "keg-tapped" | "keg-blew" | "case-added";
 
@@ -171,8 +172,9 @@ export default function InventoryPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-card-border px-4 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div>
+        <div className="max-w-3xl mx-auto flex items-center gap-3">
+          <BackToDashboard />
+          <div className="min-w-0">
             <h1 className="text-2xl font-bold text-amber tracking-tight">
               🛢 Inventory
             </h1>
@@ -180,9 +182,6 @@ export default function InventoryPage() {
               Log new kegs, blown kegs, and cases as you go.
             </p>
           </div>
-          <a href="/" className="text-sm text-muted hover:text-amber">
-            ← Dashboard
-          </a>
         </div>
       </header>
 

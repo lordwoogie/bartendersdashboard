@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import type { MenuItem, MenuChange } from "@/lib/types";
 import { getStyleDescription, getBjcpStyleName } from "@/lib/style-matcher";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 export function BeerList() {
   const [items, setItems] = useState<MenuItem[]>([]);
@@ -48,8 +49,9 @@ export function BeerList() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-card-border px-4 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div>
+        <div className="max-w-3xl mx-auto flex items-center gap-3">
+          <BackToDashboard />
+          <div className="min-w-0 flex-1">
             <h1 className="text-xl font-bold text-foreground tracking-tight">
               Cowboy Cold Beer List
             </h1>
@@ -57,21 +59,13 @@ export function BeerList() {
               {items.length} beers on tap · Lively Beerworks
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <a
-              href="/"
-              className="text-xs text-muted hover:text-amber transition-colors"
-            >
-              Dashboard
-            </a>
-            <button
-              onClick={fetchMenu}
-              disabled={loading}
-              className="text-xs bg-surface hover:bg-card-border text-foreground px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
-            >
-              {loading ? "..." : "Refresh"}
-            </button>
-          </div>
+          <button
+            onClick={fetchMenu}
+            disabled={loading}
+            className="text-xs bg-surface hover:bg-card-border text-foreground px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 shrink-0"
+          >
+            {loading ? "..." : "Refresh"}
+          </button>
         </div>
       </header>
 

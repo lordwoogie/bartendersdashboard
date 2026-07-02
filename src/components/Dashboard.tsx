@@ -16,6 +16,7 @@ import { CalendarSection } from "./CalendarSection";
 import { MenuSection } from "./MenuSection";
 import { LocalEventsSection } from "./LocalEventsSection";
 import { WeekAhead } from "./WeekAhead";
+import { SuppliesSection } from "./SuppliesSection";
 
 export function Dashboard() {
   const [loading, setLoading] = useState(true);
@@ -246,6 +247,7 @@ export function Dashboard() {
           </div>
         ) : (
           <>
+            <SuppliesSection />
             <CalendarSection events={nearestEvents} />
             <MenuSection menuData={menuData} />
             <LocalEventsSection events={localEvents} />

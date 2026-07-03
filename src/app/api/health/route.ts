@@ -11,6 +11,13 @@ export async function GET() {
     anthropic: !!process.env.ANTHROPIC_API_KEY,
     blob: !!process.env.BLOB_READ_WRITE_TOKEN,
     adminPassword: !!process.env.ADMIN_PASSWORD,
+    // Diagnostics for env plumbing: non-sensitive vars Vercel injects when a
+    // Blob store is connected, plus coarse runtime-env stats.
+    blobStoreId: !!process.env.BLOB_STORE_ID,
+    blobWebhookKey: !!process.env.BLOB_WEBHOOK_PUBLIC_KEY,
+    deputy: !!process.env.DEPUTY_ACCESS_TOKEN,
+    vercelRuntime: !!process.env.VERCEL,
+    envKeyCount: Object.keys(process.env).length,
   };
 
   return NextResponse.json({

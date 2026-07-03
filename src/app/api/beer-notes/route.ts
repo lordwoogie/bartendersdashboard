@@ -6,7 +6,7 @@ const DOC = "beer-notes.json";
 
 // Bump when the generation prompt changes meaningfully; cached AI notes from
 // older versions regenerate on next view. Manual notes are never regenerated.
-const PROMPT_VERSION = 2;
+const PROMPT_VERSION = 3;
 
 type NotesMap = Record<string, BeerNote>;
 
@@ -45,7 +45,7 @@ async function generateTastingNote(input: {
 3. The finish — how it ends and what lingers.
 4. Last line, on its own: "Try it if you like: ..." with 2–3 familiar reference points (well-known styles or flavors, not brand names).
 
-Rules: 3–5 sentences total plus the final line. Plain bar-talk language a customer immediately understands. No filler, no "this beer is", no marketing superlatives, don't repeat the style name verbatim, and stay true to what the style actually tastes like.
+Rules: 3–5 sentences total plus the final line. Plain bar-talk language a customer immediately understands. Plain text only — no title, no heading, no markdown (**, #, etc.). Start directly with the first tasting sentence. No filler, no "this beer is", no marketing superlatives, don't repeat the style name verbatim, and stay true to what the style actually tastes like.
 
 ${facts}
 

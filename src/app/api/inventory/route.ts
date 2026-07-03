@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { readData, writeData } from "@/lib/storage";
 import type { InventoryEntry, KegSize, PackSize } from "@/lib/inventory";
+import { filterEntries } from "@/lib/inventory-report";
 
 const LOG_DOC = "inventory-log.json";
 const MAX_ENTRIES = 500; // hard cap to keep the doc small
@@ -13,13 +14,19 @@ function badRequest(message: string) {
 }
 
 // GET /api/inventory?limit=50 — most recent entries first.
+// Optional report filters: from/to (YYYY-MM-DD, app-timezone days, inclusive)
+// and scope=unreconciled to hide entries already entered into EKOS.
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const raw = parseInt(searchParams.get("limit") || "50", 10);
-  const limit = Number.isFinite(raw) ? Math.max(1, Math.min(raw, 200)) : 50;
+  const limit = Number.isFinite(raw) ? Math.max(1, Math.min(raw, MAX_ENTRIES)) : 50;
+  const from = searchParams.get("from") || undefined;
+  const to = searchParams.get("to") || undefined;
+  const scope = searchParams.get("scope") === "unreconciled" ? "unreconciled" : "all";
 
   const log = await readData<InventoryEntry[]>(LOG_DOC);
-  const sorted = [...log].sort(
+  const filtered = filterEntries(log, { from, to, scope });
+  const sorted = [...filtered].sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
   return NextResponse.json({ entries: sorted.slice(0, limit) });

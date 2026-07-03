@@ -174,7 +174,7 @@ export default function InventoryPage() {
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-card-border px-4 py-4">
         <div className="max-w-3xl mx-auto flex items-center gap-3">
           <BackToDashboard />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h1 className="text-2xl font-bold text-amber tracking-tight">
               🛢 Inventory
             </h1>
@@ -182,6 +182,12 @@ export default function InventoryPage() {
               Log new kegs, blown kegs, and cases as you go.
             </p>
           </div>
+          <a
+            href="/inventory/report"
+            className="text-sm bg-surface border border-card-border hover:border-amber text-foreground px-3 py-2 rounded-lg transition-colors shrink-0"
+          >
+            📊 EKOS Report
+          </a>
         </div>
       </header>
 

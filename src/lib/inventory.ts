@@ -17,6 +17,8 @@ export type InventoryEntry =
       beerName: string;
       size: KegSize;
       note?: string;
+      // Set when the manager marks this entry as entered into EKOS.
+      reconciledAt?: string;
     }
   | {
       id: string;
@@ -28,6 +30,7 @@ export type InventoryEntry =
       // pack-size field was added; new entries always set it.
       packSize?: PackSize;
       note?: string;
+      reconciledAt?: string;
     };
 
 // A beer/can/bottle in the picker catalog. `format` lets us filter the

@@ -18,6 +18,12 @@ export async function GET() {
     deputy: !!process.env.DEPUTY_ACCESS_TOKEN,
     vercelRuntime: !!process.env.VERCEL,
     envKeyCount: Object.keys(process.env).length,
+    // Distinguish "delivered but empty" from "not delivered": key presence
+    // and value length only — never the values themselves.
+    anthropicKeyDelivered: "ANTHROPIC_API_KEY" in process.env,
+    anthropicKeyLength: (process.env.ANTHROPIC_API_KEY || "").length,
+    blobTokenDelivered: "BLOB_READ_WRITE_TOKEN" in process.env,
+    blobTokenLength: (process.env.BLOB_READ_WRITE_TOKEN || "").length,
   };
 
   return NextResponse.json({

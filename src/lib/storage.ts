@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import { put, list } from "@vercel/blob";
+import { put, get } from "@vercel/blob";
 
 // Persistent storage for the small mutable JSON documents the admin panel
 // edits (event config, custom holidays).
@@ -21,14 +21,23 @@ async function readSeedFile(name: string) {
   return JSON.parse(raw);
 }
 
+// Read through the Blob API (SDK get), NOT the public CDN URL. The CDN can
+// serve a previous version of an overwritten blob for a minute or more, which
+// made read-modify-write cycles lose entries: a write would read the stale
+// doc, append one item, and overwrite everything newer. get() is
+// read-after-write consistent.
+//
+// Returns null ONLY when the blob doesn't exist (first run -> caller seeds).
+// Any other failure throws: falling back to the seed on a transient error
+// would let the next write wipe real data.
 async function readFromBlob(name: string) {
-  const { blobs } = await list({ prefix: name, limit: 1 });
-  const match = blobs.find((b) => b.pathname === name);
-  if (!match) return null;
-  // no-store so we never serve a stale config from Next's fetch cache.
-  const res = await fetch(match.url, { cache: "no-store" });
-  if (!res.ok) return null;
-  return res.json();
+  const result = await get(name, { access: "public" });
+  if (result === null) return null;
+  if (result.statusCode !== 200 || !result.stream) {
+    throw new Error(`Unexpected blob read status ${result.statusCode} for ${name}`);
+  }
+  const text = await new Response(result.stream).text();
+  return JSON.parse(text);
 }
 
 export async function writeData(name: string, data: unknown): Promise<void> {

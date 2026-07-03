@@ -11,27 +11,32 @@ export async function GET(request: Request) {
 
   const baseUrl = new URL(request.url).origin;
 
-  try {
-    const res = await fetch(`${baseUrl}/api/send-briefing`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    });
-
-    const result = await res.json();
-
-    if (res.ok) {
-      return NextResponse.json({ success: true, result });
-    } else {
-      return NextResponse.json(
-        { error: "Failed to send briefing", details: result },
-        { status: 500 }
-      );
+  // Fire both morning emails; one failing shouldn't block the other.
+  const call = async (path: string) => {
+    try {
+      const res = await fetch(`${baseUrl}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      return { ok: res.ok, body: await res.json() };
+    } catch (err) {
+      console.error(`Cron call ${path} failed:`, err);
+      return { ok: false, body: { error: String(err) } };
     }
-  } catch (err) {
-    console.error("Cron trigger error:", err);
-    return NextResponse.json(
-      { error: "Cron trigger failed" },
-      { status: 500 }
-    );
-  }
+  };
+
+  const [briefing, inventoryDigest] = await Promise.all([
+    call("/api/send-briefing"),
+    call("/api/send-inventory-digest"),
+  ]);
+
+  const allOk = briefing.ok && inventoryDigest.ok;
+  return NextResponse.json(
+    {
+      success: allOk,
+      briefing: briefing.body,
+      inventoryDigest: inventoryDigest.body,
+    },
+    { status: allOk ? 200 : 500 }
+  );
 }

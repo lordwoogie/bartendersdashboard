@@ -11,6 +11,10 @@ export interface BeerNote {
   tastingNotes: string;
   source: "manual" | "ai";
   updatedAt: string;
+  // Version of the AI prompt that produced this note. When the prompt is
+  // improved, bumping the version in the API route regenerates stale AI
+  // notes on next view. Manual notes ignore this.
+  promptVersion?: number;
 }
 
 // Match a beer name to its stored note tolerating whitespace, curly quotes,

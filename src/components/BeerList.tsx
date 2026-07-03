@@ -4,6 +4,12 @@ import { useState, useEffect, useCallback } from "react";
 import type { MenuItem, MenuChange } from "@/lib/types";
 import { getStyleDescription, getBjcpStyleName } from "@/lib/style-matcher";
 import { BackToDashboard } from "@/components/BackToDashboard";
+import { beerNoteKey, type BeerNote } from "@/lib/beer-notes";
+
+type NoteState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "ready"; note: BeerNote | null };
 
 export function BeerList() {
   const [items, setItems] = useState<MenuItem[]>([]);
@@ -11,6 +17,31 @@ export function BeerList() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notes, setNotes] = useState<Record<string, NoteState>>({});
+
+  // Fetch (or generate + cache) a tasting note the first time a beer card is
+  // expanded. Later expansions of the same beer hit local state.
+  const fetchNote = useCallback((item: MenuItem) => {
+    const key = beerNoteKey(item.name, item.brewery);
+    setNotes((prev) => {
+      if (prev[key]) return prev;
+      // Kick off the request; mark loading synchronously.
+      const params = new URLSearchParams({ name: item.name });
+      if (item.brewery) params.set("brewery", item.brewery);
+      if (item.style) params.set("style", item.style);
+      if (item.abv !== undefined) params.set("abv", String(item.abv));
+      if (item.ibu !== undefined) params.set("ibu", String(item.ibu));
+      fetch(`/api/beer-notes?${params.toString()}`)
+        .then((r) => r.json())
+        .then((data: { note: BeerNote | null }) => {
+          setNotes((p) => ({ ...p, [key]: { status: "ready", note: data.note } }));
+        })
+        .catch(() => {
+          setNotes((p) => ({ ...p, [key]: { status: "ready", note: null } }));
+        });
+      return { ...prev, [key]: { status: "loading" } };
+    });
+  }, []);
 
   const fetchMenu = useCallback(async () => {
     setLoading(true);
@@ -113,9 +144,11 @@ export function BeerList() {
                       }`}
                     >
                       <button
-                        onClick={() =>
-                          setExpandedId(isExpanded ? null : item.id)
-                        }
+                        onClick={() => {
+                          const opening = !isExpanded;
+                          setExpandedId(opening ? item.id : null);
+                          if (opening) fetchNote(item);
+                        }}
                         className="w-full text-left px-4 py-3 flex items-center gap-3"
                       >
                         <div className="flex-1 min-w-0">
@@ -139,11 +172,18 @@ export function BeerList() {
                           </div>
                         </div>
                         <div className="text-right shrink-0 flex items-center gap-3">
-                          {item.abv && (
-                            <span className="text-sm font-mono text-amber font-semibold">
-                              {item.abv}%
-                            </span>
-                          )}
+                          <div className="flex flex-col items-end gap-0.5 leading-none">
+                            {item.abv && (
+                              <span className="text-sm font-mono text-amber font-semibold">
+                                {item.abv}%
+                              </span>
+                            )}
+                            {item.ibu !== undefined && (
+                              <span className="text-[10px] font-mono text-copper">
+                                {item.ibu} IBU
+                              </span>
+                            )}
+                          </div>
                           <span
                             className="text-muted text-xs transition-transform duration-200"
                             style={{
@@ -182,6 +222,16 @@ export function BeerList() {
                                   </span>
                                 </div>
                               )}
+                              {item.ibu !== undefined && (
+                                <div>
+                                  <span className="text-muted text-xs block">
+                                    IBU (bitterness)
+                                  </span>
+                                  <span className="text-copper font-semibold">
+                                    {item.ibu}
+                                  </span>
+                                </div>
+                              )}
                               {item.brewery && (
                                 <div>
                                   <span className="text-muted text-xs block">
@@ -203,6 +253,9 @@ export function BeerList() {
                                 </div>
                               )}
                             </div>
+
+                            {/* Tasting notes (manual or AI, lazily loaded) */}
+                            <TastingNoteBlock state={notes[beerNoteKey(item.name, item.brewery)]} />
 
                             {/* BJCP Style Description */}
                             {styleDesc && (
@@ -237,6 +290,37 @@ export function BeerList() {
           ))
         )}
       </main>
+    </div>
+  );
+}
+
+function TastingNoteBlock({ state }: { state: NoteState | undefined }) {
+  if (!state || state.status === "idle") return null;
+  if (state.status === "loading") {
+    return (
+      <div className="bg-surface/50 rounded-lg p-3 border border-amber/20">
+        <p className="text-xs text-amber font-semibold mb-1 uppercase tracking-wider">
+          Tasting Notes
+        </p>
+        <p className="text-sm text-muted italic">Loading…</p>
+      </div>
+    );
+  }
+  const note = state.note;
+  if (!note) return null;
+  return (
+    <div className="bg-surface/50 rounded-lg p-3 border border-amber/20">
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-xs text-amber font-semibold uppercase tracking-wider">
+          Tasting Notes
+        </p>
+        <span className="text-[10px] text-muted uppercase tracking-wider">
+          {note.source === "manual" ? "· house note" : "· ai"}
+        </span>
+      </div>
+      <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">
+        {note.tastingNotes}
+      </p>
     </div>
   );
 }

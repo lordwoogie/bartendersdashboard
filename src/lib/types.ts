@@ -50,6 +50,7 @@ export interface MenuItem {
   name: string;
   style?: string;
   abv?: number;
+  ibu?: number;
   brewery?: string;
   description?: string;
   section?: string;

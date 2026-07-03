@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import type { CatalogBeer } from "@/lib/inventory";
 import type { Wine, WineCategory } from "@/lib/wine";
+import type { MenuItem } from "@/lib/types";
+import { beerNoteKey, type BeerNote } from "@/lib/beer-notes";
 import { BackToDashboard } from "@/components/BackToDashboard";
 
 interface Holiday {
@@ -88,6 +90,13 @@ export default function AdminPage() {
   const [wines, setWines] = useState<Wine[]>([]);
   const [winesDirty, setWinesDirty] = useState(false);
 
+  // Beer notes: menu items from Untappd + stored per-beer notes for override.
+  // Each row is saved individually with its own button.
+  const [beerItems, setBeerItems] = useState<MenuItem[]>([]);
+  const [beerNotes, setBeerNotes] = useState<Record<string, BeerNote>>({});
+  const [beerDrafts, setBeerDrafts] = useState<Record<string, string>>({});
+  const [beerSaving, setBeerSaving] = useState<string | null>(null);
+
   const fetchConfig = useCallback(async () => {
     setLoading(true);
     try {
@@ -107,17 +116,23 @@ export default function AdminPage() {
       setAuthenticated(true);
       setMessage("");
 
-      // Catalog + wines are separate public endpoints; load for admins only.
+      // Catalog + wines + beer notes are separate public endpoints; load
+      // for admins only. Menu items come from /api/menu so we can list the
+      // beers currently on tap in the notes editor.
       if ((data.role ?? "admin") === "admin") {
         try {
-          const [catRes, wineRes] = await Promise.all([
+          const [catRes, wineRes, menuRes, notesRes] = await Promise.all([
             fetch("/api/inventory/catalog").then((r) => r.json()),
             fetch("/api/wines").then((r) => r.json()),
+            fetch("/api/menu").then((r) => r.json()),
+            fetch("/api/beer-notes", { method: "PUT" }).then((r) => r.json()),
           ]);
           setCatalog(catRes.catalog || []);
           setCatalogDirty(false);
           setWines(wineRes.wines || []);
           setWinesDirty(false);
+          setBeerItems(menuRes.menu?.items || []);
+          setBeerNotes(notesRes.notes || {});
         } catch {
           // non-fatal; leave lists empty
         }
@@ -946,6 +961,112 @@ export default function AdminPage() {
               <span className="text-xs text-copper">Unsaved changes</span>
             )}
           </div>
+        </section>
+        )}
+
+        {/* Beer Notes */}
+        {role === "admin" && (
+        <section className="bg-card-bg border border-card-border rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-amber mb-1">
+            Beer Notes
+          </h2>
+          <p className="text-xs text-muted mb-4">
+            House-written tasting notes shown on <a href="/beers" className="text-amber underline">/beers</a>.
+            AI-generated notes fill in for beers you haven&apos;t written.
+            A house note always wins. Clear the field and Save to fall
+            back to AI.
+          </p>
+
+          {beerItems.length === 0 ? (
+            <p className="text-sm text-muted">No beers loaded from Untappd yet.</p>
+          ) : (
+            <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+              {beerItems.map((item) => {
+                const key = beerNoteKey(item.name, item.brewery);
+                const stored = beerNotes[key];
+                const draft = beerDrafts[key] ?? stored?.tastingNotes ?? "";
+                const dirty = draft !== (stored?.tastingNotes ?? "");
+                return (
+                  <div
+                    key={key}
+                    className="bg-surface rounded-lg border border-card-border p-3"
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-foreground truncate">
+                          {item.name}
+                        </div>
+                        <div className="text-[10px] text-muted uppercase tracking-wider">
+                          {[item.style, item.brewery].filter(Boolean).join(" · ")}
+                        </div>
+                      </div>
+                      {stored && (
+                        <span
+                          className={`text-[10px] uppercase tracking-wider shrink-0 ${
+                            stored.source === "manual" ? "text-amber" : "text-copper"
+                          }`}
+                        >
+                          {stored.source === "manual" ? "House note" : "AI"}
+                        </span>
+                      )}
+                    </div>
+                    <textarea
+                      value={draft}
+                      onChange={(e) =>
+                        setBeerDrafts({ ...beerDrafts, [key]: e.target.value })
+                      }
+                      rows={2}
+                      placeholder="e.g. Bright grapefruit peel and pine, dry bitter finish."
+                      className="w-full bg-background border border-card-border rounded px-2 py-1 text-sm text-foreground"
+                    />
+                    <div className="flex items-center gap-3 mt-2">
+                      <button
+                        disabled={!dirty || beerSaving === key}
+                        onClick={async () => {
+                          setBeerSaving(key);
+                          try {
+                            const res = await fetch("/api/beer-notes", {
+                              method: "POST",
+                              headers: {
+                                "Content-Type": "application/json",
+                                "x-admin-password": password,
+                              },
+                              body: JSON.stringify({
+                                name: item.name,
+                                brewery: item.brewery,
+                                tastingNotes: draft,
+                              }),
+                            });
+                            const data = await res.json();
+                            if (!res.ok) {
+                              flash(data.error || "Save failed");
+                              return;
+                            }
+                            const next = { ...beerNotes };
+                            if (data.note) next[key] = data.note;
+                            else delete next[key];
+                            setBeerNotes(next);
+                            const nextDrafts = { ...beerDrafts };
+                            delete nextDrafts[key];
+                            setBeerDrafts(nextDrafts);
+                            flash(data.note ? "Note saved" : "Note cleared");
+                          } finally {
+                            setBeerSaving(null);
+                          }
+                        }}
+                        className="bg-amber text-background text-xs font-medium px-3 py-1 rounded disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {beerSaving === key ? "Saving…" : "Save"}
+                      </button>
+                      {dirty && (
+                        <span className="text-[10px] text-copper">unsaved</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
         )}
 

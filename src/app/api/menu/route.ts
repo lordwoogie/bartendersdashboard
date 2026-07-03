@@ -89,12 +89,25 @@ async function fetchUntappdMenu(): Promise<MenuItem[]> {
         const abvMatch = block.match(/([\d.]+)%\s*ABV/);
         const abv = abvMatch ? parseFloat(abvMatch[1]) : undefined;
 
+        // IBU: "N IBU" (Untappd usually shows this next to ABV)
+        const ibuMatch = block.match(/([\d.]+)\s*IBU/i);
+        const ibu = ibuMatch ? parseFloat(ibuMatch[1]) : undefined;
+
         // Brewery: inside the brewery link
         const breweryMatch = block.match(
           /data-href=":brewery"[^>]*>([\s\S]*?)<\/a>/
         );
         const brewery = breweryMatch
           ? stripHtml(breweryMatch[1])
+          : undefined;
+
+        // Venue-added menu note or beer description block, if any.
+        // Untappd shows these under various class names depending on template.
+        const descMatch =
+          block.match(/<p[^>]*class="[^"]*beer-desc[^"]*"[^>]*>([\s\S]*?)<\/p>/i) ||
+          block.match(/<p[^>]*class="[^"]*menu-note[^"]*"[^>]*>([\s\S]*?)<\/p>/i);
+        const description = descMatch
+          ? stripHtml(descMatch[1]) || undefined
           : undefined;
 
         // Beer ID from the URL
@@ -106,8 +119,9 @@ async function fetchUntappdMenu(): Promise<MenuItem[]> {
           name,
           style,
           abv,
+          ibu,
           brewery,
-          description: undefined,
+          description,
           section: sectionName,
         });
       }

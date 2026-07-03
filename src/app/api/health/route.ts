@@ -8,6 +8,9 @@ export async function GET() {
     eventbrite: !!process.env.EVENTBRITE_API_KEY,
     openWeather: !!process.env.OPENWEATHERMAP_API_KEY,
     resend: !!process.env.RESEND_API_KEY,
+    anthropic: !!process.env.ANTHROPIC_API_KEY,
+    blob: !!process.env.BLOB_READ_WRITE_TOKEN,
+    adminPassword: !!process.env.ADMIN_PASSWORD,
   };
 
   return NextResponse.json({

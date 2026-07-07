@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -13,8 +13,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Cowboy Cold Daily Briefing",
-  description: "Daily briefing dashboard for Cowboy Cold taproom — OKC Thunder, TV sports, local events, and tap list.",
+  title: "Lively Bartender Dashboard",
+  description:
+    "Daily briefing dashboard for the taproom — OKC Thunder, TV sports, local events, and tap list.",
+};
+
+// Colors the Android status bar to match the app background when installed
+// to the home screen.
+export const viewport: Viewport = {
+  themeColor: "#1a1410",
 };
 
 export default function RootLayout({

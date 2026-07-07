@@ -149,90 +149,62 @@ export function Dashboard() {
 
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-card-border px-4 py-4 no-print">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div>
-              <h1 className="text-xl font-bold text-foreground tracking-tight">
-                Daily Briefing
-              </h1>
-              <p className="text-sm text-muted mt-0.5">{dateStr}</p>
-            </div>
-            {weather && (
-              <div className="bg-surface border border-card-border rounded-lg px-3 py-2 flex items-center gap-3">
-                <div className="text-center">
-                  <div className="text-2xl leading-none">{weather.icon}</div>
-                  <div className="text-lg font-bold text-foreground mt-0.5">{weather.temp}°F</div>
-                  <div className="text-[10px] text-amber leading-tight mt-0.5">
-                    H:{weather.high}° L:{weather.low}°
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div>
+                <h1 className="text-xl font-bold text-foreground tracking-tight">
+                  Daily Briefing
+                </h1>
+                <p className="text-sm text-muted mt-0.5">{dateStr}</p>
+              </div>
+              {weather && (
+                <div className="bg-surface border border-card-border rounded-lg px-3 py-2 flex items-center gap-3">
+                  <div className="text-center">
+                    <div className="text-2xl leading-none">{weather.icon}</div>
+                    <div className="text-lg font-bold text-foreground mt-0.5">{weather.temp}°F</div>
+                    <div className="text-[10px] text-amber leading-tight mt-0.5">
+                      H:{weather.high}° L:{weather.low}°
+                    </div>
+                  </div>
+                  <div className="hidden sm:block max-w-[200px]">
+                    <p className="text-xs text-foreground font-medium">{weather.condition}</p>
+                    <p className="text-[10px] text-muted leading-snug mt-0.5 line-clamp-3">
+                      {weather.description}
+                    </p>
                   </div>
                 </div>
-                <div className="hidden sm:block max-w-[200px]">
-                  <p className="text-xs text-foreground font-medium">{weather.condition}</p>
-                  <p className="text-[10px] text-muted leading-snug mt-0.5 line-clamp-3">
-                    {weather.description}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <a
-              href="/inventory"
-              className="text-3xl text-muted hover:text-amber transition-colors no-print"
-              title="Inventory - log kegs and cases"
-            >
-              🛢
-            </a>
-            <a
-              href="/supplies"
-              className="text-3xl text-muted hover:text-amber transition-colors no-print"
-              title="Supplies - to buy list and shift notes"
-            >
-              🛒
-            </a>
-            <a
-              href="/book"
-              className="text-3xl text-muted hover:text-amber transition-colors no-print"
-              title="The Book - daily duties"
-            >
-              📖
-            </a>
-            <a
-              href="/schedule"
-              className="text-3xl text-muted hover:text-amber transition-colors no-print"
-              title="Staff schedule"
-            >
-              📋
-            </a>
-            <a
-              href="/beers"
-              className="text-3xl text-muted hover:text-amber transition-colors no-print"
-              title="Full beer list"
-            >
-              🍺
-            </a>
-            <a
-              href="/wines"
-              className="text-3xl text-muted hover:text-amber transition-colors no-print"
-              title="Wine list"
-            >
-              🍷
-            </a>
-            <a
-              href="/print"
-              className="text-3xl text-muted hover:text-amber transition-colors no-print"
-              title="Print today's sheet"
-            >
-              🖨️
-            </a>
+              )}
+            </div>
             <button
               onClick={fetchData}
               disabled={loading}
-              className="text-xs bg-surface hover:bg-card-border text-foreground px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+              className="text-xs bg-surface hover:bg-card-border text-foreground px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 shrink-0"
             >
               {loading ? "..." : "Refresh"}
             </button>
           </div>
+
+          {/* Nav: labeled links, left-aligned, tablet-friendly tap targets */}
+          <nav className="mt-3 flex flex-wrap gap-2">
+            {[
+              { href: "/inventory", label: "Inventory" },
+              { href: "/supplies", label: "Supplies" },
+              { href: "/book", label: "The Book" },
+              { href: "/schedule", label: "Schedule" },
+              { href: "/beers", label: "Beer List" },
+              { href: "/wines", label: "Wine List" },
+              { href: "/print", label: "Print" },
+            ].map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="rounded-lg border border-card-border bg-surface px-4 py-2 text-sm font-medium text-foreground hover:border-amber hover:text-amber transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
         </div>
       </header>
 

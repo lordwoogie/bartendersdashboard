@@ -5,6 +5,7 @@ import type { CatalogBeer } from "@/lib/inventory";
 import type { Wine, WineCategory } from "@/lib/wine";
 import type { MenuItem } from "@/lib/types";
 import { beerNoteKey, type BeerNote } from "@/lib/beer-notes";
+import type { ManualLink } from "@/lib/manuals";
 import { BackToDashboard } from "@/components/BackToDashboard";
 
 interface Holiday {
@@ -97,6 +98,13 @@ export default function AdminPage() {
   const [beerDrafts, setBeerDrafts] = useState<Record<string, string>>({});
   const [beerSaving, setBeerSaving] = useState<string | null>(null);
 
+  // Help-page manual links, saved in bulk like the catalog.
+  const [manuals, setManuals] = useState<ManualLink[]>([]);
+  const [manualsDirty, setManualsDirty] = useState(false);
+  const [newManualTitle, setNewManualTitle] = useState("");
+  const [newManualUrl, setNewManualUrl] = useState("");
+  const [newManualNote, setNewManualNote] = useState("");
+
   const fetchConfig = useCallback(async () => {
     setLoading(true);
     try {
@@ -121,11 +129,12 @@ export default function AdminPage() {
       // beers currently on tap in the notes editor.
       if ((data.role ?? "admin") === "admin") {
         try {
-          const [catRes, wineRes, menuRes, notesRes] = await Promise.all([
+          const [catRes, wineRes, menuRes, notesRes, manualsRes] = await Promise.all([
             fetch("/api/inventory/catalog").then((r) => r.json()),
             fetch("/api/wines").then((r) => r.json()),
             fetch("/api/menu").then((r) => r.json()),
             fetch("/api/beer-notes", { method: "PUT" }).then((r) => r.json()),
+            fetch("/api/manuals").then((r) => r.json()),
           ]);
           setCatalog(catRes.catalog || []);
           setCatalogDirty(false);
@@ -133,6 +142,8 @@ export default function AdminPage() {
           setWinesDirty(false);
           setBeerItems(menuRes.menu?.items || []);
           setBeerNotes(notesRes.notes || {});
+          setManuals(manualsRes.manuals || []);
+          setManualsDirty(false);
         } catch {
           // non-fatal; leave lists empty
         }
@@ -1067,6 +1078,125 @@ export default function AdminPage() {
               })}
             </div>
           )}
+        </section>
+        )}
+
+        {/* Help Manuals */}
+        {role === "admin" && (
+        <section className="bg-card-bg border border-card-border rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-amber mb-1">
+            Help Manuals
+          </h2>
+          <p className="text-xs text-muted mb-4">
+            Links shown under Manuals &amp; Support on the{" "}
+            <a href="/help" className="text-amber underline">/help</a> page
+            (POS docs, equipment manuals, vendor support).
+          </p>
+
+          {manuals.length > 0 && (
+            <div className="space-y-1 mb-4">
+              {manuals.map((m) => (
+                <div
+                  key={m.id}
+                  className="flex items-center justify-between bg-surface rounded px-2 py-1.5 text-sm gap-2"
+                >
+                  <div className="min-w-0 flex-1">
+                    <span className="text-foreground">{m.title}</span>
+                    {m.note && <span className="text-muted"> · {m.note}</span>}
+                    <span className="block text-[10px] text-copper truncate">
+                      {m.url}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setManuals(manuals.filter((x) => x.id !== m.id));
+                      setManualsDirty(true);
+                    }}
+                    className="text-red-400 text-xs hover:text-red-300 shrink-0"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-2">
+            <input
+              type="text"
+              value={newManualTitle}
+              onChange={(e) => setNewManualTitle(e.target.value)}
+              placeholder="Title (e.g. Glycol Chiller Manual)"
+              className="bg-surface border border-card-border rounded px-2 py-1 text-sm text-foreground"
+            />
+            <input
+              type="url"
+              value={newManualUrl}
+              onChange={(e) => setNewManualUrl(e.target.value)}
+              placeholder="https://..."
+              className="bg-surface border border-card-border rounded px-2 py-1 text-sm text-foreground"
+            />
+            <input
+              type="text"
+              value={newManualNote}
+              onChange={(e) => setNewManualNote(e.target.value)}
+              placeholder="Short note (optional)"
+              className="bg-surface border border-card-border rounded px-2 py-1 text-sm text-foreground"
+            />
+          </div>
+          <button
+            onClick={() => {
+              const title = newManualTitle.trim();
+              const url = newManualUrl.trim();
+              if (!title || !/^https?:\/\//i.test(url)) return;
+              setManuals([
+                ...manuals,
+                {
+                  id: `manual-${Date.now()}`,
+                  title,
+                  url,
+                  note: newManualNote.trim() || undefined,
+                },
+              ]);
+              setManualsDirty(true);
+              setNewManualTitle("");
+              setNewManualUrl("");
+              setNewManualNote("");
+            }}
+            className="mt-2 bg-surface hover:bg-card-border text-foreground text-sm px-4 py-1.5 rounded-lg transition-colors"
+          >
+            Add manual
+          </button>
+
+          <div className="flex items-center gap-3 mt-4 pt-4 border-t border-card-border">
+            <button
+              onClick={async () => {
+                const res = await fetch("/api/manuals", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "x-admin-password": password,
+                  },
+                  body: JSON.stringify({ manuals }),
+                });
+                const data = await res.json();
+                if (res.ok) {
+                  setManuals(data.manuals || manuals);
+                  setManualsDirty(false);
+                  flash("Manuals saved");
+                } else {
+                  flash(data.error || "Save failed");
+                }
+              }}
+              disabled={!manualsDirty}
+              className="bg-amber text-background text-sm font-medium px-4 py-1.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Save Manuals
+            </button>
+            {manualsDirty && (
+              <span className="text-xs text-copper">Unsaved changes</span>
+            )}
+          </div>
         </section>
         )}
 

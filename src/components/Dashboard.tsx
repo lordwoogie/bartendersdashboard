@@ -194,6 +194,7 @@ export function Dashboard() {
               { href: "/schedule", label: "Schedule" },
               { href: "/beers", label: "Beer List" },
               { href: "/wines", label: "Wine List" },
+              { href: "/help", label: "Help" },
               { href: "/print", label: "Print" },
             ].map((link) => (
               <a

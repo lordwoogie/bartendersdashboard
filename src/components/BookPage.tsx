@@ -1,8 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import bookData from "@/data/the-book.json";
 import { BackToDashboard } from "@/components/BackToDashboard";
+import { formatTimeInZone, formatDateLabel } from "@/lib/timezone";
+
+interface BookLogEntry {
+  date: string;
+  day: string;
+  completedAt: string;
+  itemCount: number;
+}
 
 const DAYS = [
   "sunday",
@@ -83,6 +91,35 @@ export function BookPage() {
   const dayData = (bookData as Record<string, DayData>)[selectedDay];
   const isToday = DAYS[new Date().getDay()] === selectedDay;
 
+  // Completion log: fetched for the history section, appended to when the
+  // last box of today's list gets checked.
+  const [logEntries, setLogEntries] = useState<BookLogEntry[]>([]);
+  const refreshLog = useCallback(async () => {
+    try {
+      const res = await fetch("/api/book-log?limit=30");
+      const data = await res.json();
+      setLogEntries(data.entries || []);
+    } catch {
+      // non-fatal; section just stays empty
+    }
+  }, []);
+  useEffect(() => {
+    refreshLog();
+  }, [refreshLog]);
+
+  // Every checkable key for the selected day, in section order.
+  const allKeys = [
+    "special-opening",
+    ...dayData.opening.map((_, i) => `open-${i}`),
+    ...dayData.beforeClockout.map((_, i) => `clockout-${i}`),
+    "special-closing",
+    ...dayData.closing.map((_, i) => `close-${i}`),
+    ...dayData.closingMoney.map((_, i) => `money-${i}`),
+  ];
+
+  const todayComplete =
+    isToday && logEntries.some((e) => e.date === todayLocalIso());
+
   const toggleCheck = (key: string) => {
     setCheckedItems((prev) => {
       const next = { ...prev, [key]: !prev[key] };
@@ -91,6 +128,24 @@ export function BookPage() {
       } catch {
         // storage full or disabled — state still updates in memory
       }
+
+      // The moment the whole day is checked off (and it IS today, not a
+      // preview of another day), record the completion. The server upserts
+      // by date, so re-fires after an uncheck/recheck are harmless.
+      if (isToday && allKeys.every((k) => next[k])) {
+        fetch("/api/book-log", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            date: todayLocalIso(),
+            day: selectedDay,
+            itemCount: allKeys.length,
+          }),
+        })
+          .then(() => refreshLog())
+          .catch(() => {});
+      }
+
       return next;
     });
   };
@@ -227,6 +282,42 @@ export function BookPage() {
             checked={checkedItems}
             onToggle={toggleCheck}
           />
+        </Section>
+
+        {/* Today-complete banner */}
+        {todayComplete && (
+          <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-center">
+            <p className="text-amber-400 font-semibold">
+              ✅ Book complete — logged for today
+            </p>
+          </div>
+        )}
+
+        {/* Completion Log */}
+        <Section title="Completion Log" icon="&#128203;">
+          {logEntries.length === 0 ? (
+            <p className="text-sm text-foreground/50">
+              No completions logged yet. The log records the day and time the
+              last box gets checked.
+            </p>
+          ) : (
+            <div className="space-y-1.5">
+              {logEntries.map((e) => (
+                <div
+                  key={e.date}
+                  className="flex items-center justify-between rounded-lg bg-card-bg border border-card-border px-3 py-2 text-sm"
+                >
+                  <span className="text-foreground/90">
+                    ✅ {formatDateLabel(e.date, "short")}
+                  </span>
+                  <span className="text-xs text-foreground/50">
+                    finished {formatTimeInZone(new Date(e.completedAt))} ·{" "}
+                    {e.itemCount} tasks
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </Section>
       </main>
     </div>

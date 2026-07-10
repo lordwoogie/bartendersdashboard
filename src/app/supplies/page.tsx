@@ -18,7 +18,9 @@ export default function SuppliesPage() {
   const [buyText, setBuyText] = useState("");
   const [noteText, setNoteText] = useState("");
   const [flash, setFlash] = useState("");
-  const [busy, setBusy] = useState(false);
+  // Per-form save errors, shown inline until the next attempt succeeds.
+  const [buyError, setBuyError] = useState("");
+  const [noteError, setNoteError] = useState("");
 
   const refresh = useCallback(async () => {
     try {
@@ -39,27 +41,49 @@ export default function SuppliesPage() {
     setTimeout(() => setFlash(""), 2000);
   };
 
-  const add = async (type: "to-buy" | "note", text: string) => {
-    if (!text.trim()) return;
-    setBusy(true);
-    try {
-      const res = await fetch("/api/supplies", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, text }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        showFlash(data.error || "Failed to add");
-        return;
-      }
-      // Refetch to get server-sorted order (to-buy above notes).
-      await refresh();
-      if (type === "to-buy") setBuyText("");
-      else setNoteText("");
-    } finally {
-      setBusy(false);
-    }
+  // Adds are optimistic: the item appears and the input clears immediately
+  // (venue wifi is flaky; the form must always respond to Enter). The save
+  // runs in the background with a hard timeout. On failure the temp item is
+  // removed, the typed text is restored, and an inline error appears — a
+  // note is never silently eaten.
+  const add = (type: "to-buy" | "note", text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+
+    const setText = type === "to-buy" ? setBuyText : setNoteText;
+    const setError = type === "to-buy" ? setBuyError : setNoteError;
+
+    const temp: SupplyItem = {
+      id: `tmp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      type,
+      text: trimmed,
+      createdAt: new Date().toISOString(),
+    };
+    setItems((prev) => [temp, ...prev]);
+    setText("");
+    setError("");
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+    fetch("/api/supplies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type, text: trimmed }),
+      signal: controller.signal,
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok || !data.item) throw new Error(data.error || "save failed");
+        // Swap the temp row for the server's copy (real id).
+        setItems((prev) => prev.map((i) => (i.id === temp.id ? data.item : i)));
+      })
+      .catch(() => {
+        // Roll back and hand the text back so nothing is lost.
+        setItems((prev) => prev.filter((i) => i.id !== temp.id));
+        setText(trimmed);
+        setError("Couldn't save — check the wifi and tap the button again.");
+      })
+      .finally(() => clearTimeout(timer));
   };
 
   const toggle = async (item: SupplyItem) => {
@@ -73,24 +97,28 @@ export default function SuppliesPage() {
           : i
       )
     );
-    const res = await fetch(`/api/supplies?id=${encodeURIComponent(item.id)}`, {
-      method: "PATCH",
-    });
-    if (!res.ok) {
+    try {
+      const res = await fetch(`/api/supplies?id=${encodeURIComponent(item.id)}`, {
+        method: "PATCH",
+      });
+      if (!res.ok) throw new Error("toggle failed");
+    } catch {
       setItems(prev);
-      showFlash("Toggle failed");
+      showFlash("Couldn't save that — try again");
     }
   };
 
   const remove = async (id: string) => {
     const prev = items;
     setItems(items.filter((i) => i.id !== id));
-    const res = await fetch(`/api/supplies?id=${encodeURIComponent(id)}`, {
-      method: "DELETE",
-    });
-    if (!res.ok) {
+    try {
+      const res = await fetch(`/api/supplies?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("delete failed");
+    } catch {
       setItems(prev);
-      showFlash("Delete failed");
+      showFlash("Couldn't remove that — try again");
     }
   };
 
@@ -194,12 +222,15 @@ export default function SuppliesPage() {
             />
             <button
               type="submit"
-              disabled={!buyText.trim() || busy}
+              disabled={!buyText.trim()}
               className="bg-amber text-background font-semibold px-6 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Add
             </button>
           </form>
+          {buyError && (
+            <p className="text-sm text-red-400 mt-2">{buyError}</p>
+          )}
 
           {done.length > 0 && (
             <details className="mt-6">
@@ -246,7 +277,7 @@ export default function SuppliesPage() {
               e.preventDefault();
               add("note", noteText);
             }}
-            className="flex gap-2 mb-4"
+            className="flex gap-2 mb-1"
           >
             <input
               type="text"
@@ -257,12 +288,16 @@ export default function SuppliesPage() {
             />
             <button
               type="submit"
-              disabled={!noteText.trim() || busy}
+              disabled={!noteText.trim()}
               className="bg-copper hover:bg-amber text-background font-semibold px-6 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Post
             </button>
           </form>
+          {noteError && (
+            <p className="text-sm text-red-400 mb-3">{noteError}</p>
+          )}
+          <div className="mb-3" />
 
           {notesByDay.length === 0 ? (
             <p className="text-muted text-sm">No notes yet.</p>

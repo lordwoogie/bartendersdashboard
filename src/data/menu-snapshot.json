@@ -1,4 +1,25 @@
 {
-  "lastFetched": null,
-  "items": []
+  "lastFetched": "2026-07-10T18:19:22.276Z",
+  "items": [
+    { "id": "4860192", "name": "Cowboy Cold Beer", "style": "Light Lager", "abv": 4.2, "ibu": 10, "brewery": "Lively Beerworks", "section": "Beer on tap" },
+    { "id": "3904928", "name": "Mexican Lager", "style": "Lager - Mexican", "abv": 4.8, "ibu": 8, "brewery": "Lively Beerworks", "section": "Beer on tap" },
+    { "id": "2932410", "name": "Amber Lager", "style": "Lager - Amber / Red", "abv": 5, "ibu": 12, "brewery": "Lively Beerworks", "section": "Beer on tap" },
+    { "id": "3684543", "name": "Blonde Ale", "style": "Blonde Ale", "abv": 5, "ibu": 20, "brewery": "Lively Beerworks", "section": "Beer on tap" },
+    { "id": "6669040", "name": "Peaches & Cream Blonde Ale", "style": "Fruit Beer", "abv": 5, "ibu": 10, "brewery": "Lively Beerworks", "section": "Beer on tap" },
+    { "id": "3537934", "name": "Passion Fruit Tart", "style": "Sour - Fruited Gose", "abv": 5.3, "ibu": 8, "brewery": "Lively Beerworks", "section": "Beer on tap" },
+    { "id": "2855290", "name": "IPA", "style": "IPA - American", "abv": 6.4, "ibu": 45, "brewery": "Lively Beerworks", "section": "Beer on tap" },
+    { "id": "3625727", "name": "Grapefruit IPA", "style": "IPA - American", "abv": 6.4, "ibu": 45, "brewery": "Lively Beerworks", "section": "Beer on tap" },
+    { "id": "3876476", "name": "OK Cider Co. Blackberry Radler", "style": "Cider", "abv": 5.5, "brewery": "OK Cider Co", "section": "Beer on tap" }
+  ],
+  "firstSeen": {
+    "cowboy cold beer": "1970-01-01T00:00:00.000Z",
+    "mexican lager": "1970-01-01T00:00:00.000Z",
+    "amber lager": "1970-01-01T00:00:00.000Z",
+    "blonde ale": "1970-01-01T00:00:00.000Z",
+    "peaches & cream blonde ale": "2026-07-10T18:00:00.000Z",
+    "passion fruit tart": "1970-01-01T00:00:00.000Z",
+    "ipa": "1970-01-01T00:00:00.000Z",
+    "grapefruit ipa": "1970-01-01T00:00:00.000Z",
+    "ok cider co. blackberry radler": "1970-01-01T00:00:00.000Z"
+  }
 }

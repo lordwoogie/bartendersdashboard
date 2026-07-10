@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { getCached, setCache } from "@/lib/cache";
+import { readData, writeData } from "@/lib/storage";
 import type { MenuItem, MenuChange, MenuData } from "@/lib/types";
-import fs from "fs/promises";
-import path from "path";
 
 const CACHE_KEY = "menu-data";
 const CACHE_TTL = 600; // 10 minutes
-const SNAPSHOT_PATH = path.join(process.cwd(), "src/data/menu-snapshot.json");
+const SNAPSHOT_DOC = "menu-snapshot.json";
+// How long a beer keeps its "new on tap" badge after first appearing.
+const NEW_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 const VENUE_URL =
   process.env.UNTAPPD_VENUE_URL ||
   "https://untappd.com/v/lively-beerworks/9555097";
@@ -14,12 +15,17 @@ const VENUE_URL =
 interface MenuSnapshot {
   lastFetched: string | null;
   items: MenuItem[];
+  // beer name (lowercased) -> ISO instant it first appeared on the menu.
+  // Drives the 7-day "new" badge; entries for departed beers get pruned.
+  firstSeen?: Record<string, string>;
 }
 
+// Snapshot goes through the storage helper (Blob in production): the old
+// direct-fs write failed on Vercel's read-only filesystem (EROFS), which is
+// why new beers never got flagged as new.
 async function readSnapshot(): Promise<MenuSnapshot> {
   try {
-    const raw = await fs.readFile(SNAPSHOT_PATH, "utf-8");
-    return JSON.parse(raw);
+    return await readData<MenuSnapshot>(SNAPSHOT_DOC);
   } catch {
     return { lastFetched: null, items: [] };
   }
@@ -27,7 +33,7 @@ async function readSnapshot(): Promise<MenuSnapshot> {
 
 async function writeSnapshot(snapshot: MenuSnapshot) {
   try {
-    await fs.writeFile(SNAPSHOT_PATH, JSON.stringify(snapshot, null, 2));
+    await writeData(SNAPSHOT_DOC, snapshot);
   } catch (err) {
     console.error("Failed to write menu snapshot:", err);
   }
@@ -134,48 +140,64 @@ async function fetchUntappdMenu(): Promise<MenuItem[]> {
   }
 }
 
-function detectChanges(
-  previous: MenuItem[],
-  current: MenuItem[],
-  timestamp: string
-): MenuChange[] {
-  const changes: MenuChange[] = [];
-  const prevMap = new Map(previous.map((i) => [i.name.toLowerCase(), i]));
-  const currMap = new Map(current.map((i) => [i.name.toLowerCase(), i]));
-
-  for (const [name, item] of currMap) {
-    if (!prevMap.has(name)) {
-      changes.push({ type: "added", item, timestamp });
-    }
-  }
-
-  for (const [name, item] of prevMap) {
-    if (!currMap.has(name)) {
-      changes.push({ type: "removed", item, timestamp });
-    }
-  }
-
-  return changes;
-}
+// Sentinel for "was on the menu before we started tracking" — never counts
+// as new.
+const EPOCH = "1970-01-01T00:00:00.000Z";
 
 export async function GET() {
   const cached = getCached<MenuData>(CACHE_KEY);
   if (cached) return NextResponse.json({ menu: cached, cached: true });
 
-  const currentItems = await fetchUntappdMenu();
   const snapshot = await readSnapshot();
-  const now = new Date().toISOString();
+  let currentItems = await fetchUntappdMenu();
+  const nowIso = new Date().toISOString();
+  const nowMs = Date.now();
 
-  const changes = snapshot.lastFetched
-    ? detectChanges(snapshot.items, currentItems, now)
-    : [];
+  // Untappd hiccup (blocked/timeout): keep serving the last good menu
+  // instead of wiping it — and don't touch the snapshot, or every beer
+  // would flag as "new" when the scrape recovers.
+  const scrapeFailed = currentItems.length === 0 && snapshot.items.length > 0;
+  if (scrapeFailed) currentItems = snapshot.items;
 
-  await writeSnapshot({ lastFetched: now, items: currentItems });
+  // First-seen bookkeeping, keyed by lowercased beer name. A beer is "new"
+  // for NEW_WINDOW_MS after it first appears. Departed beers are pruned so
+  // a returning seasonal counts as new again.
+  const firstSeen: Record<string, string> = { ...(snapshot.firstSeen || {}) };
+  const migrating = !snapshot.firstSeen; // snapshot from before this field
+  const currentNames = new Set(currentItems.map((i) => i.name.toLowerCase()));
+  for (const item of currentItems) {
+    const key = item.name.toLowerCase();
+    if (!firstSeen[key]) firstSeen[key] = migrating ? EPOCH : nowIso;
+  }
+  if (!scrapeFailed) {
+    for (const key of Object.keys(firstSeen)) {
+      if (!currentNames.has(key)) delete firstSeen[key];
+    }
+  }
+
+  const changes: MenuChange[] = [];
+  for (const item of currentItems) {
+    const seen = firstSeen[item.name.toLowerCase()];
+    if (seen && nowMs - new Date(seen).getTime() < NEW_WINDOW_MS) {
+      changes.push({ type: "added", item, timestamp: seen });
+    }
+  }
+  if (snapshot.lastFetched && !scrapeFailed) {
+    for (const item of snapshot.items) {
+      if (!currentNames.has(item.name.toLowerCase())) {
+        changes.push({ type: "removed", item, timestamp: nowIso });
+      }
+    }
+  }
+
+  if (!scrapeFailed) {
+    await writeSnapshot({ lastFetched: nowIso, items: currentItems, firstSeen });
+  }
 
   const menuData: MenuData = {
     items: currentItems,
     changes,
-    lastUpdated: now,
+    lastUpdated: nowIso,
   };
 
   setCache(CACHE_KEY, menuData, CACHE_TTL);

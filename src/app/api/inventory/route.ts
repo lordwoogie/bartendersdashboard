@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { readData, writeData } from "@/lib/storage";
+import { readData, mutateData } from "@/lib/storage";
 import type { InventoryEntry, KegSize, PackSize } from "@/lib/inventory";
 import { filterEntries } from "@/lib/inventory-report";
 
@@ -83,20 +83,17 @@ export async function POST(request: Request) {
     return badRequest("type must be keg-tapped, keg-blew, or case-added");
   }
 
-  const log = await readData<InventoryEntry[]>(LOG_DOC);
-  log.push(entry);
-
-  // Keep the doc bounded: drop the oldest when we exceed the cap.
-  const trimmed =
-    log.length > MAX_ENTRIES
-      ? [...log]
+  await mutateData<InventoryEntry[]>(LOG_DOC, (log) => {
+    const next = [...log, entry];
+    // Keep the doc bounded: drop the oldest when we exceed the cap.
+    return next.length > MAX_ENTRIES
+      ? next
           .sort(
             (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
           )
           .slice(0, MAX_ENTRIES)
-      : log;
-
-  await writeData(LOG_DOC, trimmed);
+      : next;
+  });
   return NextResponse.json({ success: true, entry });
 }
 
@@ -106,11 +103,14 @@ export async function DELETE(request: Request) {
   const id = searchParams.get("id");
   if (!id) return badRequest("id is required");
 
-  const log = await readData<InventoryEntry[]>(LOG_DOC);
-  const next = log.filter((e) => e.id !== id);
-  if (next.length === log.length) {
+  let found = false;
+  await mutateData<InventoryEntry[]>(LOG_DOC, (log) => {
+    const next = log.filter((e) => e.id !== id);
+    found = next.length !== log.length;
+    return next;
+  });
+  if (!found) {
     return NextResponse.json({ error: "Entry not found" }, { status: 404 });
   }
-  await writeData(LOG_DOC, next);
   return NextResponse.json({ success: true });
 }

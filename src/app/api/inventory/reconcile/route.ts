@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { readData, writeData } from "@/lib/storage";
+import { mutateData } from "@/lib/storage";
 import type { InventoryEntry } from "@/lib/inventory";
 
 const LOG_DOC = "inventory-log.json";
@@ -15,23 +15,24 @@ export async function POST(request: Request) {
   const ids = new Set(body.ids.filter((x: unknown) => typeof x === "string"));
   const undo = body.undo === true;
 
-  const log = await readData<InventoryEntry[]>(LOG_DOC);
   const now = new Date().toISOString();
   let count = 0;
-  const next = log.map((e) => {
-    if (!ids.has(e.id)) return e;
-    count++;
-    if (undo) {
-      const { reconciledAt: _drop, ...rest } = e;
-      void _drop;
-      return rest as InventoryEntry;
-    }
-    return { ...e, reconciledAt: now };
+  await mutateData<InventoryEntry[]>(LOG_DOC, (log) => {
+    count = 0;
+    return log.map((e) => {
+      if (!ids.has(e.id)) return e;
+      count++;
+      if (undo) {
+        const { reconciledAt: _drop, ...rest } = e;
+        void _drop;
+        return rest as InventoryEntry;
+      }
+      return { ...e, reconciledAt: now };
+    });
   });
 
   if (count === 0) {
     return NextResponse.json({ error: "No matching entries" }, { status: 404 });
   }
-  await writeData(LOG_DOC, next);
   return NextResponse.json({ success: true, count });
 }

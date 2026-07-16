@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { readData, writeData } from "@/lib/storage";
+import { readData, mutateData } from "@/lib/storage";
 import { beerNoteKey, type BeerNote } from "@/lib/beer-notes";
 
 const DOC = "beer-notes.json";
@@ -121,8 +121,12 @@ export async function GET(request: Request) {
     updatedAt: new Date().toISOString(),
     promptVersion: PROMPT_VERSION,
   };
-  notes[key] = entry;
-  await writeData(DOC, notes);
+  await mutateData<NotesMap>(DOC, (map) => {
+    // Someone may have written a manual note while we were generating —
+    // never overwrite a manual note with an AI one.
+    if (map[key]?.source === "manual") return map;
+    return { ...map, [key]: entry };
+  });
   return NextResponse.json({ note: entry });
 }
 
@@ -144,11 +148,13 @@ export async function POST(request: Request) {
   const text = typeof body.tastingNotes === "string" ? body.tastingNotes.trim() : "";
 
   const key = beerNoteKey(name, brewery);
-  const notes = await readData<NotesMap>(DOC);
 
   if (!text) {
-    delete notes[key];
-    await writeData(DOC, notes);
+    await mutateData<NotesMap>(DOC, (map) => {
+      const next = { ...map };
+      delete next[key];
+      return next;
+    });
     return NextResponse.json({ success: true, note: null });
   }
 
@@ -158,8 +164,7 @@ export async function POST(request: Request) {
     source: "manual",
     updatedAt: new Date().toISOString(),
   };
-  notes[key] = entry;
-  await writeData(DOC, notes);
+  await mutateData<NotesMap>(DOC, (map) => ({ ...map, [key]: entry }));
   return NextResponse.json({ success: true, note: entry });
 }
 

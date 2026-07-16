@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { readData, writeData } from "@/lib/storage";
+import { readData, mutateData } from "@/lib/storage";
 import type { SupplyItem } from "@/lib/supplies";
 
 const DOC = "supplies.json";
@@ -44,15 +44,10 @@ export async function POST(request: Request) {
     createdAt: new Date().toISOString(),
   };
 
-  const items = await readData<SupplyItem[]>(DOC);
-  items.push(item);
-
-  const trimmedList =
-    items.length > MAX_ITEMS
-      ? sort(items).slice(0, MAX_ITEMS)
-      : items;
-
-  await writeData(DOC, trimmedList);
+  await mutateData<SupplyItem[]>(DOC, (items) => {
+    const next = [...items, item];
+    return next.length > MAX_ITEMS ? sort(next).slice(0, MAX_ITEMS) : next;
+  });
   return NextResponse.json({ success: true, item });
 }
 
@@ -62,21 +57,38 @@ export async function PATCH(request: Request) {
   const id = searchParams.get("id");
   if (!id) return badRequest("id is required");
 
-  const items = await readData<SupplyItem[]>(DOC);
-  const idx = items.findIndex((i) => i.id === id);
-  if (idx === -1) {
+  // Captured from inside the mutation; reset on each attempt because
+  // mutateData may retry under contention.
+  let outcome: "ok" | "missing" | "wrong-type" = "missing";
+  let updated: SupplyItem | null = null;
+
+  await mutateData<SupplyItem[]>(DOC, (items) => {
+    outcome = "missing";
+    updated = null;
+    const idx = items.findIndex((i) => i.id === id);
+    if (idx === -1) return items;
+    const current = items[idx];
+    if (current.type !== "to-buy") {
+      outcome = "wrong-type";
+      return items;
+    }
+    const next = [...items];
+    next[idx] = {
+      ...current,
+      doneAt: current.doneAt ? undefined : new Date().toISOString(),
+    };
+    outcome = "ok";
+    updated = next[idx];
+    return next;
+  });
+
+  if (outcome === "missing") {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  const current = items[idx];
-  if (current.type !== "to-buy") {
+  if (outcome === "wrong-type") {
     return badRequest("Only to-buy items have a done state");
   }
-  items[idx] = {
-    ...current,
-    doneAt: current.doneAt ? undefined : new Date().toISOString(),
-  };
-  await writeData(DOC, items);
-  return NextResponse.json({ success: true, item: items[idx] });
+  return NextResponse.json({ success: true, item: updated });
 }
 
 // DELETE /api/supplies?id=... — remove any item (undo).
@@ -85,11 +97,15 @@ export async function DELETE(request: Request) {
   const id = searchParams.get("id");
   if (!id) return badRequest("id is required");
 
-  const items = await readData<SupplyItem[]>(DOC);
-  const next = items.filter((i) => i.id !== id);
-  if (next.length === items.length) {
+  let found = false;
+  await mutateData<SupplyItem[]>(DOC, (items) => {
+    const next = items.filter((i) => i.id !== id);
+    found = next.length !== items.length;
+    return next;
+  });
+
+  if (!found) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  await writeData(DOC, next);
   return NextResponse.json({ success: true });
 }

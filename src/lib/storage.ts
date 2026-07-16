@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import { put, get } from "@vercel/blob";
+import { put, get, BlobPreconditionFailedError } from "@vercel/blob";
 
 // Persistent storage for the small mutable JSON documents the admin panel
 // edits (event config, custom holidays).
@@ -65,4 +65,51 @@ export async function readData<T = unknown>(name: string): Promise<T> {
     return seed as T;
   }
   return (await readSeedFile(name)) as T;
+}
+
+// Atomic read-modify-write. Plain readData + writeData loses updates when
+// two requests mutate the same doc concurrently (both read v1, both write
+// their own v2 — the first write vanishes; e.g. checking off two supplies
+// quickly). This uses the blob's ETag as a compare-and-swap: the write only
+// applies if the doc is unchanged since we read it, otherwise we re-read and
+// re-apply. `mutate` may run several times — keep it pure.
+export async function mutateData<T = unknown>(
+  name: string,
+  mutate: (current: T) => T
+): Promise<T> {
+  if (!useBlob) {
+    // Local dev is effectively single-writer; plain read/write is fine.
+    const next = mutate((await readSeedFile(name)) as T);
+    await fs.writeFile(path.join(DATA_DIR, name), JSON.stringify(next, null, 2));
+    return next;
+  }
+
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const result = await get(name, { access: "public" });
+    if (result === null) {
+      // Doc doesn't exist yet: seed it via readData, then retry with an ETag.
+      await readData<T>(name);
+      continue;
+    }
+    if (result.statusCode !== 200 || !result.stream) {
+      throw new Error(`Unexpected blob read status ${result.statusCode} for ${name}`);
+    }
+    const current = JSON.parse(await new Response(result.stream).text()) as T;
+    const next = mutate(current);
+    try {
+      await put(name, JSON.stringify(next, null, 2), {
+        access: "public",
+        contentType: "application/json",
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        cacheControlMaxAge: 0,
+        ifMatch: result.blob.etag,
+      });
+      return next;
+    } catch (err) {
+      if (err instanceof BlobPreconditionFailedError) continue; // raced — retry
+      throw err;
+    }
+  }
+  throw new Error(`Write contention on ${name} — gave up after retries`);
 }

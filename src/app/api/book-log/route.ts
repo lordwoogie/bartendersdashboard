@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { readData, writeData } from "@/lib/storage";
+import { readData, mutateData } from "@/lib/storage";
 
 const DOC = "book-log.json";
 const MAX_ENTRIES = 400; // ~13 months of daily completions
@@ -47,14 +47,11 @@ export async function POST(request: Request) {
     itemCount: count,
   };
 
-  const log = await readData<BookLogEntry[]>(DOC);
-  const next = log.filter((e) => e.date !== date);
-  next.push(entry);
-  const trimmed =
-    next.length > MAX_ENTRIES
-      ? [...next].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, MAX_ENTRIES)
+  await mutateData<BookLogEntry[]>(DOC, (log) => {
+    const next = [...log.filter((e) => e.date !== date), entry];
+    return next.length > MAX_ENTRIES
+      ? next.sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, MAX_ENTRIES)
       : next;
-
-  await writeData(DOC, trimmed);
+  });
   return NextResponse.json({ success: true, entry });
 }

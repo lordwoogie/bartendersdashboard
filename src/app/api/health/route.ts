@@ -14,9 +14,21 @@ export async function GET() {
     deputy: !!process.env.DEPUTY_ACCESS_TOKEN,
   };
 
+  // Masked view of the digest recipients so we can diagnose delivery
+  // (local part hidden, domain shown). Temporary.
+  const emailRecipients = (process.env.EMAIL_RECIPIENTS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((a) => {
+      const [local, domain] = a.split("@");
+      return `${(local || "").slice(0, 2)}***@${domain || "?"}`;
+    });
+
   return NextResponse.json({
     status: "ok",
     timestamp: new Date().toISOString(),
     services,
+    emailRecipients,
   });
 }

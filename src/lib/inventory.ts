@@ -51,4 +51,17 @@ export interface CatalogBeer {
   name: string;
   brewery?: string;
   format: "keg" | "can" | "bottle";
+  // Exact item name in EKOS, if it differs from `name`. When set, the EKOS
+  // export/sync uses it so the import matches without hand-fixing.
+  ekosName?: string;
+}
+
+// Normalize a beer name for matching log entries against the catalog:
+// case-insensitive, curly quotes flattened, whitespace collapsed.
+export function normalizeBeerName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[’‘`]/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
 }

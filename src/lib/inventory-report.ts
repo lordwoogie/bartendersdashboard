@@ -3,9 +3,30 @@
 // which cases came in — and keys them into EKOS, then marks the batch
 // reconciled so it drops out of the next report.
 
-import type { InventoryEntry } from "@/lib/inventory";
-import { caseUnitLabel } from "@/lib/inventory";
+import type { InventoryEntry, CatalogBeer } from "@/lib/inventory";
+import { caseUnitLabel, normalizeBeerName } from "@/lib/inventory";
 import { dateKeyInZone, formatTimeInZone } from "@/lib/timezone";
+
+// Resolve an inventory entry's EKOS item name from the catalog's ekosName
+// overrides. Keg entries match keg-format catalog rows; case entries match
+// can/bottle rows. Falls back to the logged beerName when there's no override.
+export function makeEkosNameResolver(
+  catalog: CatalogBeer[]
+): (entry: InventoryEntry) => string {
+  // key: `${format}|${normalizedName}` -> ekosName
+  const byKey = new Map<string, string>();
+  for (const b of catalog) {
+    if (!b.ekosName) continue;
+    byKey.set(`${b.format}|${normalizeBeerName(b.name)}`, b.ekosName);
+  }
+  return (entry) => {
+    const n = normalizeBeerName(entry.beerName);
+    if (entry.type === "case-added") {
+      return byKey.get(`can|${n}`) || byKey.get(`bottle|${n}`) || entry.beerName;
+    }
+    return byKey.get(`keg|${n}`) || entry.beerName;
+  };
+}
 
 export interface EntryFilter {
   from?: string; // YYYY-MM-DD inclusive, app-timezone calendar day
@@ -49,12 +70,16 @@ function csvEscape(v: string): string {
   return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
 }
 
-export function toCsv(entries: InventoryEntry[]): string {
+export function toCsv(
+  entries: InventoryEntry[],
+  ekosNameOf?: (entry: InventoryEntry) => string
+): string {
   const header = [
     "date",
     "time",
     "event",
     "beer",
+    "ekos_name",
     "keg_size",
     "pack_size",
     "quantity",
@@ -73,6 +98,7 @@ export function toCsv(entries: InventoryEntry[]): string {
           ? "keg blew (OFF)"
           : "cases added",
       e.beerName,
+      ekosNameOf ? ekosNameOf(e) : e.beerName,
       isCase ? "" : e.size,
       isCase ? e.packSize || "case" : "",
       isCase ? String(e.quantity) : "1",

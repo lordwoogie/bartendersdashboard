@@ -85,6 +85,7 @@ export default function AdminPage() {
   const [newBeerName, setNewBeerName] = useState("");
   const [newBeerBrewery, setNewBeerBrewery] = useState("");
   const [newBeerFormat, setNewBeerFormat] = useState<CatalogBeer["format"]>("keg");
+  const [newBeerEkos, setNewBeerEkos] = useState("");
 
   // Wine list is loaded separately and saved in bulk. Each row is edited in
   // place; add/remove rows below.
@@ -681,34 +682,54 @@ export default function AdminPage() {
           </h2>
           <p className="text-xs text-muted mb-4">
             Beers/cans that appear in the /inventory picker. Bartenders can
-            still type in a beer that&apos;s not on this list.
+            still type in a beer that&apos;s not on this list. Set an{" "}
+            <span className="text-copper">EKOS item name</span> on a beer when
+            it differs from what&apos;s shown here — the EKOS export/sync uses
+            it so the import matches without hand-fixing.
           </p>
 
           {catalog.length > 0 && (
-            <div className="space-y-1 mb-4 max-h-72 overflow-y-auto">
-              {catalog.map((b) => (
+            <div className="space-y-1.5 mb-4 max-h-96 overflow-y-auto">
+              {catalog.map((b, i) => (
                 <div
                   key={b.id}
-                  className="flex items-center justify-between bg-surface rounded px-2 py-1.5 text-sm"
+                  className="bg-surface rounded px-2 py-1.5 text-sm"
                 >
-                  <div className="min-w-0 flex-1">
-                    <span className="text-foreground">{b.name}</span>
-                    {b.brewery && (
-                      <span className="text-muted"> · {b.brewery}</span>
-                    )}
-                    <span className="text-xs text-copper ml-2 uppercase">
-                      {b.format}
-                    </span>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <span className="text-foreground">{b.name}</span>
+                      {b.brewery && (
+                        <span className="text-muted"> · {b.brewery}</span>
+                      )}
+                      <span className="text-xs text-copper ml-2 uppercase">
+                        {b.format}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setCatalog(catalog.filter((x) => x.id !== b.id));
+                        setCatalogDirty(true);
+                      }}
+                      className="text-red-400 text-xs hover:text-red-300 shrink-0"
+                    >
+                      Remove
+                    </button>
                   </div>
-                  <button
-                    onClick={() => {
-                      setCatalog(catalog.filter((x) => x.id !== b.id));
+                  <input
+                    type="text"
+                    value={b.ekosName || ""}
+                    onChange={(e) => {
+                      const next = [...catalog];
+                      next[i] = {
+                        ...b,
+                        ekosName: e.target.value || undefined,
+                      };
+                      setCatalog(next);
                       setCatalogDirty(true);
                     }}
-                    className="text-red-400 text-xs hover:text-red-300 shrink-0"
-                  >
-                    Remove
-                  </button>
+                    placeholder="EKOS item name (leave blank if same as above)"
+                    className="mt-1 w-full bg-background border border-card-border rounded px-2 py-1 text-xs text-foreground"
+                  />
                 </div>
               ))}
             </div>
@@ -740,6 +761,13 @@ export default function AdminPage() {
               <option value="can">Can</option>
               <option value="bottle">Bottle</option>
             </select>
+            <input
+              type="text"
+              value={newBeerEkos}
+              onChange={(e) => setNewBeerEkos(e.target.value)}
+              placeholder="EKOS item name (optional)"
+              className="bg-surface border border-card-border rounded px-2 py-1 text-sm text-foreground col-span-2"
+            />
           </div>
           <button
             onClick={() => {
@@ -752,11 +780,13 @@ export default function AdminPage() {
                   name,
                   brewery: newBeerBrewery.trim() || undefined,
                   format: newBeerFormat,
+                  ekosName: newBeerEkos.trim() || undefined,
                 },
               ]);
               setCatalogDirty(true);
               setNewBeerName("");
               setNewBeerBrewery("");
+              setNewBeerEkos("");
             }}
             className="mt-2 bg-surface hover:bg-card-border text-foreground text-sm px-4 py-1.5 rounded-lg transition-colors"
           >

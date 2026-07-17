@@ -41,6 +41,7 @@ export async function POST(request: Request) {
       name,
       brewery: typeof raw.brewery === "string" && raw.brewery.trim() ? raw.brewery.trim() : undefined,
       format,
+      ekosName: typeof raw.ekosName === "string" && raw.ekosName.trim() ? raw.ekosName.trim() : undefined,
     });
   }
 

@@ -57,12 +57,39 @@ function eventLabel(type) {
   return "cases added";
 }
 
-function toCsv(entries) {
+function normalizeBeerName(name) {
+  return String(name || "")
+    .toLowerCase()
+    .replace(/[’‘`]/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Build a resolver from the catalog's EKOS-name overrides. Keg entries match
+// keg-format rows; case entries match can/bottle rows. Falls back to the
+// logged beer name.
+function makeEkosNameResolver(catalog) {
+  const byKey = new Map();
+  for (const b of catalog || []) {
+    if (!b || !b.ekosName) continue;
+    byKey.set(`${b.format}|${normalizeBeerName(b.name)}`, b.ekosName);
+  }
+  return (e) => {
+    const n = normalizeBeerName(e.beerName);
+    if (e.type === "case-added") {
+      return byKey.get(`can|${n}`) || byKey.get(`bottle|${n}`) || e.beerName;
+    }
+    return byKey.get(`keg|${n}`) || e.beerName;
+  };
+}
+
+function toCsv(entries, ekosNameOf) {
   const header = [
     "date",
     "time",
     "event",
     "beer",
+    "ekos_name",
     "keg_size",
     "pack",
     "quantity",
@@ -89,6 +116,7 @@ function toCsv(entries) {
       time,
       eventLabel(e.type),
       e.beerName,
+      ekosNameOf ? ekosNameOf(e) : e.beerName,
       isCase ? "" : e.size,
       isCase ? e.packSize || "case" : "",
       isCase ? String(e.quantity) : "1",
@@ -103,11 +131,16 @@ function toCsv(entries) {
 async function main() {
   const fs = await import("node:fs/promises");
 
-  // 1. Pull the entries that still need to go into EKOS.
+  // 1. Pull the entries that still need to go into EKOS, plus the catalog
+  //    (for EKOS-name overrides).
   const listUrl = `${BASE}/api/inventory?scope=${scope}&limit=500`;
-  const res = await fetch(listUrl);
+  const [res, catRes] = await Promise.all([
+    fetch(listUrl),
+    fetch(`${BASE}/api/inventory/catalog`),
+  ]);
   if (!res.ok) throw new Error(`Fetch failed: ${res.status} ${listUrl}`);
   const { entries } = await res.json();
+  const catalog = catRes.ok ? (await catRes.json()).catalog || [] : [];
 
   if (!entries || entries.length === 0) {
     console.log("Nothing to transfer — inventory is already up to date in EKOS.");
@@ -119,8 +152,9 @@ async function main() {
     (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
   );
 
-  // 2. Write the CSV.
-  await fs.writeFile(outPath, toCsv(entries), "utf-8");
+  // 2. Write the CSV (with resolved EKOS names).
+  const ekosNameOf = makeEkosNameResolver(catalog);
+  await fs.writeFile(outPath, toCsv(entries, ekosNameOf), "utf-8");
   console.log(`Wrote ${entries.length} entr${entries.length === 1 ? "y" : "ies"} to ${outPath}`);
 
   // 3. Optionally mark them transferred.

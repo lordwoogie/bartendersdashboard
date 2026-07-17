@@ -85,7 +85,9 @@ curl -s -X POST "https://bartendersdashboard.vercel.app/api/inventory/reconcile"
 - **Undo.** To un-mark entries (e.g. a bad import got reconciled), the
   reconcile endpoint accepts `{ "ids": [...], "undo": true }`, or use the
   in-app EKOS Report to review.
-- **Beer name matching.** The CSV uses the tablet's beer names, which may
-  differ slightly from EKOS item names. If your import needs exact EKOS
-  names, we can add an "EKOS name" column to the catalog so the export is
-  pre-matched.
+- **Beer name matching.** The CSV has both a `beer` column (the tablet's
+  name) and an `ekos_name` column. Set the EKOS item name per beer in
+  **admin → Inventory Catalog** (the "EKOS item name" field) and `ekos_name`
+  resolves to it; leave it blank and `ekos_name` just mirrors `beer`. Point
+  your EKOS import at the `ekos_name` column so it matches without
+  hand-fixing.

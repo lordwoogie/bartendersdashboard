@@ -109,7 +109,7 @@ export function PrintSheet() {
         {/* Header */}
         <div className="text-center border-b-2 border-black pb-2 mb-4">
           <h1 className="text-2xl font-bold uppercase tracking-wider">
-            Cowboy Cold
+            Lively Beerworks
           </h1>
           <p className="text-lg font-semibold">
             {format(now, "EEEE, MMMM d, yyyy")}

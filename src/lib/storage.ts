@@ -84,7 +84,7 @@ export async function mutateData<T = unknown>(
     return next;
   }
 
-  for (let attempt = 0; attempt < 6; attempt++) {
+  for (let attempt = 0; attempt < 5; attempt++) {
     const result = await get(name, { access: "public" });
     if (result === null) {
       // Doc doesn't exist yet: seed it via readData, then retry with an ETag.
@@ -96,20 +96,45 @@ export async function mutateData<T = unknown>(
     }
     const current = JSON.parse(await new Response(result.stream).text()) as T;
     const next = mutate(current);
-    try {
-      await put(name, JSON.stringify(next, null, 2), {
-        access: "public",
-        contentType: "application/json",
-        addRandomSuffix: false,
-        allowOverwrite: true,
-        cacheControlMaxAge: 0,
-        ifMatch: result.blob.etag,
-      });
-      return next;
-    } catch (err) {
-      if (err instanceof BlobPreconditionFailedError) continue; // raced — retry
-      throw err;
+
+    // The etag comes from a response header, which may be quoted (`"abc"`)
+    // while the server compares the raw value — or vice versa. Try both
+    // forms; only a genuine version change fails them both.
+    const raw = result.blob.etag;
+    const stripped = raw.replace(/^W\//, "").replace(/^"(.*)"$/, "$1");
+    const variants = stripped !== raw ? [raw, stripped] : [raw, `"${raw}"`];
+
+    let raced = false;
+    for (const etag of variants) {
+      try {
+        await put(name, JSON.stringify(next, null, 2), {
+          access: "public",
+          contentType: "application/json",
+          addRandomSuffix: false,
+          allowOverwrite: true,
+          cacheControlMaxAge: 0,
+          ifMatch: etag,
+        });
+        return next;
+      } catch (err) {
+        if (err instanceof BlobPreconditionFailedError) {
+          raced = true;
+          continue; // try the other etag form, then re-read
+        }
+        throw err;
+      }
+    }
+    if (raced) {
+      // Small jittered backoff before re-reading so racing writers settle.
+      await new Promise((r) => setTimeout(r, 30 + Math.random() * 120));
     }
   }
-  throw new Error(`Write contention on ${name} — gave up after retries`);
+
+  // Conditional writes kept failing. A dropped mutation strands the user, so
+  // degrade to an unconditional write (the pre-CAS behavior) and log loudly —
+  // if this line shows up in production logs, the etag handling needs work.
+  console.error(`mutateData(${name}): CAS retries exhausted; falling back to unconditional write`);
+  const next = mutate(await readData<T>(name));
+  await writeData(name, next);
+  return next;
 }

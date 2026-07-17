@@ -54,6 +54,10 @@ export interface CatalogBeer {
   // Exact item name in EKOS, if it differs from `name`. When set, the EKOS
   // export/sync uses it so the import matches without hand-fixing.
   ekosName?: string;
+  // EKOS names 12-packs as a distinct item from a regular case (e.g.
+  // "Cowboy Cold Case (Case - 2x12 ...)" vs "Cowboy Cold (Case - 4x6 ...)").
+  // Cans/bottles only; used when a case entry is flagged as a 12-pack.
+  ekosNameTwelvePack?: string;
 }
 
 // Normalize a beer name for matching log entries against the catalog:

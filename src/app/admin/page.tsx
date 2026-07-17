@@ -6,6 +6,7 @@ import type { Wine, WineCategory } from "@/lib/wine";
 import type { MenuItem } from "@/lib/types";
 import { beerNoteKey, type BeerNote } from "@/lib/beer-notes";
 import type { ManualLink } from "@/lib/manuals";
+import ekosDefaults from "@/data/ekos-name-defaults.json";
 import { BackToDashboard } from "@/components/BackToDashboard";
 
 interface Holiday {
@@ -727,13 +728,68 @@ export default function AdminPage() {
                       setCatalog(next);
                       setCatalogDirty(true);
                     }}
-                    placeholder="EKOS item name (leave blank if same as above)"
+                    placeholder={
+                      b.format === "keg"
+                        ? "EKOS item name (leave blank if same as above)"
+                        : "EKOS name — regular case"
+                    }
                     className="mt-1 w-full bg-background border border-card-border rounded px-2 py-1 text-xs text-foreground"
                   />
+                  {(b.format === "can" || b.format === "bottle") && (
+                    <input
+                      type="text"
+                      value={b.ekosNameTwelvePack || ""}
+                      onChange={(e) => {
+                        const next = [...catalog];
+                        next[i] = {
+                          ...b,
+                          ekosNameTwelvePack: e.target.value || undefined,
+                        };
+                        setCatalog(next);
+                        setCatalogDirty(true);
+                      }}
+                      placeholder="EKOS name — 12-pack (optional, if different)"
+                      className="mt-1 w-full bg-background border border-card-border rounded px-2 py-1 text-xs text-foreground"
+                    />
+                  )}
                 </div>
               ))}
             </div>
           )}
+
+          <button
+            onClick={() => {
+              // Merge the bundled EKOS-name defaults into the current rows by
+              // (name, format). Only fills fields; nothing is removed.
+              const norm = (s: string) =>
+                s.toLowerCase().replace(/[’‘`]/g, "'").replace(/\s+/g, " ").trim();
+              const byKey = new Map(
+                (ekosDefaults as Array<{
+                  name: string;
+                  format: string;
+                  ekosName?: string;
+                  ekosNameTwelvePack?: string;
+                }>).map((d) => [`${d.format}|${norm(d.name)}`, d])
+              );
+              let filled = 0;
+              const next = catalog.map((b) => {
+                const d = byKey.get(`${b.format}|${norm(b.name)}`);
+                if (!d) return b;
+                filled++;
+                return {
+                  ...b,
+                  ekosName: d.ekosName ?? b.ekosName,
+                  ekosNameTwelvePack: d.ekosNameTwelvePack ?? b.ekosNameTwelvePack,
+                };
+              });
+              setCatalog(next);
+              setCatalogDirty(true);
+              flash(`Filled EKOS names for ${filled} beers — review, then Save.`);
+            }}
+            className="mb-3 text-xs bg-surface hover:bg-card-border text-copper border border-card-border px-3 py-1.5 rounded-lg transition-colors"
+          >
+            Fill EKOS names from list
+          </button>
 
           <div className="grid grid-cols-2 gap-2">
             <input

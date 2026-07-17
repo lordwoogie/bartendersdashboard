@@ -1,0 +1,18 @@
+[
+  { "name": "Amber Lager", "format": "can", "ekosName": "Amber Lager (Case - 4x6 - 12oz - Can)" },
+  { "name": "Anniversary Imperial Stout", "format": "can", "ekosName": "Anniversary Imperial Stout (Case - 6x4 - 16oz - Can)" },
+  { "name": "Blonde Ale", "format": "can", "ekosName": "Blonde Ale (Case - 4x6 - 12oz - Can)" },
+  { "name": "Concert Beer", "format": "can", "ekosName": "Concert Beer (Case - 4x6 - 16oz - Can)" },
+  { "name": "Cowboy Cold", "format": "can", "ekosName": "Cowboy Cold (Case - 4x6 - 12oz - Can)", "ekosNameTwelvePack": "Cowboy Cold Case (Case - 2x12 - 12oz - Can)" },
+  { "name": "Deadcenter", "format": "can", "ekosName": "Deadcenter (Case - 4x6 - 16oz - Can)" },
+  { "name": "Festbier", "format": "can", "ekosName": "Festbier (Case - 4x6 - 12oz - Can)" },
+  { "name": "Grapefruit IPA", "format": "can", "ekosName": "Grapefruit IPA (Case - 4x6 - 12oz - Can)" },
+  { "name": "Hazy Pale Ale", "format": "can", "ekosName": "Hazy Pale Ale (Case - 4x6 - 12oz - Can)" },
+  { "name": "IPA", "format": "can", "ekosName": "IPA (Case - 4x6 - 12oz - Can)" },
+  { "name": "Mexican Lager", "format": "can", "ekosName": "Mexican Lager (Case - 4x6 - 12oz - Can)" },
+  { "name": "Passionfruit Tart", "format": "can", "ekosName": "Passionfruit Tart (Case - 4x6 - 12oz - Can)" },
+  { "name": "Per Annum 21’ 12 pack", "format": "can", "ekosName": "Per Annum 21’ 12 pack" },
+  { "name": "Rice Lager", "format": "can", "ekosName": "Rice Lager (Case - 4x6 - 12oz - Can)" },
+  { "name": "Softball Light", "format": "can", "ekosName": "Softball Light (Case - 6x4 - 16oz - Can)" },
+  { "name": "Tangerine Cream Ale", "format": "can", "ekosName": "Tangerine Cream Ale (Case - 6x4 - 16oz - Can)" }
+]

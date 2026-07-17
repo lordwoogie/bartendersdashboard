@@ -69,17 +69,26 @@ function normalizeBeerName(name) {
 // keg-format rows; case entries match can/bottle rows. Falls back to the
 // logged beer name.
 function makeEkosNameResolver(catalog) {
-  const byKey = new Map();
+  const caseByKey = new Map();
+  const twelveByName = new Map();
   for (const b of catalog || []) {
-    if (!b || !b.ekosName) continue;
-    byKey.set(`${b.format}|${normalizeBeerName(b.name)}`, b.ekosName);
+    if (!b) continue;
+    const n = normalizeBeerName(b.name);
+    if (b.ekosName) caseByKey.set(`${b.format}|${n}`, b.ekosName);
+    if (b.ekosNameTwelvePack && (b.format === "can" || b.format === "bottle")) {
+      twelveByName.set(n, b.ekosNameTwelvePack);
+    }
   }
   return (e) => {
     const n = normalizeBeerName(e.beerName);
     if (e.type === "case-added") {
-      return byKey.get(`can|${n}`) || byKey.get(`bottle|${n}`) || e.beerName;
+      if (e.packSize === "12-pack") {
+        const t = twelveByName.get(n);
+        if (t) return t;
+      }
+      return caseByKey.get(`can|${n}`) || caseByKey.get(`bottle|${n}`) || e.beerName;
     }
-    return byKey.get(`keg|${n}`) || e.beerName;
+    return caseByKey.get(`keg|${n}`) || e.beerName;
   };
 }
 

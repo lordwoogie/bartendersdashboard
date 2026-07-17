@@ -31,7 +31,11 @@ export function makeEkosNameResolver(
       }
       return caseByKey.get(`can|${n}`) || caseByKey.get(`bottle|${n}`) || entry.beerName;
     }
-    return caseByKey.get(`keg|${n}`) || entry.beerName;
+    // Kegs: EKOS names them "{base} (Keg - 1/2 bbl)" / "(Keg - 1/6 bbl)".
+    // base is the catalog override (if any), else the tablet name; the size
+    // suffix is appended so we match EKOS's per-size keg items.
+    const base = caseByKey.get(`keg|${n}`) || entry.beerName;
+    return `${base} (Keg - ${entry.size} bbl)`;
   };
 }
 

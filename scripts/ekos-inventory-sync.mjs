@@ -88,7 +88,9 @@ function makeEkosNameResolver(catalog) {
       }
       return caseByKey.get(`can|${n}`) || caseByKey.get(`bottle|${n}`) || e.beerName;
     }
-    return caseByKey.get(`keg|${n}`) || e.beerName;
+    // Kegs: EKOS names them "{base} (Keg - 1/2 bbl)" / "(Keg - 1/6 bbl)".
+    const base = caseByKey.get(`keg|${n}`) || e.beerName;
+    return `${base} (Keg - ${e.size} bbl)`;
   };
 }
 

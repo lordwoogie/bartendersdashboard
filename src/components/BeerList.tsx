@@ -84,7 +84,7 @@ export function BeerList() {
           <BackToDashboard />
           <div className="min-w-0 flex-1">
             <h1 className="text-xl font-bold text-foreground tracking-tight">
-              Cowboy Cold Beer List
+              Lively Beer List
             </h1>
             <p className="text-sm text-muted mt-0.5">
               {items.length} beers on tap · Lively Beerworks

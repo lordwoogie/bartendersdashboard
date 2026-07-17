@@ -49,7 +49,7 @@ export function generateEmailHtml(data: BriefingData): string {
 <body>
   <div class="container">
     <div class="header">
-      <h1>🤠 Cowboy Cold Briefing</h1>
+      <h1>🍺 Lively Beerworks — Daily Briefing</h1>
       <div class="date">${formatDateLabel(data.date, "long")}</div>`;
 
   // Weather
@@ -131,7 +131,7 @@ export function generateEmailHtml(data: BriefingData): string {
   if (data.calendarEvents.length > 0) {
     html += `
     <div class="section">
-      <div class="section-title">🤠 Our Events</div>`;
+      <div class="section-title">📅 Our Events</div>`;
     for (const e of data.calendarEvents) {
       html += `
       <div class="card">
@@ -186,7 +186,7 @@ export function generateEmailHtml(data: BriefingData): string {
 
   html += `
     <div style="text-align: center; color: #8b7d6b; font-size: 11px; margin-top: 32px; padding-top: 16px; border-top: 1px solid #3d3225;">
-      Cowboy Cold &middot; 815 SW 2nd St, OKC &middot; Generated ${formatTimeInZone(new Date())}
+      Lively Beerworks &middot; 815 SW 2nd St, OKC &middot; Generated ${formatTimeInZone(new Date())}
     </div>
   </div>
 </body>
@@ -197,5 +197,5 @@ export function generateEmailHtml(data: BriefingData): string {
 
 export function generateEmailSubject(data: BriefingData): string {
   const emoji = weatherEmoji(data.weather?.condition);
-  return `${emoji} Cowboy Cold Briefing — ${formatDateLabel(data.date, "short")}`;
+  return `${emoji} Lively Daily Briefing — ${formatDateLabel(data.date, "short")}`;
 }

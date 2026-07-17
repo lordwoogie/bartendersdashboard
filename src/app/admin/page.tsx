@@ -730,7 +730,7 @@ export default function AdminPage() {
                     }}
                     placeholder={
                       b.format === "keg"
-                        ? "EKOS item name (leave blank if same as above)"
+                        ? "EKOS base name (blank = beer name; keg size added automatically)"
                         : "EKOS name — regular case"
                     }
                     className="mt-1 w-full bg-background border border-card-border rounded px-2 py-1 text-xs text-foreground"

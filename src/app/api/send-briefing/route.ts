@@ -42,7 +42,10 @@ export async function POST(request: Request) {
 
     const resend = new Resend(resendKey);
     const result = await resend.emails.send({
-      from: "Cowboy Cold <briefing@resend.dev>",
+      // Override with EMAIL_FROM once a domain is verified in Resend
+      // (e.g. "Lively Beerworks <briefing@livelybeer.com>"). The resend.dev
+      // sandbox default only delivers to the account's own email.
+      from: process.env.EMAIL_FROM || "Lively Beerworks <briefing@resend.dev>",
       to: targetRecipients,
       subject,
       html,

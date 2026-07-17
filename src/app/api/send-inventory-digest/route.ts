@@ -56,7 +56,8 @@ export async function POST(request: Request) {
     const dayLabel = formatDateLabel(targetDay);
     const resend = new Resend(resendKey);
     const result = await resend.emails.send({
-      from: "Cowboy Cold <briefing@resend.dev>",
+      // Override with EMAIL_FROM once a domain is verified in Resend.
+      from: process.env.EMAIL_FROM || "Lively Beerworks <inventory@resend.dev>",
       to: targetRecipients,
       subject: `🛢 Inventory: ${dayEntries.length} change${dayEntries.length === 1 ? "" : "s"} — ${dayLabel}`,
       html: digestHtml(dayEntries, dayLabel),

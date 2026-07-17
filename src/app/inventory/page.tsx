@@ -5,8 +5,8 @@ import type {
   CatalogBeer,
   InventoryEntry,
   KegSize,
-  PackSize,
 } from "@/lib/inventory";
+import { caseUnitLabel } from "@/lib/inventory";
 import { formatTimeInZone } from "@/lib/timezone";
 import { format, isToday, isYesterday } from "date-fns";
 import { BackToDashboard } from "@/components/BackToDashboard";
@@ -53,7 +53,7 @@ export default function InventoryPage() {
   const [beerSelect, setBeerSelect] = useState<string>("");
   const [beerCustom, setBeerCustom] = useState("");
   const [size, setSize] = useState<KegSize>("1/2");
-  const [packSize, setPackSize] = useState<PackSize>("6-pack");
+  const [is12Pack, setIs12Pack] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
@@ -92,7 +92,7 @@ export default function InventoryPage() {
     setBeerSelect("");
     setBeerCustom("");
     setSize("1/2");
-    setPackSize("6-pack");
+    setIs12Pack(false);
     setQuantity(1);
     setNote("");
   };
@@ -120,7 +120,7 @@ export default function InventoryPage() {
       };
       if (mode === "case-added") {
         payload.quantity = quantity;
-        payload.packSize = packSize;
+        payload.packSize = is12Pack ? "12-pack" : "case";
       } else {
         payload.size = size;
       }
@@ -277,26 +277,8 @@ export default function InventoryPage() {
             {mode === "case-added" ? (
               <>
                 <div className="mt-4">
-                  <label className="block text-sm text-muted mb-1">Pack size</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(["4-pack", "6-pack", "12-pack"] as PackSize[]).map((p) => (
-                      <button
-                        key={p}
-                        onClick={() => setPackSize(p)}
-                        className={`rounded-lg border py-3 text-lg font-semibold transition-colors ${
-                          packSize === p
-                            ? "bg-amber text-background border-amber"
-                            : "bg-surface text-foreground border-card-border hover:border-amber"
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="mt-4">
                   <label className="block text-sm text-muted mb-1">
-                    How many {packSize}s?
+                    How many cases?
                   </label>
                   <div className="flex items-center gap-3">
                     <button
@@ -316,6 +298,25 @@ export default function InventoryPage() {
                     </button>
                   </div>
                 </div>
+                <button
+                  onClick={() => setIs12Pack((v) => !v)}
+                  className={`mt-4 w-full flex items-center gap-3 rounded-lg border py-3 px-4 text-left transition-colors ${
+                    is12Pack
+                      ? "bg-amber/15 border-amber"
+                      : "bg-surface border-card-border hover:border-amber"
+                  }`}
+                >
+                  <span
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md border-2 text-background ${
+                      is12Pack ? "bg-amber border-amber" : "border-card-border"
+                    }`}
+                  >
+                    {is12Pack ? "✓" : ""}
+                  </span>
+                  <span className="text-lg font-semibold text-foreground">
+                    12-pack
+                  </span>
+                </button>
               </>
             ) : (
               <div className="mt-4">
@@ -394,9 +395,7 @@ export default function InventoryPage() {
                               {e.type === "case-added" ? (
                                 <span className="text-muted">
                                   {" "}
-                                  · {e.quantity} ×{" "}
-                                  {e.packSize || "case"}
-                                  {!e.packSize && e.quantity !== 1 ? "s" : ""}
+                                  · {caseUnitLabel(e.quantity, e.packSize)}
                                 </span>
                               ) : (
                                 <span className="text-muted"> · {e.size} bbl</span>

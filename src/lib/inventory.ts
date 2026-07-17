@@ -3,7 +3,17 @@
 
 export type KegSize = "1/2" | "1/6";
 
-export type PackSize = "4-pack" | "6-pack" | "12-pack";
+// Cases are now measured simply in cases; the only distinction that matters
+// is whether a case is a 12-pack. "4-pack"/"6-pack" are kept so entries
+// logged before this change still display correctly.
+export type PackSize = "case" | "12-pack" | "4-pack" | "6-pack";
+
+// Human label for a case-added entry, e.g. "3 cases" or "3 cases (12-pack)".
+export function caseUnitLabel(quantity: number, packSize?: PackSize): string {
+  const noun = quantity === 1 ? "case" : "cases";
+  if (!packSize || packSize === "case") return `${quantity} ${noun}`;
+  return `${quantity} ${noun} (${packSize})`;
+}
 
 export type InventoryEntryType = "keg-tapped" | "keg-blew" | "case-added";
 

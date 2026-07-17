@@ -13,18 +13,25 @@ import { dateKeyInZone, formatTimeInZone } from "@/lib/timezone";
 export function makeEkosNameResolver(
   catalog: CatalogBeer[]
 ): (entry: InventoryEntry) => string {
-  // key: `${format}|${normalizedName}` -> ekosName
-  const byKey = new Map<string, string>();
+  const caseByKey = new Map<string, string>(); // `${format}|${name}` -> ekosName
+  const twelveByName = new Map<string, string>(); // name -> 12-pack ekosName
   for (const b of catalog) {
-    if (!b.ekosName) continue;
-    byKey.set(`${b.format}|${normalizeBeerName(b.name)}`, b.ekosName);
+    const n = normalizeBeerName(b.name);
+    if (b.ekosName) caseByKey.set(`${b.format}|${n}`, b.ekosName);
+    if (b.ekosNameTwelvePack && (b.format === "can" || b.format === "bottle")) {
+      twelveByName.set(n, b.ekosNameTwelvePack);
+    }
   }
   return (entry) => {
     const n = normalizeBeerName(entry.beerName);
     if (entry.type === "case-added") {
-      return byKey.get(`can|${n}`) || byKey.get(`bottle|${n}`) || entry.beerName;
+      if (entry.packSize === "12-pack") {
+        const t = twelveByName.get(n);
+        if (t) return t;
+      }
+      return caseByKey.get(`can|${n}`) || caseByKey.get(`bottle|${n}`) || entry.beerName;
     }
-    return byKey.get(`keg|${n}`) || entry.beerName;
+    return caseByKey.get(`keg|${n}`) || entry.beerName;
   };
 }
 

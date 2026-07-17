@@ -7,7 +7,7 @@ const LOG_DOC = "inventory-log.json";
 const MAX_ENTRIES = 500; // hard cap to keep the doc small
 
 const VALID_SIZES: KegSize[] = ["1/2", "1/6"];
-const VALID_PACKS: PackSize[] = ["4-pack", "6-pack", "12-pack"];
+const VALID_PACKS: PackSize[] = ["case", "12-pack", "4-pack", "6-pack"];
 
 function badRequest(message: string) {
   return NextResponse.json({ error: message }, { status: 400 });
@@ -67,8 +67,13 @@ export async function POST(request: Request) {
     if (!Number.isFinite(qtyNum) || qtyNum < 1 || qtyNum > 999) {
       return badRequest("quantity must be between 1 and 999");
     }
-    if (typeof packSize !== "string" || !VALID_PACKS.includes(packSize as PackSize)) {
-      return badRequest("packSize must be 4-pack, 6-pack, or 12-pack");
+    // Default to a plain "case"; only reject an explicitly-bad value.
+    let resolvedPack: PackSize = "case";
+    if (packSize != null && packSize !== "") {
+      if (!VALID_PACKS.includes(packSize as PackSize)) {
+        return badRequest("packSize must be 'case' or '12-pack'");
+      }
+      resolvedPack = packSize as PackSize;
     }
     entry = {
       id,
@@ -76,7 +81,7 @@ export async function POST(request: Request) {
       timestamp: now,
       beerName: trimmedName,
       quantity: qtyNum,
-      packSize: packSize as PackSize,
+      packSize: resolvedPack,
       ...(typeof note === "string" && note.trim() ? { note: note.trim() } : {}),
     };
   } else {

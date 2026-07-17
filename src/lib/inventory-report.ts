@@ -4,6 +4,7 @@
 // reconciled so it drops out of the next report.
 
 import type { InventoryEntry } from "@/lib/inventory";
+import { caseUnitLabel } from "@/lib/inventory";
 import { dateKeyInZone, formatTimeInZone } from "@/lib/timezone";
 
 export interface EntryFilter {
@@ -36,10 +37,10 @@ export function splitByType(entries: InventoryEntry[]) {
 }
 
 // One human line per entry, e.g. "Grapefruit IPA — 1/2 bbl" or
-// "Cowboy Cold — 3 × 6-pack".
+// "Cowboy Cold — 3 cases (12-pack)".
 export function entryLabel(e: InventoryEntry): string {
   if (e.type === "case-added") {
-    return `${e.beerName} — ${e.quantity} × ${e.packSize || "case"}`;
+    return `${e.beerName} — ${caseUnitLabel(e.quantity, e.packSize)}`;
   }
   return `${e.beerName} — ${e.size} bbl`;
 }

@@ -96,6 +96,7 @@ export function toCsv(
     "quantity",
     "note",
     "entered_in_ekos",
+    "id",
   ];
   const rows = entries.map((e) => {
     const d = new Date(e.timestamp);
@@ -115,6 +116,7 @@ export function toCsv(
       isCase ? String(e.quantity) : "1",
       e.note || "",
       e.reconciledAt ? "yes" : "no",
+      e.id,
     ]
       .map(csvEscape)
       .join(",");

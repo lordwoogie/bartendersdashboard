@@ -160,6 +160,22 @@ This is the single most important idea for the integration:
 something already reconciled. Skip anything ambiguous (report it) and leave
 it unreconciled for a human to resolve.
 
+### Audit trail (kept for a year)
+
+Every check-off is also written to a durable archive that records **what**
+moved, its **EKOS item name** (snapshotted at check-off time), **when it
+physically happened**, and **when it was entered into EKOS** — retained for
+365 days. This survives the live log's size cap, so you always have a full
+year of "what did we push to EKOS and when."
+
+```
+GET /api/inventory/ekos-history                     → JSON
+GET /api/inventory/ekos-history?format=csv          → CSV download
+GET /api/inventory/ekos-history?from=…&to=…          → filter by entered date
+```
+
+Un-checking an entry (reconcile `undo`) also removes its archive record.
+
 ---
 
 ## 5. Timing
@@ -184,6 +200,7 @@ Recommended order in the scheduler:
 | Mark entered                  | `POST /api/inventory/reconcile` `{ "ids": [...] }`              |
 | Undo a reconcile              | `POST /api/inventory/reconcile` `{ "ids": [...], "undo": true }`|
 | Read the EKOS name map        | `GET /api/inventory/catalog`                                    |
+| Year-long check-off history   | `GET /api/inventory/ekos-history` (`?format=csv`, `?from=&to=`) |
 | Human report page             | `GET /inventory/report`                                         |
 
 Do **not** call `POST /api/inventory` (that's the tablet logging moves) or

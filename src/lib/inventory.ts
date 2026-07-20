@@ -43,6 +43,24 @@ export type InventoryEntry =
       reconciledAt?: string;
     };
 
+// A durable record of one inventory movement that was entered into EKOS.
+// Written when an entry is checked off (reconciled) and kept for a year, so
+// the EKOS hand-off has an audit trail independent of the live activity log
+// (which is capped and drops its oldest entries). `ekosName` is snapshotted
+// at check-off time so the record reflects exactly what was entered.
+export interface ReconcileRecord {
+  id: string;
+  type: InventoryEntryType;
+  beerName: string;
+  ekosName: string;
+  size?: KegSize; // keg entries
+  packSize?: PackSize; // case entries
+  quantity?: number; // case entries
+  note?: string;
+  loggedAt: string; // when it physically happened (entry timestamp, UTC)
+  enteredAt: string; // when it was entered into EKOS (reconciledAt, UTC)
+}
+
 // A beer/can/bottle in the picker catalog. `format` lets us filter the
 // dropdown by the action being logged (keg actions show drafts, case action
 // shows cans/bottles).

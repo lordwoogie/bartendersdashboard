@@ -82,6 +82,12 @@ Response: `{ "success": true, "count": N }`.
 - Do NOT reconcile rows you skipped — they should appear again next run.
 - Made a mistake? `{ "ids": [...], "undo": true }` un-reconciles.
 
+**UI alternative:** the report page at `/inventory/report` shows every
+pending entry with a **check-off box**. Ticking a box calls the same
+reconcile endpoint for that one entry (un-ticking undoes it). If you're
+already driving a browser, checking each box off as you enter it in EKOS is
+equivalent to the POST above — use whichever is easier.
+
 ### 4. Report
 
 Tell the user: how many entries were transferred, per-beer totals, and any

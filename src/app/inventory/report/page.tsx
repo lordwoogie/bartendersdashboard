@@ -78,6 +78,37 @@ export default function InventoryReportPage() {
     }
   };
 
+  // Reflect a single entry's EKOS status locally (optimistic).
+  const setLocalEntered = (id: string, entered: boolean) =>
+    setEntries((prev) =>
+      prev.map((e) =>
+        e.id === id
+          ? { ...e, reconciledAt: entered ? new Date().toISOString() : undefined }
+          : e
+      )
+    );
+
+  // Check off (or un-check) one entry as entered into EKOS. Optimistic: the
+  // box flips instantly and the row stays visible as done; the reconcile
+  // call runs in the background and reverts on failure. This is what Claude
+  // Cowork ticks after keying each beer into EKOS.
+  const toggleEntered = async (id: string, nextEntered: boolean) => {
+    setLocalEntered(id, nextEntered);
+    try {
+      const res = await fetch("/api/inventory/reconcile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          nextEntered ? { ids: [id] } : { ids: [id], undo: true }
+        ),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setLocalEntered(id, !nextEntered); // revert
+      showFlash("Couldn't update — try again");
+    }
+  };
+
   const csvUrl = useMemo(() => {
     const p = new URLSearchParams();
     if (scope === "unreconciled") p.set("scope", "unreconciled");
@@ -98,7 +129,7 @@ export default function InventoryReportPage() {
               📊 EKOS Report
             </h1>
             <p className="text-sm text-muted mt-0.5">
-              Kegs on, kegs off, cases in — enter these, then mark done.
+              Kegs on, kegs off, cases in — check each off as it&apos;s entered in EKOS.
             </p>
           </div>
         </div>
@@ -180,16 +211,19 @@ export default function InventoryReportPage() {
               title="🍺 Kegs ON (tapped)"
               accent="text-amber"
               entries={tapped}
+              onToggle={toggleEntered}
             />
             <ReportGroup
               title="💀 Kegs OFF (blew)"
               accent="text-orange-400"
               entries={blew}
+              onToggle={toggleEntered}
             />
             <ReportGroup
               title="📦 Cases in"
               accent="text-copper"
               entries={cases}
+              onToggle={toggleEntered}
             />
 
             {unreconciledIds.length > 0 && (
@@ -214,10 +248,12 @@ function ReportGroup({
   title,
   accent,
   entries,
+  onToggle,
 }: {
   title: string;
   accent: string;
   entries: InventoryEntry[];
+  onToggle: (id: string, nextEntered: boolean) => void;
 }) {
   // Absolute-unit summary per beer, e.g. "Grapefruit IPA · 2 × 1/2 bbl, 1 × 1/6 bbl"
   const summary = useMemo(() => {
@@ -262,28 +298,42 @@ function ReportGroup({
         </ul>
       </div>
 
-      {/* Individual events */}
+      {/* Individual events — check the box once it's keyed into EKOS */}
       <div className="space-y-1.5">
-        {entries.map((e) => (
-          <div
-            key={e.id}
-            className={`flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm ${
-              e.reconciledAt ? "bg-surface/30 opacity-60" : "bg-surface/60"
-            }`}
-          >
-            <span className="text-foreground min-w-0 truncate">
-              {entryLabel(e)}
-              {e.note && (
-                <span className="text-muted text-xs"> — {e.note}</span>
-              )}
-            </span>
-            <span className="text-xs text-muted shrink-0">
-              {format(new Date(dateKeyInZone(new Date(e.timestamp)) + "T12:00:00"), "MMM d")}{" "}
-              {formatTimeInZone(new Date(e.timestamp))}
-              {e.reconciledAt && " · in EKOS"}
-            </span>
-          </div>
-        ))}
+        {entries.map((e) => {
+          const entered = !!e.reconciledAt;
+          return (
+            <label
+              key={e.id}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer select-none ${
+                entered ? "bg-surface/30 opacity-60" : "bg-surface/60"
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={entered}
+                onChange={(ev) => onToggle(e.id, ev.target.checked)}
+                aria-label={`Mark ${entryLabel(e)} as entered in EKOS`}
+                className="h-5 w-5 shrink-0 accent-amber cursor-pointer"
+              />
+              <span
+                className={`text-foreground min-w-0 flex-1 truncate ${
+                  entered ? "line-through" : ""
+                }`}
+              >
+                {entryLabel(e)}
+                {e.note && (
+                  <span className="text-muted text-xs"> — {e.note}</span>
+                )}
+              </span>
+              <span className="text-xs text-muted shrink-0">
+                {format(new Date(dateKeyInZone(new Date(e.timestamp)) + "T12:00:00"), "MMM d")}{" "}
+                {formatTimeInZone(new Date(e.timestamp))}
+                {entered && " · in EKOS"}
+              </span>
+            </label>
+          );
+        })}
       </div>
     </section>
   );

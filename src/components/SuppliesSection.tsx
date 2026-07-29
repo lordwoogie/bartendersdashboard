@@ -47,21 +47,21 @@ export function SuppliesSection() {
   if (openBuy.length === 0 && notes.length === 0) return null;
 
   return (
-    <section className="mb-6 rounded-xl border border-copper/40 bg-gradient-to-br from-card-bg to-surface p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-amber uppercase tracking-wider">
-          From the last shift
-        </h2>
-        <Link
-          href="/supplies"
-          className="text-xs text-copper hover:text-amber transition-colors"
-        >
-          Open supplies →
-        </Link>
-      </div>
-
+    <>
+      {/* Still-to-buy card */}
       {openBuy.length > 0 && (
-        <div className="mb-3">
+        <section className="mb-6 rounded-xl border border-copper/40 bg-gradient-to-br from-card-bg to-surface p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-amber uppercase tracking-wider">
+              Still to buy
+            </h2>
+            <Link
+              href="/supplies"
+              className="text-xs text-copper hover:text-amber transition-colors"
+            >
+              Open supplies →
+            </Link>
+          </div>
           <div className="flex items-center gap-2 mb-1.5">
             <span className="text-lg">🛒</span>
             <span className="text-sm font-medium text-foreground">
@@ -80,29 +80,38 @@ export function SuppliesSection() {
               </li>
             )}
           </ul>
-        </div>
+        </section>
       )}
 
+      {/* Recent notes — its own section */}
       {notes.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-lg">📝</span>
-            <span className="text-sm font-medium text-foreground">
+        <section className="mb-6 rounded-xl border border-copper/40 bg-gradient-to-br from-card-bg to-surface p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-amber uppercase tracking-wider">
               Recent notes
-            </span>
+            </h2>
+            <Link
+              href="/supplies"
+              className="text-xs text-copper hover:text-amber transition-colors"
+            >
+              Open supplies →
+            </Link>
           </div>
-          <ul className="pl-7 space-y-1.5">
+          <ul className="pl-1 space-y-2.5">
             {notes.map((n) => (
-              <li key={n.id} className="text-sm text-foreground/90">
-                <span className="text-[10px] text-muted uppercase tracking-wider block">
-                  {whenLabel(n.createdAt)}
+              <li key={n.id} className="flex gap-2 text-sm text-foreground/90">
+                <span className="text-lg leading-none shrink-0">📝</span>
+                <span className="min-w-0">
+                  <span className="text-[10px] text-muted uppercase tracking-wider block">
+                    {whenLabel(n.createdAt)}
+                  </span>
+                  <span className="whitespace-pre-wrap">{n.text}</span>
                 </span>
-                <span className="whitespace-pre-wrap">{n.text}</span>
               </li>
             ))}
           </ul>
-        </div>
+        </section>
       )}
-    </section>
+    </>
   );
 }

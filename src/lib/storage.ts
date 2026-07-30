@@ -84,7 +84,14 @@ export async function mutateData<T = unknown>(
     return next;
   }
 
-  for (let attempt = 0; attempt < 5; attempt++) {
+  // Bartenders check several things off in a row, so concurrent writes are
+  // normal, not exceptional. Five quick tries wasn't enough — production logs
+  // showed two check-offs a second apart exhausting the retries and falling
+  // through to the unconditional write below, which clobbers whichever write
+  // landed first. More attempts with exponential backoff lets contention
+  // settle instead.
+  const MAX_ATTEMPTS = 8;
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const result = await get(name, { access: "public" });
     if (result === null) {
       // Doc doesn't exist yet: seed it via readData, then retry with an ETag.
@@ -125,8 +132,11 @@ export async function mutateData<T = unknown>(
       }
     }
     if (raced) {
-      // Small jittered backoff before re-reading so racing writers settle.
-      await new Promise((r) => setTimeout(r, 30 + Math.random() * 120));
+      // Exponential backoff with jitter before re-reading, so racing writers
+      // stagger instead of colliding again at the same instant. A flat ~90ms
+      // delay meant retries kept landing on top of each other.
+      const base = Math.min(40 * 2 ** attempt, 700);
+      await new Promise((r) => setTimeout(r, base + Math.random() * base));
     }
   }
 

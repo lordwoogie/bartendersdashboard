@@ -115,7 +115,10 @@ export default function SuppliesPage() {
       const res = await fetch(`/api/supplies?id=${encodeURIComponent(id)}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error("delete failed");
+      // 404 means it's already gone on the server — that's exactly the end
+      // state we want, so treat it as a success instead of springing the
+      // row back. Only a real network/server error rolls back.
+      if (!res.ok && res.status !== 404) throw new Error("delete failed");
     } catch {
       setItems(prev);
       showFlash("Couldn't remove that — try again");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { SupplyItem } from "@/lib/supplies";
 import { formatTimeInZone } from "@/lib/timezone";
 import { format, isToday, isYesterday } from "date-fns";
@@ -43,6 +43,17 @@ export default function SuppliesPage() {
     setTimeout(() => setFlash(""), 2000);
   };
 
+  // Checking off three things in a row used to fire three overlapping writes
+  // that collided in storage, and the loser was silently dropped. Queue them
+  // so only one is in flight at a time — the UI still updates instantly, the
+  // requests just go out one after another.
+  const writeQueue = useRef<Promise<unknown>>(Promise.resolve());
+  const enqueue = <T,>(fn: () => Promise<T>): Promise<T> => {
+    const run = writeQueue.current.then(fn, fn);
+    writeQueue.current = run.catch(() => {});
+    return run;
+  };
+
   // Adds are optimistic: the item appears and the input clears immediately
   // (venue wifi is flaky; the form must always respond to Enter). The save
   // runs in the background with a hard timeout. On failure the temp item is
@@ -65,13 +76,19 @@ export default function SuppliesPage() {
     setText("");
     setError("");
 
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 10000);
-    fetch("/api/supplies", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type, text: trimmed }),
-      signal: controller.signal,
+    // Queued with the other writes so an add can't collide with a check-off
+    // on the same document. The timeout starts when the request actually
+    // goes out, not while it's waiting its turn.
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    enqueue(() => {
+      const controller = new AbortController();
+      timer = setTimeout(() => controller.abort(), 10000);
+      return fetch("/api/supplies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, text: trimmed }),
+        signal: controller.signal,
+      });
     })
       .then(async (res) => {
         const data = await res.json();
@@ -90,7 +107,7 @@ export default function SuppliesPage() {
 
   const toggle = async (item: SupplyItem) => {
     if (item.type !== "to-buy") return;
-    const prev = items;
+    const wasDone = item.doneAt;
     // Optimistic flip. Functional update so rapid taps don't clobber each
     // other via a stale closure.
     setItems((cur) =>
@@ -101,34 +118,50 @@ export default function SuppliesPage() {
       )
     );
     try {
-      const res = await fetch(`/api/supplies?id=${encodeURIComponent(item.id)}`, {
-        method: "PATCH",
-        cache: "no-store",
-      });
+      const res = await enqueue(() =>
+        fetch(`/api/supplies?id=${encodeURIComponent(item.id)}`, {
+          method: "PATCH",
+          cache: "no-store",
+        })
+      );
       if (!res.ok) throw new Error("toggle failed");
-      // Re-sync with the server so what's on screen is what's stored.
-      refresh();
+      // Trust the row the server hands back rather than re-reading the whole
+      // list: a refetch fired right after the write could observe the doc
+      // mid-flight and visually un-check what was just checked.
+      const data = await res.json().catch(() => null);
+      if (data?.item) {
+        setItems((cur) => cur.map((i) => (i.id === item.id ? data.item : i)));
+      }
     } catch {
-      setItems(prev);
+      // Roll back only this row, so one failure can't undo other check-offs
+      // the bartender made while this request was in flight.
+      setItems((cur) =>
+        cur.map((i) =>
+          i.id === item.id && i.type === "to-buy" ? { ...i, doneAt: wasDone } : i
+        )
+      );
       showFlash("Couldn't save that — try again");
     }
   };
 
   const remove = async (id: string) => {
-    const prev = items;
+    const removed = items.find((i) => i.id === id);
     setItems((cur) => cur.filter((i) => i.id !== id));
     try {
-      const res = await fetch(`/api/supplies?id=${encodeURIComponent(id)}`, {
-        method: "DELETE",
-        cache: "no-store",
-      });
+      const res = await enqueue(() =>
+        fetch(`/api/supplies?id=${encodeURIComponent(id)}`, {
+          method: "DELETE",
+          cache: "no-store",
+        })
+      );
       // 404 means it's already gone on the server — that's exactly the end
-      // state we want, so treat it as a success instead of springing the
-      // row back. Only a real network/server error rolls back.
+      // state we want, so treat it as a success instead of springing the row
+      // back. Only a real network/server error rolls back. No refetch here
+      // either: it would race the write that just landed.
       if (!res.ok && res.status !== 404) throw new Error("delete failed");
-      refresh();
     } catch {
-      setItems(prev);
+      // Put just this row back, leaving any other edits alone.
+      if (removed) setItems((cur) => (cur.some((i) => i.id === id) ? cur : [removed, ...cur]));
       showFlash("Couldn't remove that — try again");
     }
   };

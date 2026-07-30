@@ -62,8 +62,8 @@ export default function InventoryPage() {
   const refresh = useCallback(async () => {
     try {
       const [catRes, logRes] = await Promise.all([
-        fetch("/api/inventory/catalog").then((r) => r.json()),
-        fetch("/api/inventory?limit=50").then((r) => r.json()),
+        fetch("/api/inventory/catalog", { cache: "no-store" }).then((r) => r.json()),
+        fetch("/api/inventory?limit=50", { cache: "no-store" }).then((r) => r.json()),
       ]);
       setCatalog(catRes.catalog || []);
       setEntries(logRes.entries || []);

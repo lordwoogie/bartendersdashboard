@@ -24,7 +24,9 @@ export default function SuppliesPage() {
 
   const refresh = useCallback(async () => {
     try {
-      const res = await fetch("/api/supplies");
+      // no-store: the browser was serving a cached list, so deleted notes and
+      // checked-off items came back on the next load.
+      const res = await fetch("/api/supplies", { cache: "no-store" });
       const data = await res.json();
       setItems(data.items || []);
     } catch (err) {
@@ -89,9 +91,10 @@ export default function SuppliesPage() {
   const toggle = async (item: SupplyItem) => {
     if (item.type !== "to-buy") return;
     const prev = items;
-    // Optimistic flip.
-    setItems(
-      items.map((i) =>
+    // Optimistic flip. Functional update so rapid taps don't clobber each
+    // other via a stale closure.
+    setItems((cur) =>
+      cur.map((i) =>
         i.id === item.id && i.type === "to-buy"
           ? { ...i, doneAt: i.doneAt ? undefined : new Date().toISOString() }
           : i
@@ -100,8 +103,11 @@ export default function SuppliesPage() {
     try {
       const res = await fetch(`/api/supplies?id=${encodeURIComponent(item.id)}`, {
         method: "PATCH",
+        cache: "no-store",
       });
       if (!res.ok) throw new Error("toggle failed");
+      // Re-sync with the server so what's on screen is what's stored.
+      refresh();
     } catch {
       setItems(prev);
       showFlash("Couldn't save that — try again");
@@ -110,15 +116,17 @@ export default function SuppliesPage() {
 
   const remove = async (id: string) => {
     const prev = items;
-    setItems(items.filter((i) => i.id !== id));
+    setItems((cur) => cur.filter((i) => i.id !== id));
     try {
       const res = await fetch(`/api/supplies?id=${encodeURIComponent(id)}`, {
         method: "DELETE",
+        cache: "no-store",
       });
       // 404 means it's already gone on the server — that's exactly the end
       // state we want, so treat it as a success instead of springing the
       // row back. Only a real network/server error rolls back.
       if (!res.ok && res.status !== 404) throw new Error("delete failed");
+      refresh();
     } catch {
       setItems(prev);
       showFlash("Couldn't remove that — try again");

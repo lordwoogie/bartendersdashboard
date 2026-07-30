@@ -22,7 +22,7 @@ export function SuppliesSection() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/supplies")
+    fetch("/api/supplies", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
         if (cancelled) return;
@@ -94,7 +94,7 @@ export function SuppliesSection() {
               href="/supplies"
               className="text-xs text-copper hover:text-amber transition-colors"
             >
-              Open supplies →
+              All notes →
             </Link>
           </div>
           <ul className="pl-1 space-y-2.5">

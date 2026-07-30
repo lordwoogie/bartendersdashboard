@@ -32,7 +32,7 @@ export default function InventoryReportPage() {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/inventory?${query}`);
+      const res = await fetch(`/api/inventory?${query}`, { cache: "no-store" });
       const data = await res.json();
       setEntries(data.entries || []);
     } catch {

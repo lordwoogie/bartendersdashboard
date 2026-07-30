@@ -18,10 +18,21 @@ function sort(items: SupplyItem[]): SupplyItem[] {
   });
 }
 
+// This list changes constantly and is read back right after every write, so
+// it must never be served from a cache. Without this, browsers cached the
+// response and revalidated with an ETag (304), so a bartender who deleted a
+// note saw it reappear on the next load — the write had succeeded, the read
+// was stale.
+export const dynamic = "force-dynamic";
+
+const NO_STORE = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+} as const;
+
 // GET /api/supplies — everything, sorted for display.
 export async function GET() {
   const items = await readData<SupplyItem[]>(DOC);
-  return NextResponse.json({ items: sort(items) });
+  return NextResponse.json({ items: sort(items) }, { headers: NO_STORE });
 }
 
 // POST /api/supplies — add a to-buy item or a note.

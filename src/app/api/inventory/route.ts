@@ -13,6 +13,15 @@ function badRequest(message: string) {
   return NextResponse.json({ error: message }, { status: 400 });
 }
 
+// Read back immediately after every write (logging, reconcile check-off), so
+// a cached response would show stale state — e.g. an entry re-appearing as
+// un-entered after it was checked off into EKOS.
+export const dynamic = "force-dynamic";
+
+const NO_STORE = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+} as const;
+
 // GET /api/inventory?limit=50 — most recent entries first.
 // Optional report filters: from/to (YYYY-MM-DD, app-timezone days, inclusive)
 // and scope=unreconciled to hide entries already entered into EKOS.
@@ -29,7 +38,10 @@ export async function GET(request: Request) {
   const sorted = [...filtered].sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
-  return NextResponse.json({ entries: sorted.slice(0, limit) });
+  return NextResponse.json(
+    { entries: sorted.slice(0, limit) },
+    { headers: NO_STORE }
+  );
 }
 
 // POST /api/inventory — append a new entry. Open to the tablet (no auth).

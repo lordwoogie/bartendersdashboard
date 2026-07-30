@@ -23,6 +23,9 @@ export interface CalendarEvent {
   end: string;
   location?: string;
   url?: string;
+  // Google all-day events carry a date with no time. Flagged so the UI shows
+  // "All day" instead of inventing a clock time.
+  allDay?: boolean;
 }
 
 export interface LocalEvent {

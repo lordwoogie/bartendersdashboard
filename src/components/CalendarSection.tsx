@@ -87,9 +87,15 @@ export function CalendarSection({ events }: { events: CalendarEvent[] }) {
                   )}
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-sm font-medium text-amber">{startTime}</p>
-                  {endTime && (
-                    <p className="text-xs text-muted">to {endTime}</p>
+                  {event.allDay ? (
+                    <p className="text-sm font-medium text-amber">All day</p>
+                  ) : (
+                    <>
+                      <p className="text-sm font-medium text-amber">{startTime}</p>
+                      {endTime && (
+                        <p className="text-xs text-muted">to {endTime}</p>
+                      )}
+                    </>
                   )}
                 </div>
               </button>

@@ -84,6 +84,24 @@ function getIcalUrls(): string[] {
   return urls.split(",").map((u) => u.trim()).filter(Boolean);
 }
 
+// An all-day event in iCal is a DATE with no time (VALUE=DATE). ical.js hands
+// it back as midnight UTC, which in Central is 7 PM the PREVIOUS day — so a
+// Wednesday all-day event rendered as "Tue … 7:00 PM". Re-anchor date-only
+// values to midnight in the venue timezone; timed events pass through.
+function icalTimeToDate(t: ICAL.Time): Date {
+  if (!t.isDate) return t.toJSDate();
+  const iso = `${t.year}-${String(t.month).padStart(2, "0")}-${String(
+    t.day
+  ).padStart(2, "0")}`;
+  return zonedWallTimeToUtc(iso, "00:00");
+}
+
+// Safety net only: the loop already stops as soon as an occurrence passes the
+// requested window. It was 100, counted from the FIRST occurrence ever, so a
+// weekly event running longer than ~2 years (e.g. Trivia every Tuesday) ran
+// out of iterations before reaching today and never showed up at all.
+const MAX_OCCURRENCES = 5000;
+
 async function fetchIcalEvents(url: string, days: number): Promise<CalendarEvent[]> {
   try {
     const res = await fetch(url);
@@ -107,16 +125,24 @@ async function fetchIcalEvents(url: string, days: number): Promise<CalendarEvent
 
       // Handle recurring events
       if (event.isRecurring()) {
+        const allDay = event.startDate?.isDate === true;
         const iterator = event.iterator();
         let next = iterator.next();
-        // Check up to 100 occurrences to find ones in our range
         let count = 0;
-        while (next && count < 100) {
-          const occurrenceStart = next.toJSDate();
+        while (next && count < MAX_OCCURRENCES) {
+          const occurrenceStart = icalTimeToDate(next);
           if (occurrenceStart > future) break;
-          if (occurrenceStart >= now) {
+          // All-day events stay visible for the whole day they fall on, so
+          // "today" doesn't vanish at midnight-plus-one-second.
+          const stillRelevant = allDay
+            ? occurrenceStart >= startOfDayInZone(now)
+            : occurrenceStart >= now;
+          if (stillRelevant) {
             const duration = event.duration;
-            const endDate = new Date(occurrenceStart.getTime() + (duration ? duration.toSeconds() * 1000 : 3600000));
+            const endDate = new Date(
+              occurrenceStart.getTime() +
+                (duration ? duration.toSeconds() * 1000 : 3600000)
+            );
             events.push({
               id: `${event.uid}-${occurrenceStart.toISOString()}`,
               summary: event.summary || "Untitled Event",
@@ -124,18 +150,22 @@ async function fetchIcalEvents(url: string, days: number): Promise<CalendarEvent
               start: occurrenceStart.toISOString(),
               end: endDate.toISOString(),
               location: event.location || undefined,
+              ...(allDay && { allDay: true }),
             });
           }
           next = iterator.next();
           count++;
         }
       } else {
-        const startDate = event.startDate?.toJSDate();
-        const endDate = event.endDate?.toJSDate();
-        if (!startDate) continue;
+        if (!event.startDate) continue;
+        const allDay = event.startDate.isDate === true;
+        const startDate = icalTimeToDate(event.startDate);
+        const endDate = event.endDate ? icalTimeToDate(event.endDate) : undefined;
 
-        // Only include events within our range
-        if (startDate >= now && startDate <= future) {
+        // Only include events within our range. All-day events count from the
+        // start of today so today's don't disappear part-way through.
+        const from = allDay ? startOfDayInZone(now) : now;
+        if (startDate >= from && startDate <= future) {
           events.push({
             id: event.uid || `ical-${events.length}`,
             summary: event.summary || "Untitled Event",
@@ -143,6 +173,7 @@ async function fetchIcalEvents(url: string, days: number): Promise<CalendarEvent
             start: startDate.toISOString(),
             end: endDate?.toISOString() || startDate.toISOString(),
             location: event.location || undefined,
+            ...(allDay && { allDay: true }),
           });
         }
       }
@@ -162,7 +193,9 @@ export async function GET(request: Request) {
   // Manual events are always read fresh and merged into every response path.
   const manualEvents = await fetchManualEvents(days);
 
-  const cached = getCached<CalendarEvent[]>(CACHE_KEY);
+  // Key by window: a 7-day request used to serve a 14-day one (and vice
+  // versa) from the same cache slot, so callers got the wrong event set.
+  const cached = getCached<CalendarEvent[]>(`${CACHE_KEY}-${days}`);
   if (cached) {
     return NextResponse.json({
       events: sortByStart([...cached, ...manualEvents]),
@@ -189,7 +222,7 @@ export async function GET(request: Request) {
     const icalEvents = results.flat();
 
     // Cache only the iCal events; manual events are merged in fresh each time.
-    setCache(CACHE_KEY, icalEvents, CACHE_TTL);
+    setCache(`${CACHE_KEY}-${days}`, icalEvents, CACHE_TTL);
     return NextResponse.json({
       events: sortByStart([...icalEvents, ...manualEvents]),
     });

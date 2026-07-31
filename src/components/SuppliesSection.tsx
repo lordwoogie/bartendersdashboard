@@ -48,6 +48,37 @@ export function SuppliesSection() {
 
   return (
     <>
+      {/* Shift notes first — what happened last shift is the thing staff most
+          need to read before anything else. */}
+      {notes.length > 0 && (
+        <section className="mb-6 rounded-xl border border-copper/40 bg-gradient-to-br from-card-bg to-surface p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-amber uppercase tracking-wider">
+              Recent notes
+            </h2>
+            <Link
+              href="/supplies"
+              className="text-xs text-copper hover:text-amber transition-colors"
+            >
+              All notes →
+            </Link>
+          </div>
+          <ul className="pl-1 space-y-2.5">
+            {notes.map((n) => (
+              <li key={n.id} className="flex gap-2 text-sm text-foreground/90">
+                <span className="text-lg leading-none shrink-0">📝</span>
+                <span className="min-w-0">
+                  <span className="text-[10px] text-muted uppercase tracking-wider block">
+                    {whenLabel(n.createdAt)}
+                  </span>
+                  <span className="whitespace-pre-wrap">{n.text}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* Still-to-buy card */}
       {openBuy.length > 0 && (
         <section className="mb-6 rounded-xl border border-copper/40 bg-gradient-to-br from-card-bg to-surface p-4">
@@ -79,36 +110,6 @@ export function SuppliesSection() {
                 + {openBuy.length - 4} more…
               </li>
             )}
-          </ul>
-        </section>
-      )}
-
-      {/* Recent notes — its own section */}
-      {notes.length > 0 && (
-        <section className="mb-6 rounded-xl border border-copper/40 bg-gradient-to-br from-card-bg to-surface p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-amber uppercase tracking-wider">
-              Recent notes
-            </h2>
-            <Link
-              href="/supplies"
-              className="text-xs text-copper hover:text-amber transition-colors"
-            >
-              All notes →
-            </Link>
-          </div>
-          <ul className="pl-1 space-y-2.5">
-            {notes.map((n) => (
-              <li key={n.id} className="flex gap-2 text-sm text-foreground/90">
-                <span className="text-lg leading-none shrink-0">📝</span>
-                <span className="min-w-0">
-                  <span className="text-[10px] text-muted uppercase tracking-wider block">
-                    {whenLabel(n.createdAt)}
-                  </span>
-                  <span className="whitespace-pre-wrap">{n.text}</span>
-                </span>
-              </li>
-            ))}
           </ul>
         </section>
       )}

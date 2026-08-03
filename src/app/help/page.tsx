@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { ManualLink } from "@/lib/manuals";
+import { HOUSE_DOCUMENTS, type ManualLink } from "@/lib/manuals";
 import { BackToDashboard } from "@/components/BackToDashboard";
 
 // Short staff-facing guide + links to external manuals (POS, equipment).
@@ -106,6 +106,36 @@ export default function HelpPage() {
           </h2>
           <p className="text-xs text-muted mb-4">
             Documentation for the software and equipment we use.
+          </p>
+
+          {/* Our own PDFs, bundled with the app (see HOUSE_DOCUMENTS). */}
+          <p className="text-[10px] uppercase tracking-wider text-copper font-semibold mb-2">
+            Our documents
+          </p>
+          <div className="space-y-2 mb-5">
+            {HOUSE_DOCUMENTS.map((d) => (
+              <a
+                key={d.id}
+                href={d.file}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block rounded-lg border border-card-border bg-surface px-4 py-3 hover:border-amber transition-colors"
+              >
+                <span className="text-sm font-medium text-foreground flex items-center justify-between gap-2">
+                  <span className="min-w-0">📄 {d.title}</span>
+                  <span className="text-[10px] text-copper border border-copper/40 rounded px-1.5 py-0.5 shrink-0">
+                    PDF
+                  </span>
+                </span>
+                {d.note && (
+                  <span className="block text-xs text-muted mt-0.5">{d.note}</span>
+                )}
+              </a>
+            ))}
+          </div>
+
+          <p className="text-[10px] uppercase tracking-wider text-copper font-semibold mb-2">
+            Software &amp; equipment
           </p>
           {manuals.length === 0 ? (
             <p className="text-sm text-muted">No manuals added yet.</p>

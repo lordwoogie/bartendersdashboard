@@ -189,6 +189,7 @@ export function Dashboard() {
           <nav className="mt-3 flex flex-wrap gap-2">
             {[
               { href: "/inventory", label: "Inventory" },
+              { href: "/notes", label: "Notes" },
               { href: "/supplies", label: "Supplies" },
               { href: "/book", label: "The Book" },
               { href: "/schedule", label: "Schedule" },

@@ -44,7 +44,6 @@ export function SuppliesSection() {
     .slice(0, 3);
 
   if (!loaded) return null;
-  if (openBuy.length === 0 && notes.length === 0) return null;
 
   return (
     <>
@@ -52,35 +51,44 @@ export function SuppliesSection() {
           need to read before anything else. The whole card is the link, so
           it's an easy tap target on the tablet rather than a small header
           link. */}
-      {notes.length > 0 && (
-        <Link
-          href="/supplies"
-          className="block mb-6 rounded-xl border border-copper/40 bg-gradient-to-br from-card-bg to-surface p-4 transition-colors hover:border-amber/70 active:bg-surface"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-amber uppercase tracking-wider">
-              📝 Shift Notes
-            </h2>
-            <span className="text-xs text-copper">All notes →</span>
-          </div>
-          <ul className="pl-1 space-y-2.5">
-            {notes.map((n) => (
-              <li key={n.id} className="flex gap-2 text-sm text-foreground/90">
-                <span className="text-lg leading-none shrink-0">📝</span>
-                <span className="min-w-0">
-                  <span className="text-[10px] text-muted uppercase tracking-wider block">
-                    {whenLabel(n.createdAt)}
-                  </span>
-                  <span className="whitespace-pre-wrap">{n.text}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="text-xs text-copper/80 mt-3">
-            Tap to read all notes or add one
+      {/* Always rendered, even with no notes: when this card hid itself the
+          dashboard lost its only route to notes, so staff couldn't find
+          where to read or leave one. */}
+      <Link
+        href="/supplies"
+        className="block mb-6 rounded-xl border border-copper/40 bg-gradient-to-br from-card-bg to-surface p-4 transition-colors hover:border-amber/70 active:bg-surface"
+      >
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-amber uppercase tracking-wider">
+            📝 Shift Notes
+          </h2>
+          <span className="text-xs text-copper">All notes →</span>
+        </div>
+        {notes.length === 0 ? (
+          <p className="text-sm text-muted">
+            No notes yet — tap here to leave one for the next shift.
           </p>
-        </Link>
-      )}
+        ) : (
+          <>
+            <ul className="pl-1 space-y-2.5">
+              {notes.map((n) => (
+                <li key={n.id} className="flex gap-2 text-sm text-foreground/90">
+                  <span className="text-lg leading-none shrink-0">📝</span>
+                  <span className="min-w-0">
+                    <span className="text-[10px] text-muted uppercase tracking-wider block">
+                      {whenLabel(n.createdAt)}
+                    </span>
+                    <span className="whitespace-pre-wrap">{n.text}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-copper/80 mt-3">
+              Tap to read all notes or add one
+            </p>
+          </>
+        )}
+      </Link>
 
       {/* Still-to-buy card */}
       {openBuy.length > 0 && (

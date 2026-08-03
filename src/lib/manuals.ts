@@ -31,4 +31,10 @@ export const HOUSE_DOCUMENTS: HouseDocument[] = [
     file: "/manuals/audio-video-guide.pdf",
     note: "AV Controller app, Spotify playlists, TV audio, and volume.",
   },
+  {
+    id: "high-yall-thc",
+    title: "High Y'all — THC Beverage Service Guide",
+    file: "/manuals/high-yall-thc-service-guide.pdf",
+    note: "Service limits, dosing, alcohol interaction, ID checks, and the guest script.",
+  },
 ];

@@ -49,19 +49,19 @@ export function SuppliesSection() {
   return (
     <>
       {/* Shift notes first — what happened last shift is the thing staff most
-          need to read before anything else. */}
+          need to read before anything else. The whole card is the link, so
+          it's an easy tap target on the tablet rather than a small header
+          link. */}
       {notes.length > 0 && (
-        <section className="mb-6 rounded-xl border border-copper/40 bg-gradient-to-br from-card-bg to-surface p-4">
+        <Link
+          href="/supplies"
+          className="block mb-6 rounded-xl border border-copper/40 bg-gradient-to-br from-card-bg to-surface p-4 transition-colors hover:border-amber/70 active:bg-surface"
+        >
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-amber uppercase tracking-wider">
-              Recent notes
+              📝 Shift Notes
             </h2>
-            <Link
-              href="/supplies"
-              className="text-xs text-copper hover:text-amber transition-colors"
-            >
-              All notes →
-            </Link>
+            <span className="text-xs text-copper">All notes →</span>
           </div>
           <ul className="pl-1 space-y-2.5">
             {notes.map((n) => (
@@ -76,7 +76,10 @@ export function SuppliesSection() {
               </li>
             ))}
           </ul>
-        </section>
+          <p className="text-xs text-copper/80 mt-3">
+            Tap to read all notes or add one
+          </p>
+        </Link>
       )}
 
       {/* Still-to-buy card */}

@@ -55,7 +55,7 @@ export function SuppliesSection() {
           dashboard lost its only route to notes, so staff couldn't find
           where to read or leave one. */}
       <Link
-        href="/supplies"
+        href="/notes"
         className="block mb-6 rounded-xl border border-copper/40 bg-gradient-to-br from-card-bg to-surface p-4 transition-colors hover:border-amber/70 active:bg-surface"
       >
         <div className="flex items-center justify-between mb-3">

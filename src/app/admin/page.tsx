@@ -697,12 +697,29 @@ export default function AdminPage() {
                   className="bg-surface rounded px-2 py-1.5 text-sm"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <span className="text-foreground">{b.name}</span>
+                    <div className="min-w-0 flex-1 flex items-center gap-2">
+                      {/* Editable so duplicate rows (e.g. a 12oz and a 16oz
+                          can of the same beer) can be told apart. The name is
+                          what the picker shows AND what the EKOS export
+                          matches on, so two rows must never share one. */}
+                      <input
+                        type="text"
+                        value={b.name}
+                        onChange={(e) => {
+                          const next = [...catalog];
+                          next[i] = { ...b, name: e.target.value };
+                          setCatalog(next);
+                          setCatalogDirty(true);
+                        }}
+                        aria-label="Beer name"
+                        className="min-w-0 flex-1 bg-background border border-card-border rounded px-2 py-1 text-sm text-foreground"
+                      />
                       {b.brewery && (
-                        <span className="text-muted"> · {b.brewery}</span>
+                        <span className="text-muted text-xs shrink-0">
+                          {b.brewery}
+                        </span>
                       )}
-                      <span className="text-xs text-copper ml-2 uppercase">
+                      <span className="text-xs text-copper uppercase shrink-0">
                         {b.format}
                       </span>
                     </div>

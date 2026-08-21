@@ -65,6 +65,19 @@ mapped, or a spelling mismatch), SKIP that row, leave it unreconciled, and
 report it to the user at the end — never guess. Fixing the mapping is a
 one-field edit in **admin → Inventory Catalog**.
 
+Guest and one-off items (cider, seltzer, THC drinks, collab kegs) are often
+not in the catalog at all — their `ekos_name` is just the tablet name and may
+never exist in EKOS. Same rule: skip and report. If the same item shows up
+run after run, say so explicitly — the user either adds it to the catalog or
+checks it off by hand on `/inventory/report`. These stuck rows also surface
+in `GET /api/health` under `inventory.pendingUnmapped`.
+
+Some beers sell cases in two can sizes and have two catalog rows named for
+the size, e.g. **"Mexican Lager 12oz"** and **"Mexican Lager 16oz"** — the
+`beer` column may carry that suffix while the `ekos_name` points at the
+matching SKU. Rows logged before the split may say just "Mexican Lager";
+their `ekos_name` resolves to the **16oz case**, the house default.
+
 ### 3. Mark what you entered as reconciled
 
 Only after the EKOS entries are saved, reconcile exactly the rows you

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { readData } from "@/lib/storage";
-import type { InventoryEntry } from "@/lib/inventory";
+import type { CatalogBeer, InventoryEntry } from "@/lib/inventory";
+import { normalizeBeerName } from "@/lib/inventory";
+import { duplicateCatalogNames, repairCatalog } from "@/lib/catalog-repair";
 
 // How long an inventory movement may sit un-entered into EKOS before health
 // flags the sync as stalled. The hand-off runs daily, so 3 days of backlog
@@ -29,10 +31,15 @@ export async function GET() {
         pendingEkos: number;
         oldestPendingDays: number | null;
         syncStalled: boolean;
+        catalogDuplicates: string[];
+        pendingUnmapped: { count: number; names: string[] };
       }
     | { error: string };
   try {
-    const log = await readData<InventoryEntry[]>("inventory-log.json");
+    const [log, catalog] = await Promise.all([
+      readData<InventoryEntry[]>("inventory-log.json"),
+      readData<CatalogBeer[]>("inventory-catalog.json"),
+    ]);
     const pending = log.filter((e) => !e.reconciledAt);
     const oldestTs = pending.reduce<number | null>((min, e) => {
       const t = new Date(e.timestamp).getTime();
@@ -42,14 +49,40 @@ export async function GET() {
       oldestTs === null
         ? null
         : Math.round(((Date.now() - oldestTs) / 86_400_000) * 10) / 10;
+
+    // Rows the resolver can't tell apart even after self-repair — exports
+    // pick one arbitrarily, so these need a manual rename in admin.
+    const repaired = repairCatalog(catalog).catalog;
+    const catalogDuplicates = duplicateCatalogNames(repaired);
+
+    // Pending entries whose beer isn't in the catalog at all (guest taps,
+    // one-off kegs): their export row carries no real EKOS item, the sync
+    // agent can't enter them, and they'd otherwise sit pending invisibly.
+    const known = new Set<string>();
+    for (const b of repaired) {
+      const n = normalizeBeerName(b.name);
+      known.add(n);
+      const m = n.match(/^(.+) \d{1,2}oz$/);
+      if (m) known.add(m[1]); // bare legacy names still resolve via fallback
+    }
+    const unmappedEntries = pending.filter(
+      (e) => !known.has(normalizeBeerName(e.beerName))
+    );
+    const pendingUnmapped = {
+      count: unmappedEntries.length,
+      names: [...new Set(unmappedEntries.map((e) => e.beerName))].sort(),
+    };
+
     inventory = {
       pendingEkos: pending.length,
       oldestPendingDays,
       syncStalled:
         oldestPendingDays !== null && oldestPendingDays > STALE_PENDING_DAYS,
+      catalogDuplicates,
+      pendingUnmapped,
     };
   } catch {
-    inventory = { error: "could not read inventory log" };
+    inventory = { error: "could not read inventory data" };
   }
 
   return NextResponse.json({

@@ -2,44 +2,47 @@
 
 import { useEffect, useState } from "react";
 import { zonedWallTimeToUtc } from "@/lib/timezone";
+import type { Announcement } from "@/lib/announcements";
 
-// One-off announcement pop-up over the dashboard. The message lives here in
-// code — to change or retire it, edit ANNOUNCEMENT (or set it to null to turn
-// the pop-up off entirely). Dismissing snoozes it for 12 hours per device so
-// each shift still sees it, and it retires itself after `lastDay` with no
-// deploy needed.
-
-interface Announcement {
-  id: string; // bump this when the message changes so old snoozes don't hide it
-  emoji: string;
-  title: string;
-  message: string;
-  lastDay: string; // YYYY-MM-DD, venue time — hidden after this day ends
-}
-
-const ANNOUNCEMENT: Announcement | null = {
-  id: "trivia-cancelled-aug-2026",
-  emoji: "🚫",
-  title: "Heads up",
-  message: "Trivia is cancelled for the month of August.",
-  lastDay: "2026-08-31",
-};
+// Announcement pop-up over the dashboard. The message is managed from
+// /admin (no deploy needed); this just renders whatever /api/announcement
+// says. Dismissing snoozes it for 12 hours per device so each shift still
+// sees it, and it hides itself once the announcement's last day ends. The
+// tablet stays open for days at a time, so the announcement, the snooze
+// lapse, and the expiry are all re-checked on a timer, not just at load.
 
 const SNOOZE_MS = 12 * 60 * 60 * 1000; // 12 hours
 const snoozeKey = (id: string) => `announce-snooze-${id}`;
+const FETCH_EVERY_MS = 60_000;
 
 export function AnnouncementPopup() {
+  const [announcement, setAnnouncement] = useState<Announcement | null>(null);
   const [open, setOpen] = useState(false);
 
-  // The tablet stays open for days at a time, so both the snooze lapse and
-  // the expiry are re-checked on a timer, not just at page load.
   useEffect(() => {
-    if (!ANNOUNCEMENT) return;
-    const a = ANNOUNCEMENT;
-    const check = () => {
-      // Day after lastDay, midnight venue time = the moment it retires.
+    let cancelled = false;
+
+    const check = async () => {
+      let a: Announcement | null = announcement;
+      try {
+        const res = await fetch("/api/announcement", { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          a = data.announcement || null;
+        }
+      } catch {
+        // Offline — fall back to whatever we last fetched.
+      }
+      if (cancelled) return;
+      setAnnouncement(a);
+
+      if (!a || !a.enabled || !a.message) {
+        setOpen(false);
+        return;
+      }
+      // Retired once the last day ends (venue time).
       const end = zonedWallTimeToUtc(a.lastDay, "23:59");
-      if (Date.now() > end.getTime() + 60_000) {
+      if (!Number.isNaN(end.getTime()) && Date.now() > end.getTime() + 60_000) {
         setOpen(false);
         return;
       }
@@ -51,9 +54,14 @@ export function AnnouncementPopup() {
         setOpen(true);
       }
     };
+
     check();
-    const timer = setInterval(check, 60_000);
-    return () => clearInterval(timer);
+    const timer = setInterval(check, FETCH_EVERY_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -65,11 +73,13 @@ export function AnnouncementPopup() {
     };
   }, [open]);
 
-  if (!ANNOUNCEMENT || !open) return null;
-  const a = ANNOUNCEMENT;
+  if (!announcement || !open) return null;
 
   const close = () => {
-    window.localStorage.setItem(snoozeKey(a.id), String(Date.now()));
+    window.localStorage.setItem(
+      snoozeKey(announcement.id),
+      String(Date.now())
+    );
     setOpen(false);
   };
 
@@ -85,7 +95,7 @@ export function AnnouncementPopup() {
       <div className="relative w-full max-w-md rounded-2xl border border-amber/50 bg-card-bg shadow-2xl">
         <div className="flex items-start justify-between gap-3 border-b border-card-border px-4 py-3">
           <h2 className="text-sm font-semibold text-amber uppercase tracking-wider">
-            {a.emoji} {a.title}
+            📣 Heads up
           </h2>
           <button
             type="button"
@@ -98,8 +108,8 @@ export function AnnouncementPopup() {
         </div>
 
         <div className="p-5">
-          <p className="text-lg font-semibold text-foreground leading-snug">
-            {a.message}
+          <p className="text-lg font-semibold text-foreground leading-snug whitespace-pre-wrap">
+            {announcement.message}
           </p>
           <button
             type="button"

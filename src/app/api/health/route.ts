@@ -1,4 +1,11 @@
 import { NextResponse } from "next/server";
+import { readData } from "@/lib/storage";
+import type { InventoryEntry } from "@/lib/inventory";
+
+// How long an inventory movement may sit un-entered into EKOS before health
+// flags the sync as stalled. The hand-off runs daily, so 3 days of backlog
+// means several runs have been missed.
+const STALE_PENDING_DAYS = 3;
 
 export async function GET() {
   const services = {
@@ -14,9 +21,41 @@ export async function GET() {
     deputy: !!process.env.DEPUTY_ACCESS_TOKEN,
   };
 
+  // EKOS hand-off watchdog: how much inventory is waiting to be entered, and
+  // whether the oldest of it has been waiting long enough to mean the daily
+  // sync is stalled. Best-effort — a storage hiccup must not fail health.
+  let inventory:
+    | {
+        pendingEkos: number;
+        oldestPendingDays: number | null;
+        syncStalled: boolean;
+      }
+    | { error: string };
+  try {
+    const log = await readData<InventoryEntry[]>("inventory-log.json");
+    const pending = log.filter((e) => !e.reconciledAt);
+    const oldestTs = pending.reduce<number | null>((min, e) => {
+      const t = new Date(e.timestamp).getTime();
+      return Number.isFinite(t) && (min === null || t < min) ? t : min;
+    }, null);
+    const oldestPendingDays =
+      oldestTs === null
+        ? null
+        : Math.round(((Date.now() - oldestTs) / 86_400_000) * 10) / 10;
+    inventory = {
+      pendingEkos: pending.length,
+      oldestPendingDays,
+      syncStalled:
+        oldestPendingDays !== null && oldestPendingDays > STALE_PENDING_DAYS,
+    };
+  } catch {
+    inventory = { error: "could not read inventory log" };
+  }
+
   return NextResponse.json({
     status: "ok",
     timestamp: new Date().toISOString(),
     services,
+    inventory,
   });
 }

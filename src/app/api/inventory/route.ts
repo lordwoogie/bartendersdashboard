@@ -13,6 +13,23 @@ function badRequest(message: string) {
   return NextResponse.json({ error: message }, { status: 400 });
 }
 
+// Bound the doc without ever losing inventory that hasn't reached EKOS:
+// entries not yet reconciled are always kept, and only the oldest RECONCILED
+// entries are evicted to make room. If unreconciled entries alone exceed the
+// cap (the sync has stalled for a long time), the doc is allowed to run over
+// rather than silently dropping movements — /api/health flags that state.
+function bounded(log: InventoryEntry[]): InventoryEntry[] {
+  if (log.length <= MAX_ENTRIES) return log;
+  const unreconciled = log.filter((e) => !e.reconciledAt);
+  const reconciled = log
+    .filter((e) => e.reconciledAt)
+    .sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+  const room = Math.max(0, MAX_ENTRIES - unreconciled.length);
+  return [...unreconciled, ...reconciled.slice(0, room)];
+}
+
 // Read back immediately after every write (logging, reconcile check-off), so
 // a cached response would show stale state — e.g. an entry re-appearing as
 // un-entered after it was checked off into EKOS.
@@ -100,17 +117,7 @@ export async function POST(request: Request) {
     return badRequest("type must be keg-tapped, keg-blew, or case-added");
   }
 
-  await mutateData<InventoryEntry[]>(LOG_DOC, (log) => {
-    const next = [...log, entry];
-    // Keep the doc bounded: drop the oldest when we exceed the cap.
-    return next.length > MAX_ENTRIES
-      ? next
-          .sort(
-            (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-          )
-          .slice(0, MAX_ENTRIES)
-      : next;
-  });
+  await mutateData<InventoryEntry[]>(LOG_DOC, (log) => bounded([...log, entry]));
   return NextResponse.json({ success: true, entry });
 }
 

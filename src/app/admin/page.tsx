@@ -100,6 +100,14 @@ export default function AdminPage() {
   const [beerDrafts, setBeerDrafts] = useState<Record<string, string>>({});
   const [beerSaving, setBeerSaving] = useState<string | null>(null);
 
+  // Dashboard announcement pop-up: one message + last day + on/off, posted
+  // from here so it needs no deploy.
+  const [annMessage, setAnnMessage] = useState("");
+  const [annLastDay, setAnnLastDay] = useState("");
+  const [annEnabled, setAnnEnabled] = useState(false);
+  const [annDirty, setAnnDirty] = useState(false);
+  const [annSaving, setAnnSaving] = useState(false);
+
   // Help-page manual links, saved in bulk like the catalog.
   const [manuals, setManuals] = useState<ManualLink[]>([]);
   const [manualsDirty, setManualsDirty] = useState(false);
@@ -131,12 +139,13 @@ export default function AdminPage() {
       // beers currently on tap in the notes editor.
       if ((data.role ?? "admin") === "admin") {
         try {
-          const [catRes, wineRes, menuRes, notesRes, manualsRes] = await Promise.all([
+          const [catRes, wineRes, menuRes, notesRes, manualsRes, annRes] = await Promise.all([
             fetch("/api/inventory/catalog").then((r) => r.json()),
             fetch("/api/wines").then((r) => r.json()),
             fetch("/api/menu").then((r) => r.json()),
             fetch("/api/beer-notes", { method: "PUT" }).then((r) => r.json()),
             fetch("/api/manuals").then((r) => r.json()),
+            fetch("/api/announcement", { cache: "no-store" }).then((r) => r.json()),
           ]);
           setCatalog(catRes.catalog || []);
           setCatalogDirty(false);
@@ -146,6 +155,12 @@ export default function AdminPage() {
           setBeerNotes(notesRes.notes || {});
           setManuals(manualsRes.manuals || []);
           setManualsDirty(false);
+          if (annRes.announcement) {
+            setAnnMessage(annRes.announcement.message || "");
+            setAnnLastDay(annRes.announcement.lastDay || "");
+            setAnnEnabled(annRes.announcement.enabled === true);
+            setAnnDirty(false);
+          }
         } catch {
           // non-fatal; leave lists empty
         }
@@ -1181,6 +1196,101 @@ export default function AdminPage() {
               })}
             </div>
           )}
+        </section>
+        )}
+
+        {/* Dashboard Announcement */}
+        {role === "admin" && (
+        <section className="bg-card-bg border border-card-border rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-amber mb-1">
+            Dashboard Announcement
+          </h2>
+          <p className="text-xs text-muted mb-4">
+            Pop-up shown over the dashboard (e.g. &quot;Trivia is cancelled for
+            the month of August&quot;). It reappears every 12 hours per device
+            until its last day ends, then retires itself. Changing the message
+            resets everyone&apos;s dismissals so the new text is seen.
+          </p>
+
+          <textarea
+            value={annMessage}
+            onChange={(e) => {
+              setAnnMessage(e.target.value);
+              setAnnDirty(true);
+            }}
+            placeholder="What should the pop-up say?"
+            rows={2}
+            maxLength={300}
+            className="w-full bg-surface border border-card-border rounded px-2 py-1.5 text-sm text-foreground"
+          />
+          <div className="flex flex-wrap items-center gap-4 mt-2">
+            <label className="text-sm text-muted flex items-center gap-2">
+              Show through
+              <input
+                type="date"
+                value={annLastDay}
+                onChange={(e) => {
+                  setAnnLastDay(e.target.value);
+                  setAnnDirty(true);
+                }}
+                className="bg-surface border border-card-border rounded px-2 py-1 text-sm text-foreground"
+              />
+            </label>
+            <label className="text-sm text-foreground flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={annEnabled}
+                onChange={(e) => {
+                  setAnnEnabled(e.target.checked);
+                  setAnnDirty(true);
+                }}
+                className="h-4 w-4 accent-amber"
+              />
+              Show the pop-up
+            </label>
+          </div>
+
+          <div className="flex items-center gap-3 mt-4 pt-4 border-t border-card-border">
+            <button
+              onClick={async () => {
+                if (!annMessage.trim() || !annLastDay) {
+                  flash("Announcement needs a message and a last day");
+                  return;
+                }
+                setAnnSaving(true);
+                try {
+                  const res = await fetch("/api/announcement", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      "x-admin-password": password,
+                    },
+                    body: JSON.stringify({
+                      message: annMessage,
+                      lastDay: annLastDay,
+                      enabled: annEnabled,
+                    }),
+                  });
+                  const data = await res.json();
+                  if (res.ok) {
+                    setAnnDirty(false);
+                    flash("Announcement saved");
+                  } else {
+                    flash(data.error || "Save failed");
+                  }
+                } finally {
+                  setAnnSaving(false);
+                }
+              }}
+              disabled={!annDirty || annSaving}
+              className="bg-amber text-background text-sm font-medium px-4 py-1.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {annSaving ? "Saving…" : "Save Announcement"}
+            </button>
+            {annDirty && (
+              <span className="text-xs text-copper">Unsaved changes</span>
+            )}
+          </div>
         </section>
         )}
 

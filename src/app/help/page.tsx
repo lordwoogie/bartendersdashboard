@@ -43,6 +43,7 @@ const GUIDE = [
       "Tap a task to check it off. Needs to Happen and Logs work the same way.",
       "Going to be gone? Availability → Request time off. The head brewer confirms it.",
       "Head brewer: tap Edit and enter the production password to build the week.",
+      "For the shop TV, open Production → TV (or /production/tv) and hit Fullscreen. It refreshes itself.",
     ],
   },
   {

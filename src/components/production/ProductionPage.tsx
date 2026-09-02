@@ -101,6 +101,9 @@ export function ProductionPage() {
                   Edit
                 </button>
               )}
+              <a href="/production/tv" className={`${btn.secondary} hidden sm:inline-flex items-center gap-1.5`} title="Big-screen view for the shop TV">
+                <span aria-hidden="true">📺</span> TV
+              </a>
               <button type="button" onClick={() => window.print()} className={`${btn.ghost} hidden sm:inline`}>
                 Print
               </button>

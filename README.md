@@ -59,6 +59,7 @@ All API keys are optional. The dashboard shows "Configure [service]" messages fo
 | /print | Print-friendly daily sheet |
 | /admin | Admin panel (password protected) |
 | /production | Production board — schedule, needs, availability, logs (editing password protected) |
+| /production/tv | Big-screen version of the week board for the shop TV (auto-refreshes; `?week=next`, `?from=today`, `?done=hide`) |
 | /api/sports | Sports data (ESPN CDN) |
 | /api/calendar | Google Calendar events |
 | /api/events | Local events (Eventbrite + PredictHQ) |

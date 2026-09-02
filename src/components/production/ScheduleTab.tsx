@@ -58,11 +58,24 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
   const [showWeekend, setShowWeekend] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [noteDay, setNoteDay] = useState<string | null>(null);
+  // Phones show one day at a time (plus To Do) and open on today; "Week"
+  // stacks all of them. Laptops always get the full grid.
+  const [mobileDay, setMobileDay] = useState<string>(() =>
+    weekDays(thisMonday).slice(0, 5).includes(today) ? today : "all"
+  );
 
   const week = findWeek(data, weekStart) ?? emptyWeek(weekStart);
   const days = weekDays(weekStart);
   const weekendHasItems = week.items.some((i) => i.day === days[5] || i.day === days[6]);
   const visibleDays = days.slice(0, 5).concat(showWeekend || weekendHasItems ? days.slice(5) : []);
+  const mobileShows = (day: string) =>
+    mobileDay === "all" || day === TODO_DAY || day === mobileDay;
+
+  const goToWeek = (next: string) => {
+    setWeekStart(next);
+    // Landing on this week opens today; any other week opens Monday.
+    setMobileDay(mobileDay === "all" ? "all" : next === thisMonday ? today : next);
+  };
 
   const tasks = week.items.filter((i) => isTaskColumn(i.column));
   const done = tasks.filter((i) => i.doneAt).length;
@@ -121,7 +134,17 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
             onDelete={() => ok({ action: "remove-item", id: item.id })}
             onMove={(direction) => ok({ action: "move-item", id: item.id, direction })}
             onClose={() => setEditingId(null)}
-          />
+          >
+            <MoveTo
+              item={item}
+              days={visibleDays}
+              onMove={async (day, column) => {
+                const moved = await ok({ action: "move-item-to", id: item.id, day, column });
+                if (moved) setEditingId(null);
+                return moved;
+              }}
+            />
+          </TextEditor>
         </li>
       );
     }
@@ -146,17 +169,17 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
             type="button"
             onClick={() => toggle(item)}
             aria-pressed={Boolean(item.doneAt)}
-            className="w-full text-left flex items-start gap-2 rounded-lg px-1.5 py-1.5 hover:bg-surface"
+            className="w-full text-left flex items-start gap-2.5 md:gap-2 rounded-lg px-1.5 py-2.5 md:py-1.5 hover:bg-surface active:bg-surface"
           >
             <span
               aria-hidden="true"
-              className={`mt-0.5 w-4 h-4 shrink-0 rounded border-2 flex items-center justify-center text-[10px] font-bold ${
+              className={`mt-0.5 w-5 h-5 md:w-4 md:h-4 shrink-0 rounded border-2 flex items-center justify-center text-[11px] md:text-[10px] font-bold ${
                 item.doneAt ? "bg-amber border-amber text-background" : "border-copper/60"
               }`}
             >
               {item.doneAt ? "✓" : ""}
             </span>
-            <span className={`text-sm leading-snug ${item.doneAt ? "line-through text-muted" : "text-foreground"}`}>
+            <span className={`text-base md:text-sm leading-snug ${item.doneAt ? "line-through text-muted" : "text-foreground"}`}>
               {item.text}
             </span>
           </button>
@@ -185,7 +208,7 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
     return (
       <div
         key={day}
-        className={`${GRID} border-t border-card-border ${isToday ? "bg-amber/5" : ""}`}
+        className={`${mobileShows(day) ? "" : "hidden"} ${GRID} border-t border-card-border ${isToday ? "bg-amber/5" : ""}`}
       >
         <div
           className={`px-3 py-2 md:py-3 flex flex-wrap items-center gap-x-2 gap-y-1 md:block ${
@@ -252,7 +275,7 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
         <button
           type="button"
           aria-label="Previous week"
-          onClick={() => setWeekStart(addDays(weekStart, -7))}
+          onClick={() => goToWeek(addDays(weekStart, -7))}
           className={`${btn.secondary} px-3`}
         >
           ‹
@@ -267,16 +290,54 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
         <button
           type="button"
           aria-label="Next week"
-          onClick={() => setWeekStart(addDays(weekStart, 7))}
+          onClick={() => goToWeek(addDays(weekStart, 7))}
           className={`${btn.secondary} px-3`}
         >
           ›
         </button>
         {weekStart !== thisMonday && (
-          <button type="button" onClick={() => setWeekStart(thisMonday)} className={btn.secondary}>
+          <button type="button" onClick={() => goToWeek(thisMonday)} className={btn.secondary}>
             Today
           </button>
         )}
+      </div>
+
+      <div className="md:hidden flex gap-1.5 overflow-x-auto -mx-4 px-4 pb-0.5 no-print">
+        {visibleDays.map((day) => {
+          const count = week.items.filter((i) => i.day === day && isTaskColumn(i.column) && !i.doneAt).length;
+          const active = mobileDay === day;
+          return (
+            <button
+              key={day}
+              type="button"
+              onClick={() => setMobileDay(day)}
+              className={`shrink-0 rounded-lg border px-3 py-2 text-sm font-semibold leading-tight ${
+                active
+                  ? "border-amber bg-amber/15 text-amber"
+                  : day === today
+                    ? "border-amber/40 bg-surface text-amber"
+                    : "border-card-border bg-surface text-foreground"
+              }`}
+            >
+              {dayLabel(day).split(" ")[0]}
+              <span className="block text-[10px] font-normal opacity-80">
+                {dayLabel(day).split(" ")[1]}
+                {count > 0 && ` · ${count}`}
+              </span>
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          onClick={() => setMobileDay("all")}
+          className={`shrink-0 rounded-lg border px-3 py-2 text-sm font-semibold ${
+            mobileDay === "all"
+              ? "border-amber bg-amber/15 text-amber"
+              : "border-card-border bg-surface text-foreground"
+          }`}
+        >
+          Week
+        </button>
       </div>
 
       {editing && (
@@ -365,5 +426,58 @@ function DayNoteEditor({
         ×
       </button>
     </form>
+  );
+}
+
+// "Move to" inside an item's editor: pick a day and column, tap Move.
+function MoveTo({
+  item,
+  days,
+  onMove,
+}: {
+  item: ProductionItem;
+  days: string[];
+  onMove: (day: string, column: ColumnKey) => Promise<boolean>;
+}) {
+  const [day, setDay] = useState(item.day);
+  const [column, setColumn] = useState<ColumnKey>(item.column);
+  const [busy, setBusy] = useState(false);
+  const unchanged = day === item.day && column === item.column;
+  const invalid = day === TODO_DAY && !isTaskColumn(column);
+  return (
+    <div className="flex flex-wrap items-center gap-1 text-xs">
+      <span className="text-muted mr-1">Move to</span>
+      <select value={day} onChange={(e) => setDay(e.target.value)} className={`${btn.input} w-auto py-1 text-xs`}>
+        <option value={TODO_DAY}>To Do</option>
+        {days.map((d) => (
+          <option key={d} value={d}>
+            {dayLabel(d)}
+          </option>
+        ))}
+      </select>
+      <select
+        value={column}
+        onChange={(e) => setColumn(e.target.value as ColumnKey)}
+        className={`${btn.input} w-auto py-1 text-xs`}
+      >
+        {ALL_COLUMNS.map((c) => (
+          <option key={c.key} value={c.key} disabled={day === TODO_DAY && !isTaskColumn(c.key)}>
+            {c.label}
+          </option>
+        ))}
+      </select>
+      <button
+        type="button"
+        disabled={busy || unchanged || invalid}
+        onClick={async () => {
+          setBusy(true);
+          await onMove(day, column);
+          setBusy(false);
+        }}
+        className={`${btn.secondary} py-1 px-3 text-xs`}
+      >
+        Move
+      </button>
+    </div>
   );
 }

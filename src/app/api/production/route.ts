@@ -224,6 +224,25 @@ function applyAction(data: ProductionData, body: Body): ProductionData {
         return { ...w, items };
       });
     }
+    case "move-item-to": {
+      // Shift an item to another day and/or column in the same week (the
+      // head brewer re-planning from a laptop). It lands at the bottom of
+      // the target cell; a task moved into a people column loses its check.
+      const weekStart = weekStartOf(body.weekStart);
+      const id = idOf(body.id);
+      const day = body.day === TODO_DAY ? TODO_DAY : dateKey(body.day, "day");
+      if (day !== TODO_DAY && !dayInWeek(weekStart, day)) bad("day is not in that week");
+      const column = columnOf(body.column);
+      if (day === TODO_DAY && !isTaskColumn(column)) bad("To-do items go in a task column");
+      return withWeek(data, weekStart, (w) => {
+        const item = w.items.find((i) => i.id === id);
+        if (!item) notFound("Item");
+        if (item.day === day && item.column === column) return w;
+        const moved: ProductionItem = { ...item, day, column };
+        if (!isTaskColumn(column)) delete moved.doneAt;
+        return { ...w, items: [...w.items.filter((i) => i.id !== id), moved] };
+      });
+    }
     case "set-day-note": {
       const weekStart = weekStartOf(body.weekStart);
       const day = dateKey(body.day, "day");

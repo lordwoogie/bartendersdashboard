@@ -27,7 +27,9 @@ export function Flash({ message }: { message: string }) {
 
 // "+ Add" that turns into a text input. Enter saves and keeps the input open
 // for the next entry (building a day is usually several items in a row);
-// Escape or the × closes it. A failed save hands the text back.
+// Escape or the × closes it. A failed save hands the text back. Pasting a
+// multi-line list (say, a column copied out of the old spreadsheet) adds
+// one item per line.
 export function AddInline({
   placeholder,
   onAdd,
@@ -60,6 +62,29 @@ export function AddInline({
     } else {
       inputRef.current?.focus();
     }
+  };
+
+  const [pasting, setPasting] = useState(false);
+  const pasteList = async (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const lines = e.clipboardData
+      .getData("text")
+      .split(/\r?\n/)
+      .map((l) => l.replace(/^[\s•\-–*]+/, "").trim())
+      .filter(Boolean);
+    if (lines.length < 2) return; // single line: let the input take it
+    e.preventDefault();
+    setPasting(true);
+    setError("");
+    const failed: string[] = [];
+    for (const line of lines) {
+      if (!(await onAdd(line))) failed.push(line);
+    }
+    setPasting(false);
+    if (failed.length) {
+      setText(failed.join(" / "));
+      setError(`${failed.length} of ${lines.length} didn't save — they're back in the box`);
+    }
+    inputRef.current?.focus();
   };
 
   if (!open) {
@@ -97,10 +122,12 @@ export function AddInline({
               setText("");
             }
           }}
-          placeholder={placeholder}
+          onPaste={pasteList}
+          placeholder={pasting ? "Adding…" : placeholder}
+          disabled={pasting}
           className={`${btn.input} py-1.5 text-sm`}
         />
-        <button type="submit" disabled={!text.trim()} className={`${btn.primary} py-1.5 px-3`}>
+        <button type="submit" disabled={!text.trim() || pasting} className={`${btn.primary} py-1.5 px-3`}>
           Add
         </button>
         <button
@@ -121,18 +148,21 @@ export function AddInline({
 }
 
 // Inline editor for a single line of text with optional reorder + delete.
+// `children` renders extra controls (e.g. "move to another day") below.
 export function TextEditor({
   initial,
   onSave,
   onDelete,
   onMove,
   onClose,
+  children,
 }: {
   initial: string;
   onSave: (text: string) => Promise<boolean>;
   onDelete: () => Promise<boolean>;
   onMove?: (direction: -1 | 1) => Promise<boolean>;
   onClose: () => void;
+  children?: React.ReactNode;
 }) {
   const [text, setText] = useState(initial);
   const [busy, setBusy] = useState(false);
@@ -212,6 +242,7 @@ export function TextEditor({
           Delete
         </button>
       </div>
+      {children}
       {error && <p className="text-xs text-red-400">{error}</p>}
     </form>
   );

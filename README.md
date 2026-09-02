@@ -16,6 +16,7 @@ Shows bartenders what's happening today and this week: Thunder games, TV sports,
 - **Print View** -- Ink-friendly daily sheet for behind the bar
 - **Daily Email** -- Morning briefing email at 7 AM CT via Vercel Cron
 - **Admin Panel** -- Manage holidays, sports priorities, email recipients, quick events
+- **Production Board** -- The brewery's week (canning, cellar, prep, brew, who's in / out), "needs to happen" lists, time-off requests, and the Crowder + canning-run logs. Everyone reads and checks off; the head brewer edits with a password
 
 ## Quick Start
 
@@ -45,6 +46,7 @@ Visit http://localhost:3000
 | RESEND_API_KEY | Resend | resend.com | For email |
 | EMAIL_RECIPIENTS | - | Comma-separated emails | For email |
 | ADMIN_PASSWORD | - | Any password | For admin |
+| PRODUCTION_PASSWORD | - | Any password | For editing /production (admin password also works) |
 | CRON_SECRET | Vercel | Auto-set or random string | For cron |
 
 All API keys are optional. The dashboard shows "Configure [service]" messages for unconfigured services.
@@ -56,6 +58,7 @@ All API keys are optional. The dashboard shows "Configure [service]" messages fo
 | / | Main dashboard |
 | /print | Print-friendly daily sheet |
 | /admin | Admin panel (password protected) |
+| /production | Production board — schedule, needs, availability, logs (editing password protected) |
 | /api/sports | Sports data (ESPN CDN) |
 | /api/calendar | Google Calendar events |
 | /api/events | Local events (Eventbrite + PredictHQ) |
@@ -66,6 +69,7 @@ All API keys are optional. The dashboard shows "Configure [service]" messages fo
 | /api/send-briefing/preview | Preview email in browser |
 | /api/cron | Vercel Cron endpoint (7 AM CT) |
 | /api/health | Health check / service status |
+| /api/production | Production board data (GET) and edits (POST `{ action, ... }`) |
 
 ## Deploy to Vercel
 

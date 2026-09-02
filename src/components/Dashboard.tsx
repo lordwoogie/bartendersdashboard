@@ -194,6 +194,7 @@ export function Dashboard() {
               { href: "/supplies", label: "Supplies" },
               { href: "/book", label: "The Book" },
               { href: "/schedule", label: "Schedule" },
+              { href: "/production", label: "Production" },
               { href: "/beers", label: "Beer List" },
               { href: "/wines", label: "Wine List" },
               { href: "/help", label: "Help" },

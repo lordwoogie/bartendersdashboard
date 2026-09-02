@@ -36,6 +36,16 @@ const GUIDE = [
     ],
   },
   {
+    icon: "🏭",
+    title: "Production board",
+    lines: [
+      "Production → the week's canning, cellar, prep, and brew tasks, plus who's in and who's out.",
+      "Tap a task to check it off. Needs to Happen and Logs work the same way.",
+      "Going to be gone? Availability → Request time off. The head brewer confirms it.",
+      "Head brewer: tap Edit and enter the production password to build the week.",
+    ],
+  },
+  {
     icon: "🍺",
     title: "Customer questions",
     lines: [

@@ -1,0 +1,789 @@
+{
+  "weeks": [
+    {
+      "weekStart": "2026-08-31",
+      "items": [
+        {
+          "id": "pi-seed-001",
+          "day": "todo",
+          "column": "cellar",
+          "text": "Dose FV 4"
+        },
+        {
+          "id": "pi-seed-002",
+          "day": "todo",
+          "column": "prep",
+          "text": "Smokiez Tropical Cans (200 cases)"
+        },
+        {
+          "id": "pi-seed-003",
+          "day": "todo",
+          "column": "cellar",
+          "text": "Carb and Dose FV 3"
+        },
+        {
+          "id": "pi-seed-004",
+          "day": "todo",
+          "column": "prep",
+          "text": "Sleek Brite Cans (200 cases)"
+        },
+        {
+          "id": "pi-seed-005",
+          "day": "2026-08-31",
+          "column": "packaging",
+          "text": "Smokiez Tropical FV 4 (200)"
+        },
+        {
+          "id": "pi-seed-006",
+          "day": "2026-08-31",
+          "column": "cellar",
+          "text": "Dump Yeast FV 1 & 9"
+        },
+        {
+          "id": "pi-seed-007",
+          "day": "2026-08-31",
+          "column": "brew",
+          "text": "Lo Dose"
+        },
+        {
+          "id": "pi-seed-008",
+          "day": "2026-08-31",
+          "column": "help",
+          "text": "Nick Out 4:50"
+        },
+        {
+          "id": "pi-seed-009",
+          "day": "2026-08-31",
+          "column": "packaging",
+          "text": "Tom on Shot Machine"
+        },
+        {
+          "id": "pi-seed-010",
+          "day": "2026-08-31",
+          "column": "cellar",
+          "text": "Biofine (42oz) FV 1 and 9 (Begin Carbonation)"
+        },
+        {
+          "id": "pi-seed-011",
+          "day": "2026-08-31",
+          "column": "help",
+          "text": "Joey 9am"
+        },
+        {
+          "id": "pi-seed-012",
+          "day": "2026-08-31",
+          "column": "packaging",
+          "text": "Smokiez Blackberry FV 3 (200)"
+        },
+        {
+          "id": "pi-seed-013",
+          "day": "2026-08-31",
+          "column": "cellar",
+          "text": "CIP/SIP BT"
+        },
+        {
+          "id": "pi-seed-014",
+          "day": "2026-08-31",
+          "column": "help",
+          "text": "Ethan (10ish?)"
+        },
+        {
+          "id": "pi-seed-015",
+          "day": "2026-08-31",
+          "column": "packaging",
+          "text": "Watermelon Shots"
+        },
+        {
+          "id": "pi-seed-016",
+          "day": "2026-08-31",
+          "column": "cellar",
+          "text": "CIP/SIP BT"
+        },
+        {
+          "id": "pi-seed-017",
+          "day": "2026-08-31",
+          "column": "cellar",
+          "text": "Carb Lo Dose"
+        },
+        {
+          "id": "pi-seed-018",
+          "day": "2026-08-31",
+          "column": "prep",
+          "text": "Lo Dose Cans"
+        },
+        {
+          "id": "pi-seed-019",
+          "day": "2026-09-01",
+          "column": "prep",
+          "text": "4 Pallets Dirty Halfs"
+        },
+        {
+          "id": "pi-seed-020",
+          "day": "2026-09-01",
+          "column": "cellar",
+          "text": "CIP/SIP FV 3"
+        },
+        {
+          "id": "pi-seed-021",
+          "day": "2026-09-01",
+          "column": "help",
+          "text": "Tom 10am"
+        },
+        {
+          "id": "pi-seed-022",
+          "day": "2026-09-01",
+          "column": "packaging",
+          "text": "Lo Dose BT (200)"
+        },
+        {
+          "id": "pi-seed-023",
+          "day": "2026-09-01",
+          "column": "cellar",
+          "text": "Keg Wash 40 Slims/ 24 Halfs"
+        },
+        {
+          "id": "pi-seed-024",
+          "day": "2026-09-01",
+          "column": "help",
+          "text": "Jacob 10am"
+        },
+        {
+          "id": "pi-seed-025",
+          "day": "2026-09-01",
+          "column": "packaging",
+          "text": "Convert to 12oz"
+        },
+        {
+          "id": "pi-seed-026",
+          "day": "2026-09-01",
+          "column": "cellar",
+          "text": "Carb Check FV 1 & 9"
+        },
+        {
+          "id": "pi-seed-027",
+          "day": "2026-09-01",
+          "column": "help",
+          "text": "Blake 10am"
+        },
+        {
+          "id": "pi-seed-028",
+          "day": "2026-09-01",
+          "column": "packaging",
+          "text": "Watermelon 10mg Shots"
+        },
+        {
+          "id": "pi-seed-029",
+          "day": "2026-09-01",
+          "column": "packaging",
+          "text": "Original 10mg Shots"
+        },
+        {
+          "id": "pi-seed-030",
+          "day": "2026-09-01",
+          "column": "cellar",
+          "text": "Flip Small Batch/Shots"
+        },
+        {
+          "id": "pi-seed-031",
+          "day": "2026-09-01",
+          "column": "prep",
+          "text": "12oz Standard Brites (1 pallet)"
+        },
+        {
+          "id": "pi-seed-032",
+          "day": "2026-09-02",
+          "column": "cellar",
+          "text": "CIP/SIP BT"
+        },
+        {
+          "id": "pi-seed-033",
+          "day": "2026-09-02",
+          "column": "prep",
+          "text": "16 Dirty Halfs"
+        },
+        {
+          "id": "pi-seed-034",
+          "day": "2026-09-02",
+          "column": "packaging",
+          "text": "Fest Beer (64 cases) 4-layers"
+        },
+        {
+          "id": "pi-seed-035",
+          "day": "2026-09-02",
+          "column": "cellar",
+          "text": "Fill 18 Amber 1/2s (FV 9)"
+        },
+        {
+          "id": "pi-seed-036",
+          "day": "2026-09-02",
+          "column": "brew",
+          "text": "Sherpa Blood Orange BT"
+        },
+        {
+          "id": "pi-seed-037",
+          "day": "2026-09-02",
+          "column": "help",
+          "text": "Blake"
+        },
+        {
+          "id": "pi-seed-038",
+          "day": "2026-09-02",
+          "column": "cellar",
+          "text": "Fill 40 Amber Slims (FV 9)"
+        },
+        {
+          "id": "pi-seed-039",
+          "day": "2026-09-02",
+          "column": "brew",
+          "text": "Sherpa Watermelon FV 3"
+        },
+        {
+          "id": "pi-seed-040",
+          "day": "2026-09-02",
+          "column": "help",
+          "text": "Pryce"
+        },
+        {
+          "id": "pi-seed-041",
+          "day": "2026-09-02",
+          "column": "packaging",
+          "text": "Amber Beer (100 cases) Rest of Pallet"
+        },
+        {
+          "id": "pi-seed-042",
+          "day": "2026-09-02",
+          "column": "cellar",
+          "text": "Fill 16 Fest 1/2s (FV 1)"
+        },
+        {
+          "id": "pi-seed-043",
+          "day": "2026-09-02",
+          "column": "packaging",
+          "text": "2 2oz Shot Runs"
+        },
+        {
+          "id": "pi-seed-044",
+          "day": "2026-09-02",
+          "column": "cellar",
+          "text": "Fill 20 Fest Slims (FV 1)"
+        },
+        {
+          "id": "pi-seed-045",
+          "day": "2026-09-02",
+          "column": "brew",
+          "text": "2x Shots"
+        },
+        {
+          "id": "pi-seed-046",
+          "day": "2026-09-02",
+          "column": "cellar",
+          "text": "CIP/SIP SB FV 3 / FV 8"
+        },
+        {
+          "id": "pi-seed-047",
+          "day": "2026-09-03",
+          "column": "packaging",
+          "text": "All 2oz"
+        },
+        {
+          "id": "pi-seed-048",
+          "day": "2026-09-03",
+          "column": "prep",
+          "text": "CAPITAL ORDER"
+        },
+        {
+          "id": "pi-seed-049",
+          "day": "2026-09-03",
+          "column": "help",
+          "text": "Blake"
+        },
+        {
+          "id": "pi-seed-050",
+          "day": "2026-09-03",
+          "column": "help",
+          "text": "Cody"
+        },
+        {
+          "id": "pi-seed-051",
+          "day": "2026-09-04",
+          "column": "help",
+          "text": "Joey"
+        },
+        {
+          "id": "pi-seed-052",
+          "day": "2026-09-04",
+          "column": "mia",
+          "text": "Shaun"
+        },
+        {
+          "id": "pi-seed-053",
+          "day": "2026-09-04",
+          "column": "help",
+          "text": "Cody"
+        },
+        {
+          "id": "pi-seed-054",
+          "day": "2026-09-04",
+          "column": "prep",
+          "text": "Friday Chore'n"
+        }
+      ]
+    },
+    {
+      "weekStart": "2026-09-07",
+      "items": [
+        {
+          "id": "pi-seed-055",
+          "day": "2026-09-10",
+          "column": "prep",
+          "text": "CAPITAL ORDER"
+        },
+        {
+          "id": "pi-seed-056",
+          "day": "2026-09-11",
+          "column": "prep",
+          "text": "Friday Chore'n"
+        }
+      ],
+      "dayNotes": {
+        "2026-09-07": "Labor Day"
+      }
+    }
+  ],
+  "needs": [
+    {
+      "id": "need-seed-057",
+      "group": "order",
+      "text": "BSG:",
+      "createdAt": "2026-09-02T12:00:00.000Z"
+    },
+    {
+      "id": "need-seed-058",
+      "group": "order",
+      "text": "Amoretti:",
+      "createdAt": "2026-09-02T12:00:00.000Z"
+    }
+  ],
+  "availability": {
+    "people": [
+      "Chance",
+      "Wepel",
+      "Tom",
+      "Mike",
+      "Shaun",
+      "Ethan",
+      "Pryce",
+      "Darby",
+      "Blake",
+      "Rainer",
+      "Pat"
+    ],
+    "entries": [
+      {
+        "id": "av-seed-059",
+        "person": "Chance",
+        "dates": "9/25 - 10/4",
+        "status": "confirmed",
+        "createdAt": "2026-09-02T12:00:00.000Z"
+      },
+      {
+        "id": "av-seed-060",
+        "person": "Tom",
+        "dates": "10/8 -10/16",
+        "status": "confirmed",
+        "createdAt": "2026-09-02T12:00:00.000Z"
+      },
+      {
+        "id": "av-seed-061",
+        "person": "Ethan",
+        "dates": "9/7, 9/11, 9/14, 9/18, 9/21",
+        "status": "confirmed",
+        "createdAt": "2026-09-02T12:00:00.000Z"
+      },
+      {
+        "id": "av-seed-062",
+        "person": "Blake",
+        "dates": "8/31",
+        "status": "confirmed",
+        "createdAt": "2026-09-02T12:00:00.000Z"
+      },
+      {
+        "id": "av-seed-063",
+        "person": "Blake",
+        "dates": "10/15",
+        "status": "confirmed",
+        "createdAt": "2026-09-02T12:00:00.000Z"
+      },
+      {
+        "id": "av-seed-064",
+        "person": "Rainer",
+        "dates": "9/11, 9/14",
+        "status": "confirmed",
+        "createdAt": "2026-09-02T12:00:00.000Z"
+      }
+    ]
+  },
+  "crowder": [
+    {
+      "id": "cr-seed-065",
+      "date": "2026-03-10",
+      "item": "Standard Case Trays",
+      "reimbursed": true
+    },
+    {
+      "id": "cr-seed-066",
+      "date": "2026-04-17",
+      "item": "White Pak-Techs / 624",
+      "reimbursed": true
+    },
+    {
+      "id": "cr-seed-067",
+      "date": "2026-04-24",
+      "item": "Can Ends (GF) / 3528",
+      "reimbursed": true
+    },
+    {
+      "id": "cr-seed-068",
+      "date": "2026-04-28",
+      "item": "Can Ends (Amber) 3576",
+      "reimbursed": true
+    },
+    {
+      "id": "cr-seed-069",
+      "date": "2026-05-04",
+      "item": "Case Trays 225 (Cowboy)",
+      "reimbursed": true
+    },
+    {
+      "id": "cr-seed-070",
+      "date": "2026-05-27",
+      "item": "Case Trays 136 (Mexican)",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-071",
+      "date": "2026-05-27",
+      "item": "Can Ends (3264)",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-072",
+      "date": "2026-05-27",
+      "item": "Brite Cans (3264)",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-073",
+      "date": "2026-06-08",
+      "item": "IPA Cans (2952) Ends",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-074",
+      "date": "2026-06-08",
+      "item": "IPA Case Trays 192",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-075",
+      "date": "2026-06-09",
+      "item": "Case Trays (226) Cowboy",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-076",
+      "date": "2026-06-10",
+      "item": "Case Trays (206) Zoo Amp",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-077",
+      "date": "2026-06-16",
+      "item": "Case Tray (206) Zoo Amp",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-078",
+      "date": "2026-06-19",
+      "item": "Smokiez Blackberry Lemonade 5112 Can ends",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-079",
+      "date": "2026-06-19",
+      "item": "Smokiez Blackberry Lemonade 852 Pak Techs",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-080",
+      "date": "2026-06-19",
+      "item": "Smokiez Blackberry Lemonade 213 Case Trays",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-081",
+      "date": "2026-06-19",
+      "item": "Smokiez Tropical 4704 Can Ends",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-082",
+      "date": "2026-06-19",
+      "item": "Smokiez Tropical 784 Pak Techs",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-083",
+      "date": "2026-06-19",
+      "item": "Smokiez Tropical 196 Case Trays",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-084",
+      "date": "2026-07-01",
+      "item": "Soshell Pineapple Mule 4440 Can Ends",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-085",
+      "date": "2026-07-01",
+      "item": "Soshell Pineapple Mule 733 Pak Techs",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-086",
+      "date": "2026-07-01",
+      "item": "Soshell Pineapple Mule 183 Case Trays",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-087",
+      "date": "2026-07-02",
+      "item": "Soshell Paloma 4488",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-088",
+      "date": "2026-07-02",
+      "item": "Soshell Paloma 748 Pak Techs",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-089",
+      "date": "2026-07-02",
+      "item": "Soshell Paloma 187 Case Trays",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-090",
+      "date": "2026-07-03",
+      "item": "Soshell Lit 4440 Can ends",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-091",
+      "date": "2026-07-03",
+      "item": "Soshell Lit 733 PakTechs",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-092",
+      "date": "2026-07-03",
+      "item": "Sosehll Lit 183 Case Trays",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-093",
+      "date": "2026-07-03",
+      "item": "Soshell Marg 4440",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-094",
+      "date": "2026-07-03",
+      "item": "Soshell Marg 733 Pak Techs",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-095",
+      "date": "2026-07-03",
+      "item": "Soshell Marg 183 Case Trays",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-096",
+      "date": "2026-08-04",
+      "item": "GF IPA 2664 Can Ends",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-097",
+      "date": "2026-08-04",
+      "item": "Mexican 2664 Can Ends",
+      "reimbursed": false
+    },
+    {
+      "id": "cr-seed-098",
+      "date": "2026-08-04",
+      "item": "Brite Cans 2664 ?",
+      "reimbursed": false
+    }
+  ],
+  "runLog": [
+    {
+      "id": "run-seed-099",
+      "date": "2026-06-19",
+      "text": "Smokiez Tropical - 5,000 units - 200 cases"
+    },
+    {
+      "id": "run-seed-100",
+      "date": "2026-06-22",
+      "text": "Smokiez BB lem- 5,000 units - 200 cases / J Shrooms Lime - 5000 units / J Shrooms Grapefruit - 5000 units \u2014\u2014 Split Shift 7-7"
+    },
+    {
+      "id": "run-seed-101",
+      "date": "2026-06-23",
+      "text": "Sherpa Mango- 15,000 units- 600 cases"
+    },
+    {
+      "id": "run-seed-102",
+      "date": "2026-06-24",
+      "text": "Sherpa Watermelon- 15,000 units - 600 Cases"
+    },
+    {
+      "id": "run-seed-103",
+      "date": "2026-06-25",
+      "text": "Sherpa Blood Orange - 15,000 Units- 600 Cases"
+    },
+    {
+      "id": "run-seed-104",
+      "date": "2026-06-26",
+      "text": "Sherpa Mango - 15,000 units - 600 Cases"
+    },
+    {
+      "id": "run-seed-105",
+      "date": "2026-06-29",
+      "text": "Sherpa Lemonade - 15,000 units - 600 Cases"
+    },
+    {
+      "id": "run-seed-106",
+      "date": "2026-06-30",
+      "text": "Soshell LIT - 4500 units - 175 cases / Soshell Margarita - 4500 units - 175 Cases"
+    },
+    {
+      "id": "run-seed-107",
+      "date": "2026-07-01",
+      "text": "Soshell Paloma - 4500 units - 175 cases / Soshell Mule - 4500 units - 175 Cases"
+    },
+    {
+      "id": "run-seed-108",
+      "date": "2026-07-02",
+      "text": "Happy Can Root Beer - 18,700 units - 780 cases \u2014\u2014 Split Shift 7-7"
+    },
+    {
+      "id": "run-seed-109",
+      "date": "2026-07-03",
+      "text": "Happy Can Root Beer - 18,700 units - 780 cases \u2014\u2014 Split Shift 7-7"
+    },
+    {
+      "id": "run-seed-110",
+      "date": "2026-07-06",
+      "text": "Happy Can Purp Slurp - 18700 units - 780 cases \u2014\u2014 Split Shift 7-7"
+    },
+    {
+      "id": "run-seed-111",
+      "date": "2026-07-07",
+      "text": "Happy Can Purp Slurp - 18700 units - 780 cases \u2014\u2014 Split Shift 7-7"
+    },
+    {
+      "id": "run-seed-112",
+      "date": "2026-07-08",
+      "text": "Happy Vanilla Dream - 18700 units - 780 cases \u2014\u2014 Split Shift 7-7"
+    },
+    {
+      "id": "run-seed-113",
+      "date": "2026-07-09",
+      "text": "Happy Can Vanilla Dream - 18700 units - 780 cases \u2014\u2014 Split Shift 7-7"
+    },
+    {
+      "id": "run-seed-114",
+      "date": "2026-07-10",
+      "text": "Happy Can Citrus Haze - 26,600 units - 1110 cases \u2014\u2014 Split Shift 7-9"
+    },
+    {
+      "id": "run-seed-115",
+      "date": "2026-07-13",
+      "text": "Sherpa Watermelon - 25,000 units - 1040 Cases \u2014\u2014 Split Shift 7-9"
+    },
+    {
+      "id": "run-seed-116",
+      "date": "2026-07-14",
+      "text": "Sherpa Blood Orange - 12,500 units - 520 Cases"
+    },
+    {
+      "id": "run-seed-117",
+      "date": "2026-07-15",
+      "text": "Sherpa Lemonade - 25,000 units - 1040 Cases \u2014\u2014 Split Shift 7-9"
+    },
+    {
+      "id": "run-seed-118",
+      "date": "2026-07-16",
+      "text": "Sherpa Blood Orange - 12,500 units - 520 cases"
+    },
+    {
+      "id": "run-seed-119",
+      "date": "2026-07-17",
+      "text": "Sherpa Mango - 25,000 units - 1040 Cases \u2014\u2014 Split Shift 7-9"
+    },
+    {
+      "id": "run-seed-120",
+      "date": "2026-07-20",
+      "text": "Sherpa Watermelon - 25,000 units - 1040 Cases \u2014\u2014 Split Shift 7-9"
+    },
+    {
+      "id": "run-seed-121",
+      "date": "2026-07-21",
+      "text": "Sherpa Blood Orange - 12,500 units - 520 Cases"
+    },
+    {
+      "id": "run-seed-122",
+      "date": "2026-07-22",
+      "text": "Beer TBD"
+    },
+    {
+      "id": "run-seed-123",
+      "date": "2026-07-23",
+      "text": "Beer/ Maintenance"
+    },
+    {
+      "id": "run-seed-124",
+      "date": "2026-07-24",
+      "text": "Sherpa Lemonade - 25,000 units - 1040 Cases \u2014\u2014 Split Shift 7-9"
+    },
+    {
+      "id": "run-seed-125",
+      "date": "2026-07-27",
+      "text": "Sherpa Blood Orange - 12,500 units - 520 cases"
+    },
+    {
+      "id": "run-seed-126",
+      "date": "2026-07-28",
+      "text": "Sherpa Mango - 25,000 units - 1040 Cases \u2014\u2014 Split Shift 7-9"
+    },
+    {
+      "id": "run-seed-127",
+      "date": "2026-07-29",
+      "text": "TBD"
+    },
+    {
+      "id": "run-seed-128",
+      "date": "2026-07-30",
+      "text": "TBD"
+    },
+    {
+      "id": "run-seed-129",
+      "date": "2026-07-31",
+      "text": "Incentive Day"
+    }
+  ]
+}

@@ -1,38 +1,202 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------
+   Lively Beerworks design system
+   Source: Brand Essence Guide (Switch Creative) via the Claude Design
+   handoff bundle. Colors are defined here and ONLY here — the :root block
+   holds the raw values and semantic aliases, and the @theme block below
+   exposes them to Tailwind as utility classes (bg-green, text-ink, …).
+   --------------------------------------------------------------------- */
+
+/* ---- Webfonts -------------------------------------------------------
+   Platform is the brand typeface (Medium is the workhorse weight, Bold is
+   for emphasis). Only those two weights exist, so Tailwind's font-semibold
+   / font-extrabold resolve to Bold and font-normal resolves to Medium —
+   no faux-bold synthesis.
+
+   BN Cringe Sans: the woff files were not included in the design bundle.
+   Drop them into public/fonts/ and un-comment this block, then add
+   "BN Cringe Sans" to the front of --font-brand below.
+
+   @font-face {
+     font-family: "BN Cringe Sans";
+     src: url("/fonts/BNCringeSans-Regular.woff2") format("woff2"),
+          url("/fonts/BNCringeSans-Regular.woff") format("woff");
+     font-weight: 400;
+     font-style: normal;
+     font-display: swap;
+   }
+   @font-face {
+     font-family: "BN Cringe Sans";
+     src: url("/fonts/BNCringeSans-Bold.woff2") format("woff2"),
+          url("/fonts/BNCringeSans-Bold.woff") format("woff");
+     font-weight: 700;
+     font-style: normal;
+     font-display: swap;
+   }
+*/
+
+@font-face {
+  font-family: "Platform";
+  src: url("/fonts/Platform-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Platform";
+  src: url("/fonts/Platform-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --background: #1a1410;
-  --foreground: #f5e6d3;
-  --card-bg: #231c14;
-  --card-border: #3d3225;
-  --amber: #d4a056;
-  --copper: #b87333;
+  /* ---- Brand palette (Brand Essence Guide §05) ----
+     Green, Yellow and Pink are co-equal core colors (~25% each); Purple is
+     the grounding color (~15%, the taproom building is purple); Blue is
+     used minimally (~10%). Color goes on as flat blocks, not gradients. */
+  --lively-green: #2b6d57; /* PMS 562C */
+  --lively-pink: #fc8773; /* PMS 2339C */
+  --lively-yellow: #ffd10d; /* PMS 7404C */
+  --lively-purple: #2e3080; /* PMS 2126C */
+  --lively-blue: #baedf5; /* PMS 291C */
+
+  /* ---- Tints & shades (derived, for UI states) ---- */
+  --green-deep: #1f5340;
+  --green-tint: #e9f2ee;
+  --pink-tint: #ffede8;
+  --yellow-deep: #e6bb00;
+  --yellow-tint: #fff6d2;
+  --purple-deep: #23255f;
+  --purple-tint: #e7e7f2;
+  --blue-tint: #ecfafc;
+
+  /* ---- Neutrals ---- */
+  --ink: #161616; /* display / logo black */
+  --ink-soft: #3a3a3a;
+  --slate: #6a6e6c; /* muted text on light surfaces */
+  --line: #e2e1dc; /* hairline borders */
+  --paper: #ffffff; /* primary surface */
+  --paper-2: #f7f6f1; /* warm off-white page ground */
+  --cream: #fbf8ef; /* warm tinted panel */
+
+  /* ---- Status (kept on-brand) ---- */
+  --critical: #d8482f;
+  --critical-tint: #fbe9e5;
+
+  /* ---- Team colors (OKC Thunder section only; not brand colors) ---- */
   --thunder-blue: #007ac1;
   --thunder-orange: #ef6100;
-  --muted: #8b7d6b;
-  --surface: #2a2218;
-  --accent-glow: rgba(212, 160, 86, 0.15);
+
+  /* ---- Semantic aliases ----
+     These are the names the components were written against. Mapping them
+     here means the whole site follows the palette without touching every
+     className. Legacy accent names: "amber" was the primary accent, now
+     Lively Green; "copper" was the secondary accent, now Lively Purple. */
+  --background: var(--paper-2);
+  --foreground: var(--ink);
+  --card-bg: var(--paper);
+  --card-border: var(--line);
+  --surface: var(--cream);
+  --muted: var(--slate);
+  --amber: var(--lively-green);
+  --copper: var(--lively-purple);
+  --accent-glow: rgba(43, 109, 87, 0.15);
+
+  /* ---- Type ---- */
+  --font-brand: "Platform", "Arial Narrow", system-ui, -apple-system, sans-serif;
+  --font-mono-stack: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
 @theme inline {
+  /* Brand */
+  --color-green: var(--lively-green);
+  --color-pink: var(--lively-pink);
+  --color-yellow: var(--lively-yellow);
+  --color-purple: var(--lively-purple);
+  --color-blue: var(--lively-blue);
+  --color-green-deep: var(--green-deep);
+  --color-green-tint: var(--green-tint);
+  --color-pink-tint: var(--pink-tint);
+  --color-yellow-deep: var(--yellow-deep);
+  --color-yellow-tint: var(--yellow-tint);
+  --color-purple-deep: var(--purple-deep);
+  --color-purple-tint: var(--purple-tint);
+  --color-blue-tint: var(--blue-tint);
+
+  /* Neutrals */
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-slate: var(--slate);
+  --color-line: var(--line);
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-cream: var(--cream);
+
+  /* Status */
+  --color-critical: var(--critical);
+  --color-critical-tint: var(--critical-tint);
+
+  /* Team */
+  --color-thunder-blue: var(--thunder-blue);
+  --color-thunder-orange: var(--thunder-orange);
+
+  /* Semantic / legacy aliases */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card-bg: var(--card-bg);
   --color-card-border: var(--card-border);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
   --color-amber: var(--amber);
   --color-copper: var(--copper);
-  --color-thunder-blue: var(--thunder-blue);
-  --color-thunder-orange: var(--thunder-orange);
-  --color-muted: var(--muted);
-  --color-surface: var(--surface);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  /* Type */
+  --font-sans: var(--font-brand);
+  --font-mono: var(--font-mono-stack);
+  --tracking-label: 0.14em;
+  --tracking-eyebrow: 0.22em;
+
+  /* Shape: the brand reads geometric and flat — small radii, pills for tags */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 14px;
+
+  /* The signature hard-offset block shadow: solid color, zero blur */
+  --shadow-block: 4px 4px 0 var(--ink);
+  --shadow-block-sm: 3px 3px 0 var(--ink);
+  --shadow-block-purple: 4px 4px 0 var(--lively-purple);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-brand);
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--lively-yellow);
+  color: var(--lively-purple);
+}
+
+:focus-visible {
+  outline: 3px solid var(--lively-purple);
+  outline-offset: 2px;
+}
+
+/* The brand's spaced, all-caps eyebrow label ("B R A N D  O V E R V I E W") */
+@utility eyebrow {
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
 }
 
 @keyframes pulse-live {
@@ -45,8 +209,8 @@ body {
 }
 
 @keyframes glow-new {
-  0%, 100% { box-shadow: 0 0 8px rgba(212, 160, 86, 0.3); }
-  50% { box-shadow: 0 0 16px rgba(212, 160, 86, 0.6); }
+  0%, 100% { box-shadow: 0 0 0 2px rgba(43, 109, 87, 0.25); }
+  50% { box-shadow: 0 0 0 4px rgba(43, 109, 87, 0.55); }
 }
 
 .animate-glow-new {

@@ -4,22 +4,47 @@ import { useEffect, useRef, useState } from "react";
 
 // Small building blocks the production tabs share: an inline "+ Add" input,
 // an inline text editor with save/delete, and consistent button styles.
+//
+// Styling follows the Lively Beerworks design system: flat color blocks,
+// crisp 2px keylines, small radii, Platform Bold for anything clickable, and
+// the signature hard-offset block shadow on the primary action (it collapses
+// on press so the button reads as physically pushed).
 
 export const btn = {
   primary:
-    "bg-amber text-background font-semibold px-4 py-2 rounded-lg text-sm disabled:opacity-40 disabled:cursor-not-allowed",
+    "inline-flex items-center justify-center gap-1.5 bg-green text-paper font-bold px-4 py-2 rounded-md text-sm border-2 border-green shadow-block-sm transition-[background-color,box-shadow,transform] duration-150 hover:bg-green-deep hover:border-green-deep active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:active:translate-x-0 disabled:active:translate-y-0",
   secondary:
-    "bg-surface hover:bg-card-border text-foreground px-3 py-2 rounded-lg text-sm border border-card-border disabled:opacity-40",
-  ghost: "text-xs text-muted hover:text-amber px-2 py-1 rounded",
-  danger: "text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded",
+    "inline-flex items-center justify-center gap-1.5 bg-paper text-ink font-bold px-3 py-2 rounded-md text-sm border-2 border-ink transition-colors duration-150 hover:bg-ink hover:text-paper disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-paper disabled:hover:text-ink",
+  // Yellow-on-purple is the brand's "active / look here" pairing; used for
+  // the header's Done button while editing is unlocked.
+  yellow:
+    "inline-flex items-center justify-center gap-1.5 bg-yellow text-purple font-bold px-4 py-2 rounded-md text-sm border-2 border-yellow transition-colors duration-150 hover:bg-yellow-deep hover:border-yellow-deep disabled:opacity-40 disabled:cursor-not-allowed",
+  // Outline buttons that sit on the green header bar.
+  onGreen:
+    "inline-flex items-center justify-center gap-1.5 bg-transparent text-paper font-bold px-3 py-2 rounded-md text-sm border-2 border-paper/70 transition-colors duration-150 hover:bg-paper hover:text-green hover:border-paper disabled:opacity-40 disabled:cursor-not-allowed",
+  ghost: "text-xs font-bold text-slate hover:text-green px-2 py-1 rounded-sm transition-colors duration-150",
+  ghostOnGreen:
+    "text-xs font-bold text-paper/80 hover:text-paper hover:underline underline-offset-4 px-2 py-1 rounded-sm transition-colors duration-150",
+  danger:
+    "text-xs font-bold text-critical hover:bg-critical-tint px-2 py-1 rounded-sm transition-colors duration-150",
   input:
-    "bg-surface border border-card-border rounded-lg px-3 py-2 text-base text-foreground w-full focus:outline-none focus:border-amber",
+    "bg-paper border-2 border-line rounded-md px-3 py-2 text-base text-ink placeholder:text-slate w-full transition-colors duration-150 focus:outline-none focus:border-green disabled:opacity-60",
 } as const;
+
+// Selectable pill used for tabs, the phone's day picker, and the TV control
+// bar: solid green when active, keyline when not.
+export function chip(active: boolean) {
+  return `shrink-0 inline-flex items-center gap-1.5 rounded-md border-2 px-3.5 py-2 text-sm font-bold leading-tight transition-colors duration-150 ${
+    active
+      ? "border-green bg-green text-paper"
+      : "border-line bg-paper text-ink hover:border-green hover:text-green"
+  }`;
+}
 
 export function Flash({ message }: { message: string }) {
   if (!message) return null;
   return (
-    <div className="fixed left-1/2 -translate-x-1/2 bottom-6 z-50 bg-amber text-background text-sm font-medium px-4 py-2 rounded-lg shadow-lg no-print">
+    <div className="fixed left-1/2 -translate-x-1/2 bottom-6 z-50 bg-yellow text-purple text-sm font-bold px-4 py-2 rounded-md border-2 border-purple shadow-block-purple no-print">
       {message}
     </div>
   );
@@ -94,8 +119,8 @@ export function AddInline({
         onClick={() => setOpen(true)}
         className={
           compact
-            ? "text-xs text-amber/70 hover:text-amber py-1"
-            : "text-sm text-amber/80 hover:text-amber border border-dashed border-amber/40 hover:border-amber rounded-lg px-3 py-2 w-full text-left"
+            ? "text-xs font-bold text-green/80 hover:text-green py-1 transition-colors duration-150"
+            : "text-sm font-bold text-green border-2 border-dashed border-green/50 hover:border-green hover:bg-green-tint rounded-md px-3 py-2 w-full text-left transition-colors duration-150"
         }
       >
         + {label}
@@ -142,7 +167,7 @@ export function AddInline({
           ×
         </button>
       </div>
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs font-bold text-critical">{error}</p>}
     </form>
   );
 }
@@ -190,7 +215,7 @@ export function TextEditor({
         if (text.trim() && text.trim() !== initial) run(() => onSave(text.trim()), true);
         else onClose();
       }}
-      className="bg-surface border border-amber/40 rounded-lg p-2 space-y-2"
+      className="bg-cream border-2 border-green rounded-md p-2 space-y-2"
     >
       <input
         ref={inputRef}
@@ -243,12 +268,13 @@ export function TextEditor({
         </button>
       </div>
       {children}
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs font-bold text-critical">{error}</p>}
     </form>
   );
 }
 
-// Section wrapper used on every tab.
+// Section wrapper used on every tab: solid paper surface, crisp keyline,
+// small radius — no drop shadow (the brand favors flat blocks).
 export function Card({
   title,
   subtitle,
@@ -261,11 +287,11 @@ export function Card({
   action?: React.ReactNode;
 }) {
   return (
-    <section className="bg-card-bg border border-card-border rounded-2xl p-4 sm:p-5">
+    <section className="bg-paper border-2 border-line rounded-lg p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
-          <h2 className="text-lg font-semibold text-amber">{title}</h2>
-          {subtitle && <p className="text-xs text-muted mt-0.5">{subtitle}</p>}
+          <h2 className="text-lg font-bold text-ink tracking-tight leading-tight">{title}</h2>
+          {subtitle && <p className="text-xs text-slate mt-0.5">{subtitle}</p>}
         </div>
         {action}
       </div>

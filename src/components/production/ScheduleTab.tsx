@@ -24,6 +24,10 @@ import { AddInline, TextEditor, btn } from "./shared";
 // pinned to a day), one column per area of the brewery — the same layout as
 // the whiteboard/spreadsheet. On phones each day collapses into a card with
 // only its non-empty columns.
+//
+// The phone view is the check-off view for the floor, so it keeps big tap
+// targets and high contrast: 24px checkboxes that fill solid green, ink text
+// on paper, and flat blue / pink blocks for who's in and who's out.
 
 type Act = (
   payload: Record<string, unknown>,
@@ -39,6 +43,9 @@ interface Props {
 }
 
 const GRID = "md:grid md:grid-cols-[6.5rem_repeat(6,minmax(0,1fr))] print:grid print:grid-cols-[5rem_repeat(6,minmax(0,1fr))]";
+// The phone's day picker: solid green for the day being shown, green keyline
+// for today, plain keyline otherwise.
+const DAY_PILL = "shrink-0 rounded-md border-2 px-3 py-2 text-sm font-bold leading-tight transition-colors duration-150";
 
 function patchWeek(
   data: ProductionData,
@@ -154,10 +161,10 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
           <button
             type="button"
             onClick={() => setEditingId(item.id)}
-            className="w-full text-left text-sm text-foreground bg-surface hover:border-amber/60 border border-card-border rounded-lg px-2.5 py-1.5 flex items-start gap-2"
+            className="w-full text-left text-sm text-ink bg-paper hover:border-green border-2 border-line rounded-md px-2.5 py-1.5 flex items-start gap-2 transition-colors duration-150"
           >
-            <span className={`flex-1 ${item.doneAt ? "line-through text-muted" : ""}`}>{item.text}</span>
-            <span aria-hidden="true" className="text-muted text-xs mt-0.5">✎</span>
+            <span className={`flex-1 ${item.doneAt ? "line-through text-slate" : ""}`}>{item.text}</span>
+            <span aria-hidden="true" className="text-slate text-xs mt-0.5">✎</span>
           </button>
         </li>
       );
@@ -169,17 +176,17 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
             type="button"
             onClick={() => toggle(item)}
             aria-pressed={Boolean(item.doneAt)}
-            className="w-full text-left flex items-start gap-2.5 md:gap-2 rounded-lg px-1.5 py-2.5 md:py-1.5 hover:bg-surface active:bg-surface"
+            className="w-full text-left flex items-start gap-2.5 md:gap-2 rounded-md px-1.5 py-2.5 md:py-1.5 hover:bg-cream active:bg-green-tint transition-colors duration-150"
           >
             <span
               aria-hidden="true"
-              className={`mt-0.5 w-5 h-5 md:w-4 md:h-4 shrink-0 rounded border-2 flex items-center justify-center text-[11px] md:text-[10px] font-bold ${
-                item.doneAt ? "bg-amber border-amber text-background" : "border-copper/60"
+              className={`mt-0.5 w-6 h-6 md:w-4 md:h-4 shrink-0 rounded-sm border-2 flex items-center justify-center text-[13px] md:text-[10px] font-bold transition-colors duration-150 ${
+                item.doneAt ? "bg-green border-green text-paper" : "border-ink/50 bg-paper"
               }`}
             >
               {item.doneAt ? "✓" : ""}
             </span>
-            <span className={`text-base md:text-sm leading-snug ${item.doneAt ? "line-through text-muted" : "text-foreground"}`}>
+            <span className={`text-base md:text-sm leading-snug ${item.doneAt ? "line-through text-slate" : "text-ink"}`}>
               {item.text}
             </span>
           </button>
@@ -189,10 +196,8 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
     return (
       <li key={item.id}>
         <span
-          className={`inline-block text-sm rounded-md px-2 py-1 border ${
-            item.column === "mia"
-              ? "border-red-900/60 bg-red-950/40 text-red-300"
-              : "border-amber/30 bg-amber/10 text-amber"
+          className={`inline-block text-sm font-bold rounded-sm px-2 py-1 ${
+            item.column === "mia" ? "bg-pink text-purple" : "bg-blue text-green"
           }`}
         >
           {item.text}
@@ -208,20 +213,20 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
     return (
       <div
         key={day}
-        className={`${mobileShows(day) ? "" : "hidden"} ${GRID} border-t border-card-border ${isToday ? "bg-amber/5" : ""}`}
+        className={`${mobileShows(day) ? "" : "hidden"} ${GRID} border-t-2 border-line ${isToday ? "bg-yellow-tint/50" : ""}`}
       >
         <div
           className={`px-3 py-2 md:py-3 flex flex-wrap items-center gap-x-2 gap-y-1 md:block ${
-            isTodo ? "bg-surface/60" : isToday ? "bg-amber/10" : "bg-surface/30"
+            isTodo ? "bg-cream" : isToday ? "bg-yellow-tint" : "bg-paper-2"
           } md:bg-transparent`}
         >
-          <div className={`text-sm font-bold uppercase tracking-wide ${isToday ? "text-amber" : "text-foreground"}`}>
+          <div className={`text-sm font-bold uppercase tracking-wide ${isToday ? "text-green" : "text-ink"}`}>
             {isTodo ? "To Do" : dayLabel(day)}
           </div>
-          {isTodo && <div className="text-[11px] text-muted">any day this week</div>}
-          {isToday && <div className="text-[11px] text-amber font-medium">Today</div>}
+          {isTodo && <div className="text-[11px] text-slate">any day this week</div>}
+          {isToday && <div className="text-[11px] text-green font-bold">Today</div>}
           {note && (
-            <div className="text-xs font-medium text-copper bg-copper/10 border border-copper/40 rounded px-1.5 py-0.5 md:mt-1 md:inline-block">
+            <div className="text-xs font-bold text-purple bg-yellow rounded-sm px-1.5 py-0.5 md:mt-1 md:inline-block">
               {note}
             </div>
           )}
@@ -245,11 +250,11 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
           return (
             <div
               key={col.key}
-              className={`${hideOnMobile ? "hidden md:block print:block" : ""} px-2.5 py-2 md:border-l md:border-card-border ${
-                disabled ? "md:bg-surface/20" : ""
+              className={`${hideOnMobile ? "hidden md:block print:block" : ""} px-2.5 py-2 md:border-l-2 md:border-line ${
+                disabled ? "md:bg-cream/60" : ""
               }`}
             >
-              <div className="md:hidden print:hidden text-[10px] uppercase tracking-wider text-muted mb-1">
+              <div className="md:hidden print:hidden text-[10px] font-bold uppercase tracking-wider text-slate mb-1">
                 {col.label}
               </div>
               {items.length > 0 && <ul className="space-y-1">{items.map(renderItem)}</ul>}
@@ -281,8 +286,8 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
           ‹
         </button>
         <div className="flex-1 text-center min-w-0">
-          <div className="font-semibold text-foreground text-lg leading-tight">{weekLabel(weekStart)}</div>
-          <div className="text-xs text-muted">
+          <div className="font-bold text-ink text-lg leading-tight tracking-tight">{weekLabel(weekStart)}</div>
+          <div className="text-xs text-slate">
             {relative}
             {tasks.length > 0 && ` · ${done}/${tasks.length} tasks done`}
           </div>
@@ -311,16 +316,16 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
               key={day}
               type="button"
               onClick={() => setMobileDay(day)}
-              className={`shrink-0 rounded-lg border px-3 py-2 text-sm font-semibold leading-tight ${
+              className={`${DAY_PILL} ${
                 active
-                  ? "border-amber bg-amber/15 text-amber"
+                  ? "border-green bg-green text-paper"
                   : day === today
-                    ? "border-amber/40 bg-surface text-amber"
-                    : "border-card-border bg-surface text-foreground"
+                    ? "border-green bg-paper text-green"
+                    : "border-line bg-paper text-ink"
               }`}
             >
               {dayLabel(day).split(" ")[0]}
-              <span className="block text-[10px] font-normal opacity-80">
+              <span className="block text-[10px] opacity-80">
                 {dayLabel(day).split(" ")[1]}
                 {count > 0 && ` · ${count}`}
               </span>
@@ -330,10 +335,8 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
         <button
           type="button"
           onClick={() => setMobileDay("all")}
-          className={`shrink-0 rounded-lg border px-3 py-2 text-sm font-semibold ${
-            mobileDay === "all"
-              ? "border-amber bg-amber/15 text-amber"
-              : "border-card-border bg-surface text-foreground"
+          className={`${DAY_PILL} ${
+            mobileDay === "all" ? "border-green bg-green text-paper" : "border-line bg-paper text-ink"
           }`}
         >
           Week
@@ -355,25 +358,25 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
             </button>
           )}
           {!weekendHasItems && (
-            <label className="flex items-center gap-2 text-muted cursor-pointer">
+            <label className="flex items-center gap-2 text-slate cursor-pointer">
               <input
                 type="checkbox"
                 checked={showWeekend}
                 onChange={(e) => setShowWeekend(e.target.checked)}
-                className="accent-amber"
+                className="accent-green"
               />
               Show Sat / Sun
             </label>
           )}
-          <span className="text-xs text-muted">Tap any item to edit, reorder, or delete it.</span>
+          <span className="text-xs text-slate">Tap any item to edit, reorder, or delete it.</span>
         </div>
       )}
 
-      <div className="bg-card-bg border border-card-border rounded-2xl overflow-hidden">
-        <div className={`hidden ${GRID} bg-surface text-[11px] uppercase tracking-wider text-muted font-semibold`}>
+      <div className="bg-paper border-2 border-line rounded-lg overflow-hidden">
+        <div className={`hidden ${GRID} bg-cream text-[11px] uppercase tracking-wider text-slate font-bold`}>
           <div className="px-3 py-2">Day</div>
           {ALL_COLUMNS.map((c) => (
-            <div key={c.key} className="px-2.5 py-2 border-l border-card-border">
+            <div key={c.key} className="px-2.5 py-2 border-l-2 border-line">
               {c.label}
             </div>
           ))}
@@ -383,7 +386,7 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
       </div>
 
       {week.items.length === 0 && !editing && (
-        <p className="text-sm text-muted text-center">Nothing on the board for this week yet.</p>
+        <p className="text-sm text-slate text-center">Nothing on the board for this week yet.</p>
       )}
     </div>
   );
@@ -446,7 +449,7 @@ function MoveTo({
   const invalid = day === TODO_DAY && !isTaskColumn(column);
   return (
     <div className="flex flex-wrap items-center gap-1 text-xs">
-      <span className="text-muted mr-1">Move to</span>
+      <span className="text-slate mr-1">Move to</span>
       <select value={day} onChange={(e) => setDay(e.target.value)} className={`${btn.input} w-auto py-1 text-xs`}>
         <option value={TODO_DAY}>To Do</option>
         {days.map((d) => (

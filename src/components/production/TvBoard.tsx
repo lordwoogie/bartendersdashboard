@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import {
   ALL_COLUMNS,
@@ -21,6 +22,11 @@ import { dateKeyInZone, formatTimeInZone } from "@/lib/timezone";
 // /production/tv — the week board for a wall TV. No header, no buttons, big
 // type, and the whole grid scaled to fit the screen so nothing needs
 // scrolling. Reloads itself every minute and rolls to the new week on Monday.
+//
+// Built for reading from across the room: white Platform Bold on the brand's
+// purple ground, yellow for "today" and checked-off tasks, flat blue / pink
+// blocks for who's in and who's out. No hairlines or tints that wash out
+// on a TV panel.
 //
 // Settings live in the URL so a bookmark on the TV keeps them:
 //   ?week=next      show next week instead of this one
@@ -164,10 +170,17 @@ export function TvBoard() {
 
   if (!data || !today || !weekStart || !now) {
     return (
-      <div className="h-screen w-screen bg-background text-foreground flex items-center justify-center">
+      <div className="h-screen w-screen bg-purple text-paper flex items-center justify-center">
         <div className="text-center">
-          <div className="text-6xl mb-4 animate-pulse">🍺</div>
-          <p className="text-2xl text-muted">{error || "Loading the board…"}</p>
+          <Image
+            src="/brand/tree-yellow.svg"
+            alt=""
+            width={70}
+            height={80}
+            unoptimized
+            className="h-20 w-auto mx-auto mb-5 animate-pulse"
+          />
+          <p className="text-2xl text-paper/80">{error || "Loading the board…"}</p>
         </div>
       </div>
     );
@@ -196,23 +209,21 @@ export function TvBoard() {
         <li key={item.id} className="flex items-start gap-2 leading-snug">
           <span
             aria-hidden="true"
-            className={`mt-1 w-[1.1em] h-[1.1em] shrink-0 rounded border-2 flex items-center justify-center text-[0.7em] font-bold ${
-              item.doneAt ? "bg-amber border-amber text-background" : "border-copper/70"
+            className={`mt-1 w-[1.1em] h-[1.1em] shrink-0 rounded-sm border-[3px] flex items-center justify-center text-[0.7em] font-bold ${
+              item.doneAt ? "bg-yellow border-yellow text-purple" : "border-paper/80"
             }`}
           >
             {item.doneAt ? "✓" : ""}
           </span>
-          <span className={item.doneAt ? "line-through text-muted" : "text-foreground"}>{item.text}</span>
+          <span className={item.doneAt ? "line-through text-paper/50" : "text-paper"}>{item.text}</span>
         </li>
       );
     }
     return (
       <li key={item.id}>
         <span
-          className={`inline-block rounded-md px-2 py-0.5 border leading-snug ${
-            item.column === "mia"
-              ? "border-red-900/70 bg-red-950/50 text-red-300"
-              : "border-amber/40 bg-amber/10 text-amber"
+          className={`inline-block rounded-sm px-2 py-0.5 font-bold leading-snug ${
+            item.column === "mia" ? "bg-pink text-purple" : "bg-blue text-purple"
           }`}
         >
           {item.text}
@@ -230,16 +241,16 @@ export function TvBoard() {
     return (
       <div
         key={day}
-        className={`${GRID} border-t-2 border-card-border ${isToday ? "bg-amber/10" : isTodo ? "bg-surface/50" : ""}`}
+        className={`${GRID} border-t-2 border-paper/20 ${isToday ? "bg-paper/10" : isTodo ? "bg-paper/5" : ""}`}
       >
-        <div className={`px-4 py-3 ${isToday ? "border-l-8 border-amber" : "border-l-8 border-transparent"}`}>
-          <div className={`text-[1.6em] font-extrabold uppercase tracking-wide leading-none ${isToday ? "text-amber" : "text-foreground"}`}>
+        <div className={`px-4 py-3 ${isToday ? "border-l-8 border-yellow" : "border-l-8 border-transparent"}`}>
+          <div className={`text-[1.6em] font-bold uppercase tracking-wide leading-none ${isToday ? "text-yellow" : "text-paper"}`}>
             {isTodo ? "To Do" : dayLabel(day)}
           </div>
-          {isTodo && <div className="text-[0.85em] text-muted mt-1">any day this week</div>}
-          {isToday && <div className="text-[0.85em] text-amber font-semibold mt-1">Today</div>}
+          {isTodo && <div className="text-[0.85em] text-paper/70 mt-1">any day this week</div>}
+          {isToday && <div className="text-[0.85em] text-yellow font-bold mt-1">Today</div>}
           {note && (
-            <div className="mt-2 inline-block text-[0.9em] font-semibold text-copper bg-copper/10 border border-copper/50 rounded px-2 py-0.5">
+            <div className="mt-2 inline-block text-[0.9em] font-bold text-purple bg-yellow rounded-sm px-2 py-0.5">
               {note}
             </div>
           )}
@@ -250,7 +261,7 @@ export function TvBoard() {
           return (
             <div
               key={col.key}
-              className={`px-3 py-3 border-l border-card-border ${disabled ? "bg-surface/30" : ""}`}
+              className={`px-3 py-3 border-l-2 border-paper/20 ${disabled ? "bg-paper/5" : ""}`}
             >
               {items.length > 0 && <ul className="space-y-1.5">{items.map(renderItem)}</ul>}
             </div>
@@ -261,33 +272,44 @@ export function TvBoard() {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-background text-foreground flex flex-col select-none">
+    <div className="h-screen w-screen overflow-hidden bg-purple text-paper flex flex-col select-none">
       <header className="flex items-end justify-between px-6 pt-4 pb-3 shrink-0">
-        <div>
-          <div className="text-sm uppercase tracking-[0.3em] text-copper font-semibold">Lively Production</div>
-          <h1 className="text-4xl font-extrabold text-amber leading-tight">
-            {weekLabel(weekStart)}
-            <span className="ml-3 text-2xl font-semibold text-muted">
-              {showNext ? "Next week" : "This week"}
-            </span>
-          </h1>
+        <div className="flex items-end gap-5">
+          <Image
+            src="/brand/lockup-horizontal-long-white.svg"
+            alt="Lively Beerworks"
+            width={154}
+            height={50}
+            priority
+            unoptimized
+            className="h-[50px] w-auto mb-1"
+          />
+          <div>
+            <div className="text-sm uppercase tracking-eyebrow text-yellow font-bold">Production</div>
+            <h1 className="text-4xl font-bold text-paper leading-tight">
+              {weekLabel(weekStart)}
+              <span className="ml-3 text-2xl font-bold text-paper/60">
+                {showNext ? "Next week" : "This week"}
+              </span>
+            </h1>
+          </div>
         </div>
         <div className="text-right">
           <div className="text-4xl font-bold tabular-nums leading-tight">{formatTimeInZone(now)}</div>
-          <div className="text-sm text-muted">
+          <div className="text-sm text-paper/70">
             {tasks.length > 0 && `${done}/${tasks.length} tasks done · `}
-            {error ? <span className="text-red-300">{error}</span> : updatedAt ? `Updated ${formatTimeInZone(updatedAt)}` : ""}
+            {error ? <span className="text-pink font-bold">{error}</span> : updatedAt ? `Updated ${formatTimeInZone(updatedAt)}` : ""}
           </div>
         </div>
       </header>
 
       <div className="flex-1 min-h-0 px-6 pb-4">
         <div ref={outerRef} className="h-full w-full overflow-hidden">
-        <div ref={boardRef} className="text-[1.35rem] bg-card-bg border-2 border-card-border rounded-2xl overflow-hidden">
-          <div className={`${GRID} bg-surface text-[0.8em] uppercase tracking-wider text-muted font-bold`}>
+        <div ref={boardRef} className="text-[1.35rem] bg-purple-deep border-2 border-paper/30 rounded-lg overflow-hidden">
+          <div className={`${GRID} bg-paper/10 text-[0.8em] uppercase tracking-wider text-paper/80 font-bold`}>
             <div className="px-4 py-2 border-l-8 border-transparent">Day</div>
             {ALL_COLUMNS.map((c) => (
-              <div key={c.key} className="px-3 py-2 border-l border-card-border">
+              <div key={c.key} className="px-3 py-2 border-l-2 border-paper/20">
                 {c.label}
               </div>
             ))}
@@ -295,7 +317,7 @@ export function TvBoard() {
           {renderRow(TODO_DAY)}
           {visibleDays.map(renderRow)}
           {week.items.length === 0 && (
-            <div className="px-6 py-16 text-center text-muted text-[1.2em] border-t-2 border-card-border">
+            <div className="px-6 py-16 text-center text-paper/70 text-[1.2em] border-t-2 border-paper/20">
               Nothing on the board for {weekLabel(weekStart)} yet.
             </div>
           )}
@@ -304,47 +326,49 @@ export function TvBoard() {
       </div>
 
       <div
-        className={`fixed bottom-0 inset-x-0 flex flex-wrap items-center justify-center gap-2 p-3 bg-background/90 backdrop-blur border-t border-card-border transition-opacity duration-300 ${
+        className={`fixed bottom-0 inset-x-0 flex flex-wrap items-center justify-center gap-2 p-3 bg-purple-deep border-t-2 border-paper/30 transition-opacity duration-300 ${
           controls ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
         <a href="/production" className={chip(false)}>
           ← Board
         </a>
-        <span className="w-px h-6 bg-card-border mx-1" />
+        <span className="w-px h-6 bg-paper/30 mx-1" />
         <button type="button" onClick={() => setParam("week", null)} className={chip(!showNext)}>
           This week
         </button>
         <button type="button" onClick={() => setParam("week", "next")} className={chip(showNext)}>
           Next week
         </button>
-        <span className="w-px h-6 bg-card-border mx-1" />
+        <span className="w-px h-6 bg-paper/30 mx-1" />
         <button type="button" onClick={() => setParam("from", null)} className={chip(!fromToday)}>
           Whole week
         </button>
         <button type="button" onClick={() => setParam("from", "today")} className={chip(fromToday)}>
           From today
         </button>
-        <span className="w-px h-6 bg-card-border mx-1" />
+        <span className="w-px h-6 bg-paper/30 mx-1" />
         <button type="button" onClick={() => setParam("done", null)} className={chip(!hideDone)}>
           Strike done
         </button>
         <button type="button" onClick={() => setParam("done", "hide")} className={chip(hideDone)}>
           Hide done
         </button>
-        <span className="w-px h-6 bg-card-border mx-1" />
+        <span className="w-px h-6 bg-paper/30 mx-1" />
         <button type="button" onClick={toggleFullscreen} className={chip(false)}>
-          ⛶ Fullscreen
+          Fullscreen
         </button>
       </div>
     </div>
   );
 }
 
+// Control-bar pill on the purple ground: solid yellow when active, white
+// keyline when not.
 function chip(active: boolean) {
-  return `rounded-lg border px-3 py-1.5 text-sm font-medium ${
+  return `rounded-md border-2 px-3 py-1.5 text-sm font-bold transition-colors duration-150 ${
     active
-      ? "border-amber bg-amber/15 text-amber"
-      : "border-card-border bg-surface text-foreground hover:border-amber hover:text-amber"
+      ? "border-yellow bg-yellow text-purple"
+      : "border-paper/60 bg-transparent text-paper hover:bg-paper hover:text-purple hover:border-paper"
   }`;
 }

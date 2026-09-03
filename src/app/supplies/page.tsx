@@ -102,7 +102,7 @@ export default function SuppliesPage() {
                         showFlash("Couldn't remove that — try again");
                       }
                     }}
-                    className="text-red-400 text-xs hover:text-red-300"
+                    className="text-critical text-xs hover:text-critical/80"
                   >
                     Remove
                   </button>
@@ -133,7 +133,7 @@ export default function SuppliesPage() {
               Add
             </button>
           </form>
-          {buyError && <p className="text-sm text-red-400 mt-2">{buyError}</p>}
+          {buyError && <p className="text-sm text-critical mt-2">{buyError}</p>}
 
           {done.length > 0 && (
             <details className="mt-6">
@@ -166,7 +166,7 @@ export default function SuppliesPage() {
                           showFlash("Couldn't remove that — try again");
                         }
                       }}
-                      className="text-red-400/70 text-xs hover:text-red-300"
+                      className="text-critical/70 text-xs hover:text-critical/80"
                     >
                       Remove
                     </button>

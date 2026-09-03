@@ -65,12 +65,12 @@ function CrowderLog({
       title="Crowder Inventory"
       subtitle={`${openCount} not yet reimbursed`}
       action={
-        <label className="flex items-center gap-2 text-xs text-muted cursor-pointer shrink-0">
+        <label className="flex items-center gap-2 text-xs text-slate cursor-pointer shrink-0">
           <input
             type="checkbox"
             checked={onlyOpen}
             onChange={(e) => setOnlyOpen(e.target.checked)}
-            className="accent-amber"
+            className="accent-green"
           />
           Only unpaid
         </label>
@@ -92,20 +92,20 @@ function CrowderLog({
         </div>
       )}
       {rows.length === 0 ? (
-        <p className="text-sm text-muted">Nothing logged.</p>
+        <p className="text-sm text-slate">Nothing logged.</p>
       ) : (
         <div className="overflow-x-auto -mx-4 sm:mx-0">
           <table className="w-full text-sm min-w-[32rem]">
             <thead>
-              <tr className="text-[11px] uppercase tracking-wider text-muted text-left">
-                <th className="px-4 sm:px-2 py-2 font-semibold">Date</th>
-                <th className="px-2 py-2 font-semibold">Item / #</th>
-                <th className="px-2 py-2 font-semibold">Reimbursed</th>
-                <th className="px-2 py-2 font-semibold">Notes</th>
+              <tr className="text-[11px] uppercase tracking-wider text-slate text-left">
+                <th className="px-4 sm:px-2 py-2 font-bold">Date</th>
+                <th className="px-2 py-2 font-bold">Item / #</th>
+                <th className="px-2 py-2 font-bold">Reimbursed</th>
+                <th className="px-2 py-2 font-bold">Notes</th>
                 {editing && <th className="px-2 py-2" />}
               </tr>
             </thead>
-            <tbody className="divide-y divide-card-border">
+            <tbody className="divide-y-2 divide-line">
               {rows.map((e) =>
                 editingId === e.id ? (
                   <tr key={e.id}>
@@ -119,7 +119,7 @@ function CrowderLog({
                     </td>
                   </tr>
                 ) : (
-                  <tr key={e.id} className={e.reimbursed ? "text-muted" : "text-foreground"}>
+                  <tr key={e.id} className={e.reimbursed ? "text-slate" : "text-ink"}>
                     <td className="px-4 sm:px-2 py-2 whitespace-nowrap align-top">{e.date ? longDate(e.date) : "—"}</td>
                     <td className="px-2 py-2 align-top">{e.item}</td>
                     <td className="px-2 py-2 align-top whitespace-nowrap">
@@ -134,21 +134,21 @@ function CrowderLog({
                               reimbursedDate: e.reimbursed ? "" : (e.reimbursedDate ?? today),
                             })
                           }
-                          className={`rounded-md px-2 py-0.5 text-xs border ${
+                          className={`rounded-sm px-2 py-0.5 text-xs font-bold border-2 transition-colors duration-150 ${
                             e.reimbursed
-                              ? "border-green-800 bg-green-950/40 text-green-200"
-                              : "border-amber/50 text-amber hover:bg-amber/10"
+                              ? "border-green bg-green text-paper"
+                              : "border-purple text-purple hover:bg-purple-tint"
                           }`}
                         >
                           {e.reimbursed ? `Yes${e.reimbursedDate ? ` · ${shortDate(e.reimbursedDate)}` : ""}` : "Mark paid"}
                         </button>
                       ) : e.reimbursed ? (
-                        <span className="text-green-300">Yes{e.reimbursedDate ? ` · ${shortDate(e.reimbursedDate)}` : ""}</span>
+                        <span className="font-bold text-green">Yes{e.reimbursedDate ? ` · ${shortDate(e.reimbursedDate)}` : ""}</span>
                       ) : (
-                        <span className="text-amber">No</span>
+                        <span className="font-bold text-purple">No</span>
                       )}
                     </td>
-                    <td className="px-2 py-2 align-top text-muted">{e.notes ?? ""}</td>
+                    <td className="px-2 py-2 align-top text-slate">{e.notes ?? ""}</td>
                     {editing && (
                       <td className="px-2 py-2 align-top text-right">
                         <button type="button" onClick={() => setEditingId(e.id)} className={btn.ghost}>
@@ -200,7 +200,7 @@ function CrowderForm({
         setBusy(false);
         if (saved) onClose();
       }}
-      className="bg-surface border border-amber/40 rounded-lg p-3 grid gap-2 sm:grid-cols-[9.5rem_1fr]"
+      className="bg-cream border-2 border-green rounded-md p-3 grid gap-2 sm:grid-cols-[9.5rem_1fr]"
     >
       <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={btn.input} required />
       <input
@@ -211,12 +211,12 @@ function CrowderForm({
         className={btn.input}
         required
       />
-      <label className="flex items-center gap-2 text-sm text-foreground">
+      <label className="flex items-center gap-2 text-sm text-ink">
         <input
           type="checkbox"
           checked={reimbursed}
           onChange={(e) => setReimbursed(e.target.checked)}
-          className="accent-amber"
+          className="accent-green"
         />
         Reimbursed
       </label>
@@ -313,11 +313,11 @@ function RunLog({
           )}
         </div>
       )}
-      {months.length === 0 && <p className="text-sm text-muted">No runs logged.</p>}
+      {months.length === 0 && <p className="text-sm text-slate">No runs logged.</p>}
       {months.map((m) => (
         <div key={m.key} className="mb-4 last:mb-0">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-copper mb-2">{m.label}</h3>
-          <ul className="divide-y divide-card-border">
+          <h3 className="text-xs font-bold uppercase tracking-eyebrow text-purple mb-2">{m.label}</h3>
+          <ul className="divide-y-2 divide-line">
             {m.rows.map((e) =>
               editingId === e.id ? (
                 <li key={e.id} className="py-2">
@@ -330,8 +330,8 @@ function RunLog({
                 </li>
               ) : (
                 <li key={e.id} className="py-2 flex items-start gap-3 text-sm">
-                  <span className="w-10 shrink-0 font-mono text-muted">{shortDate(e.date)}</span>
-                  <span className="flex-1 text-foreground">{e.text}</span>
+                  <span className="w-10 shrink-0 tabular-nums text-slate">{shortDate(e.date)}</span>
+                  <span className="flex-1 text-ink">{e.text}</span>
                   {editing && (
                     <button type="button" onClick={() => setEditingId(e.id)} className={btn.ghost}>
                       ✎
@@ -371,7 +371,7 @@ function RunForm({
         setBusy(false);
         if (saved) onClose();
       }}
-      className="bg-surface border border-amber/40 rounded-lg p-3 grid gap-2 sm:grid-cols-[9.5rem_1fr]"
+      className="bg-cream border-2 border-green rounded-md p-3 grid gap-2 sm:grid-cols-[9.5rem_1fr]"
     >
       <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={btn.input} required />
       <input

@@ -105,7 +105,7 @@ export default function NotesPage() {
               Post
             </button>
           </form>
-          {noteError && <p className="text-sm text-red-400 mt-2">{noteError}</p>}
+          {noteError && <p className="text-sm text-critical mt-2">{noteError}</p>}
 
           <div className="mt-6">
             {!loaded ? (
@@ -141,7 +141,7 @@ export default function NotesPage() {
                                 showFlash("Couldn't remove that — try again");
                               }
                             }}
-                            className="text-red-400 text-xs hover:text-red-300 shrink-0 mt-0.5"
+                            className="text-critical text-xs hover:text-critical/80 shrink-0 mt-0.5"
                           >
                             Remove
                           </button>

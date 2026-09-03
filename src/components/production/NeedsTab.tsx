@@ -62,8 +62,8 @@ export function NeedsTab({ data, editing, act, flash }: Props) {
                 type="button"
                 onClick={() => toggle(item)}
                 aria-label={item.doneAt ? "Mark not done" : "Mark done"}
-                className={`mt-0.5 w-5 h-5 shrink-0 rounded border-2 flex items-center justify-center text-xs font-bold ${
-                  item.doneAt ? "bg-amber border-amber text-background" : "border-copper/60 hover:border-amber"
+                className={`mt-0.5 w-6 h-6 shrink-0 rounded-sm border-2 flex items-center justify-center text-[13px] font-bold transition-colors duration-150 ${
+                  item.doneAt ? "bg-green border-green text-paper" : "border-ink/50 bg-paper hover:border-green"
                 }`}
               >
                 {item.doneAt ? "✓" : ""}
@@ -72,12 +72,12 @@ export function NeedsTab({ data, editing, act, flash }: Props) {
                 <button
                   type="button"
                   onClick={() => setEditingId(item.id)}
-                  className={`flex-1 text-left text-sm ${item.doneAt ? "line-through text-muted" : "text-foreground"} hover:text-amber`}
+                  className={`flex-1 text-left text-sm ${item.doneAt ? "line-through text-slate" : "text-ink"} hover:text-green`}
                 >
-                  {item.text} <span className="text-muted text-xs">✎</span>
+                  {item.text} <span className="text-slate text-xs">✎</span>
                 </button>
               ) : (
-                <span className={`flex-1 text-sm ${item.doneAt ? "line-through text-muted" : "text-foreground"}`}>
+                <span className={`flex-1 text-sm ${item.doneAt ? "line-through text-slate" : "text-ink"}`}>
                   {item.text}
                 </span>
               )}
@@ -86,7 +86,7 @@ export function NeedsTab({ data, editing, act, flash }: Props) {
         return (
           <Card key={group.key} title={group.label} subtitle={`${open.length} open`}>
             {open.length === 0 && done.length === 0 && (
-              <p className="text-sm text-muted mb-3">Nothing here.</p>
+              <p className="text-sm text-slate mb-3">Nothing here.</p>
             )}
             {open.length > 0 && <ul className="space-y-2 mb-3">{open.map(render)}</ul>}
             {editing && (
@@ -97,7 +97,7 @@ export function NeedsTab({ data, editing, act, flash }: Props) {
             )}
             {done.length > 0 && (
               <details className="mt-3">
-                <summary className="text-xs text-muted cursor-pointer hover:text-amber">
+                <summary className="text-xs font-bold text-slate cursor-pointer hover:text-green">
                   Done ({done.length})
                 </summary>
                 <ul className="space-y-2 mt-2">{done.map(render)}</ul>

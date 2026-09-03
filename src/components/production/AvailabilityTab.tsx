@@ -49,20 +49,22 @@ export function AvailabilityTab({ data, editing, act, flash }: Props) {
         />
       );
     }
+    // Confirmed time off is a solid green block; a request is a dashed purple
+    // keyline until the head brewer moves it over.
     const classes =
       e.status === "confirmed"
-        ? "border-green-800 bg-green-950/40 text-green-200"
-        : "border-dashed border-amber/60 bg-amber/5 text-amber";
+        ? "border-green bg-green text-paper"
+        : "border-dashed border-purple/60 bg-paper text-purple";
     const body = (
       <>
-        <span className="font-medium">{e.dates}</span>
+        <span className="font-bold">{e.dates}</span>
         {e.note && <span className="text-xs opacity-80"> — {e.note}</span>}
         {e.status === "request" && <span className="text-[10px] uppercase tracking-wider opacity-70 ml-1">pending</span>}
       </>
     );
     if (!editing) {
       return (
-        <span key={e.id} className={`inline-block text-sm rounded-md px-2 py-1 border ${classes}`}>
+        <span key={e.id} className={`inline-block text-sm rounded-sm px-2 py-1 border-2 ${classes}`}>
           {body}
         </span>
       );
@@ -72,7 +74,7 @@ export function AvailabilityTab({ data, editing, act, flash }: Props) {
         <button
           type="button"
           onClick={() => setEditingId(e.id)}
-          className={`text-left text-sm rounded-md px-2 py-1 border ${classes} hover:border-amber`}
+          className={`text-left text-sm rounded-sm px-2 py-1 border-2 ${classes} hover:border-ink`}
         >
           {body} <span className="text-xs opacity-60">✎</span>
         </button>
@@ -80,7 +82,7 @@ export function AvailabilityTab({ data, editing, act, flash }: Props) {
           <button
             type="button"
             onClick={() => ok({ action: "update-availability", id: e.id, status: "confirmed" })}
-            className="text-xs rounded-md px-2 border border-green-800 bg-green-950/40 text-green-200 hover:bg-green-900/60"
+            className="text-xs font-bold rounded-sm px-2 border-2 border-green bg-green text-paper hover:bg-green-deep hover:border-green-deep transition-colors duration-150"
             title="Move to confirmed"
           >
             ✓ Confirm
@@ -95,18 +97,18 @@ export function AvailabilityTab({ data, editing, act, flash }: Props) {
       <RequestForm people={people} act={act} flash={flash} />
 
       {editing && pending.length > 0 && (
-        <div className="text-sm text-amber bg-amber/10 border border-amber/30 rounded-xl px-4 py-2">
+        <div className="text-sm font-bold text-purple bg-yellow rounded-md px-4 py-2">
           {pending.length} request{pending.length === 1 ? "" : "s"} waiting to be confirmed — tap ✓ Confirm next to it.
         </div>
       )}
 
-      <Card title="Time off" subtitle="Green is confirmed. Dashed amber is a request the head brewer hasn't moved yet.">
-        <div className="hidden sm:grid grid-cols-[7rem_1fr_1fr] gap-3 text-[11px] uppercase tracking-wider text-muted font-semibold border-b border-card-border pb-2 mb-1">
+      <Card title="Time off" subtitle="Green is confirmed. Dashed purple is a request the head brewer hasn't moved yet.">
+        <div className="hidden sm:grid grid-cols-[7rem_1fr_1fr] gap-3 text-[11px] uppercase tracking-wider text-slate font-bold border-b-2 border-line pb-2 mb-1">
           <div>Who</div>
           <div>Confirmed</div>
           <div>Requests</div>
         </div>
-        <ul className="divide-y divide-card-border">
+        <ul className="divide-y-2 divide-line">
           {roster.map((person) => {
             const mine = entries.filter((e) => e.person === person);
             const confirmed = mine.filter((e) => e.status === "confirmed");
@@ -114,7 +116,7 @@ export function AvailabilityTab({ data, editing, act, flash }: Props) {
             return (
               <li key={person} className="py-3 sm:grid sm:grid-cols-[7rem_1fr_1fr] sm:gap-3 space-y-2 sm:space-y-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-foreground">{person}</span>
+                  <span className="font-bold text-ink">{person}</span>
                   {editing && people.includes(person) && (
                     <button
                       type="button"
@@ -131,9 +133,9 @@ export function AvailabilityTab({ data, editing, act, flash }: Props) {
                   )}
                 </div>
                 <div className="space-y-1">
-                  <div className="sm:hidden text-[10px] uppercase tracking-wider text-muted">Confirmed</div>
+                  <div className="sm:hidden text-[10px] font-bold uppercase tracking-wider text-slate">Confirmed</div>
                   <div className="flex flex-wrap gap-1.5">
-                    {confirmed.length === 0 && !editing && <span className="text-sm text-muted">—</span>}
+                    {confirmed.length === 0 && !editing && <span className="text-sm text-slate">—</span>}
                     {confirmed.map(chip)}
                   </div>
                   {editing && (
@@ -146,9 +148,9 @@ export function AvailabilityTab({ data, editing, act, flash }: Props) {
                   )}
                 </div>
                 <div className="space-y-1">
-                  <div className="sm:hidden text-[10px] uppercase tracking-wider text-muted">Requests</div>
+                  <div className="sm:hidden text-[10px] font-bold uppercase tracking-wider text-slate">Requests</div>
                   <div className="flex flex-wrap gap-1.5">
-                    {requests.length === 0 && <span className="text-sm text-muted">—</span>}
+                    {requests.length === 0 && <span className="text-sm text-slate">—</span>}
                     {requests.map(chip)}
                   </div>
                 </div>
@@ -248,7 +250,7 @@ function RequestForm({
           Request
         </button>
       </form>
-      {error && <p className="text-sm text-red-400 mt-2">{error}</p>}
+      {error && <p className="text-sm font-bold text-critical mt-2">{error}</p>}
     </Card>
   );
 }
@@ -278,7 +280,7 @@ function EntryEditor({
         setBusy(false);
         if (ok) onClose();
       }}
-      className="w-full bg-surface border border-amber/40 rounded-lg p-2 space-y-2"
+      className="w-full bg-cream border-2 border-green rounded-md p-2 space-y-2"
     >
       <input
         autoFocus

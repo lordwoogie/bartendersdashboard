@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 // Small building blocks the production tabs share: an inline "+ Add" input,
 // an inline text editor with save/delete, and consistent button styles.
@@ -41,6 +41,59 @@ export function chip(active: boolean) {
   }`;
 }
 
+// One-line-at-a-time text box that wraps and grows with its content, so a
+// long task in a narrow schedule cell stays fully visible while you type.
+// Enter submits (tasks are single entries; newlines are never kept).
+export function GrowInput({
+  inputRef,
+  value,
+  onChange,
+  onSubmit,
+  onEscape,
+  onPaste,
+  placeholder,
+  disabled,
+  className,
+}: {
+  inputRef: React.RefObject<HTMLTextAreaElement | null>;
+  value: string;
+  onChange: (value: string) => void;
+  onSubmit: () => void;
+  onEscape: () => void;
+  onPaste?: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+}) {
+  useLayoutEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "0px";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [inputRef, value]);
+
+  return (
+    <textarea
+      ref={inputRef}
+      rows={1}
+      value={value}
+      onChange={(e) => onChange(e.target.value.replace(/[\r\n]+/g, " "))}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          onSubmit();
+        } else if (e.key === "Escape") {
+          onEscape();
+        }
+      }}
+      onPaste={onPaste}
+      placeholder={placeholder}
+      disabled={disabled}
+      className={`${btn.input} resize-none overflow-hidden leading-snug ${className ?? ""}`}
+    />
+  );
+}
+
 export function Flash({ message }: { message: string }) {
   if (!message) return null;
   return (
@@ -69,7 +122,7 @@ export function AddInline({
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [error, setError] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
@@ -90,7 +143,7 @@ export function AddInline({
   };
 
   const [pasting, setPasting] = useState(false);
-  const pasteList = async (e: React.ClipboardEvent<HTMLInputElement>) => {
+  const pasteList = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const lines = e.clipboardData
       .getData("text")
       .split(/\r?\n/)
@@ -136,22 +189,21 @@ export function AddInline({
       }}
       className="space-y-1"
     >
+      <GrowInput
+        inputRef={inputRef}
+        value={text}
+        onChange={setText}
+        onSubmit={submit}
+        onEscape={() => {
+          setOpen(false);
+          setText("");
+        }}
+        onPaste={pasteList}
+        placeholder={pasting ? "Adding…" : placeholder}
+        disabled={pasting}
+        className="py-1.5 text-sm"
+      />
       <div className="flex gap-1">
-        <input
-          ref={inputRef}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Escape") {
-              setOpen(false);
-              setText("");
-            }
-          }}
-          onPaste={pasteList}
-          placeholder={pasting ? "Adding…" : placeholder}
-          disabled={pasting}
-          className={`${btn.input} py-1.5 text-sm`}
-        />
         <button type="submit" disabled={!text.trim() || pasting} className={`${btn.primary} py-1.5 px-3`}>
           Add
         </button>
@@ -192,7 +244,7 @@ export function TextEditor({
   const [text, setText] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -217,14 +269,16 @@ export function TextEditor({
       }}
       className="bg-cream border-2 border-green rounded-md p-2 space-y-2"
     >
-      <input
-        ref={inputRef}
+      <GrowInput
+        inputRef={inputRef}
         value={text}
-        onChange={(e) => setText(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") onClose();
+        onChange={setText}
+        onSubmit={() => {
+          if (text.trim() && text.trim() !== initial) run(() => onSave(text.trim()), true);
+          else onClose();
         }}
-        className={`${btn.input} py-1.5 text-sm`}
+        onEscape={onClose}
+        className="py-1.5 text-sm"
       />
       <div className="flex flex-wrap items-center gap-1">
         <button type="submit" disabled={busy || !text.trim()} className={`${btn.primary} py-1 px-3`}>

@@ -257,11 +257,11 @@ export function TvBoard() {
         </div>
         {ALL_COLUMNS.map((col) => {
           const items = itemsIn(day, col.key);
-          const disabled = isTodo && !isTaskColumn(col.key);
+
           return (
             <div
               key={col.key}
-              className={`px-3 py-3 border-l-2 border-paper/20 ${disabled ? "bg-paper/5" : ""}`}
+              className="px-3 py-3 border-l-2 border-paper/20"
             >
               {items.length > 0 && <ul className="space-y-1.5">{items.map(renderItem)}</ul>}
             </div>

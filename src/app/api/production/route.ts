@@ -167,7 +167,6 @@ function applyAction(data: ProductionData, body: Body): ProductionData {
       const day = body.day === TODO_DAY ? TODO_DAY : dateKey(body.day, "day");
       if (day !== TODO_DAY && !dayInWeek(weekStart, day)) bad("day is not in that week");
       const column = columnOf(body.column);
-      if (day === TODO_DAY && !isTaskColumn(column)) bad("To-do items go in a task column");
       const item: ProductionItem = { id: newId("pi"), day, column, text: text(body.text, "text") };
       return withWeek(data, weekStart, (w) => ({
         ...w,
@@ -233,7 +232,6 @@ function applyAction(data: ProductionData, body: Body): ProductionData {
       const day = body.day === TODO_DAY ? TODO_DAY : dateKey(body.day, "day");
       if (day !== TODO_DAY && !dayInWeek(weekStart, day)) bad("day is not in that week");
       const column = columnOf(body.column);
-      if (day === TODO_DAY && !isTaskColumn(column)) bad("To-do items go in a task column");
       return withWeek(data, weekStart, (w) => {
         const item = w.items.find((i) => i.id === id);
         if (!item) notFound("Item");

@@ -245,20 +245,17 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
         </div>
         {ALL_COLUMNS.map((col) => {
           const items = itemsIn(day, col.key);
-          const disabled = isTodo && !isTaskColumn(col.key);
-          const hideOnMobile = items.length === 0 && (!editing || disabled);
+          const hideOnMobile = items.length === 0 && !editing;
           return (
             <div
               key={col.key}
-              className={`${hideOnMobile ? "hidden md:block print:block" : ""} px-2.5 py-2 md:border-l-2 md:border-line ${
-                disabled ? "md:bg-cream/60" : ""
-              }`}
+              className={`${hideOnMobile ? "hidden md:block print:block" : ""} px-2.5 py-2 md:border-l-2 md:border-line`}
             >
               <div className="md:hidden print:hidden text-[10px] font-bold uppercase tracking-wider text-slate mb-1">
                 {col.label}
               </div>
               {items.length > 0 && <ul className="space-y-1">{items.map(renderItem)}</ul>}
-              {editing && !disabled && (
+              {editing && (
                 <div className={`no-print ${items.length > 0 ? "mt-1" : ""}`}>
                   <AddInline
                     compact
@@ -446,7 +443,6 @@ function MoveTo({
   const [column, setColumn] = useState<ColumnKey>(item.column);
   const [busy, setBusy] = useState(false);
   const unchanged = day === item.day && column === item.column;
-  const invalid = day === TODO_DAY && !isTaskColumn(column);
   return (
     <div className="flex flex-wrap items-center gap-1 text-xs">
       <span className="text-slate mr-1">Move to</span>
@@ -464,14 +460,14 @@ function MoveTo({
         className={`${btn.input} w-auto py-1 text-xs`}
       >
         {ALL_COLUMNS.map((c) => (
-          <option key={c.key} value={c.key} disabled={day === TODO_DAY && !isTaskColumn(c.key)}>
+          <option key={c.key} value={c.key}>
             {c.label}
           </option>
         ))}
       </select>
       <button
         type="button"
-        disabled={busy || unchanged || invalid}
+        disabled={busy || unchanged}
         onClick={async () => {
           setBusy(true);
           await onMove(day, column);

@@ -25,8 +25,8 @@ interface Memo {
 const AREA_COLORS: Record<string, string> = {
   manager: "bg-amber/20 text-amber",
   "bar shift": "bg-copper/20 text-copper",
-  kitchen: "bg-green-900/30 text-green-400",
-  door: "bg-blue-900/30 text-blue-400",
+  kitchen: "bg-green-tint text-green",
+  door: "bg-blue text-purple",
 };
 
 function getAreaColor(area: string): string {

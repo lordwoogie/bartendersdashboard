@@ -26,9 +26,9 @@ export default function GlobalError({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#1a1410",
-          color: "#f5efe6",
-          fontFamily: "system-ui, sans-serif",
+          background: "#f7f6f1",
+          color: "#161616",
+          fontFamily: "Platform, system-ui, sans-serif",
           textAlign: "center",
           padding: "1rem",
         }}
@@ -45,10 +45,10 @@ export default function GlobalError({
             type="button"
             onClick={() => reset()}
             style={{
-              background: "#f59e0b",
-              color: "#1a1410",
-              border: "none",
-              borderRadius: "0.5rem",
+              background: "#2b6d57",
+              color: "#ffffff",
+              border: "2px solid #161616",
+              borderRadius: "8px",
               padding: "0.6rem 1.4rem",
               fontSize: "1rem",
               fontWeight: 600,

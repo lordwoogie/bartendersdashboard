@@ -119,7 +119,7 @@ function WineCard({ wine }: { wine: Wine }) {
     .join(" · ");
 
   return (
-    <div className="rounded-xl bg-gradient-to-r from-surface to-surface/60 border border-copper/30 p-4">
+    <div className="rounded-xl bg-cream border border-line p-4">
       <button
         type="button"
         onClick={() => hasDetails && setOpen((o) => !o)}
@@ -167,7 +167,7 @@ function WineCard({ wine }: { wine: Wine }) {
       </button>
 
       {open && wine.notes && (
-        <p className="mt-3 pt-3 border-t border-copper/20 text-sm text-muted/90 whitespace-pre-line leading-relaxed">
+        <p className="mt-3 pt-3 border-t border-line text-sm text-muted/90 whitespace-pre-line leading-relaxed">
           {wine.notes}
         </p>
       )}

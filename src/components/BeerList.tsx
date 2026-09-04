@@ -93,7 +93,7 @@ export function BeerList() {
           <button
             onClick={fetchMenu}
             disabled={loading}
-            className="text-xs bg-surface hover:bg-card-border text-foreground px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 shrink-0"
+            className="text-xs font-bold rounded-md border-2 border-green/40 text-green px-3 py-1.5 hover:bg-green hover:text-paper hover:border-green transition-colors duration-150 disabled:opacity-50 shrink-0"
           >
             {loading ? "..." : "Refresh"}
           </button>
@@ -115,7 +115,7 @@ export function BeerList() {
         ) : (
           Array.from(sections.entries()).map(([sectionName, sectionItems]) => (
             <div key={sectionName} className="mb-8">
-              <h2 className="text-sm uppercase tracking-wider text-copper font-semibold mb-3 flex items-center gap-2">
+              <h2 className="text-sm uppercase tracking-wider text-green font-bold mb-3 flex items-center gap-2">
                 <span>🍺</span>
                 {sectionName}
                 <span className="text-xs text-muted font-normal">
@@ -260,7 +260,7 @@ export function BeerList() {
                             {/* BJCP Style Description */}
                             {styleDesc && (
                               <div className="bg-surface/50 rounded-lg p-3 border border-card-border/30">
-                                <p className="text-xs text-copper font-semibold mb-1 uppercase tracking-wider">
+                                <p className="text-xs text-green font-bold mb-1 uppercase tracking-wider">
                                   About this style
                                 </p>
                                 <p className="text-sm text-foreground/80 leading-relaxed">
@@ -298,7 +298,7 @@ function TastingNoteBlock({ state }: { state: NoteState | undefined }) {
   if (!state || state.status === "idle") return null;
   if (state.status === "loading") {
     return (
-      <div className="bg-surface/50 rounded-lg p-3 border border-amber/20">
+      <div className="bg-cream rounded-md p-3 border border-line">
         <p className="text-xs text-amber font-semibold mb-1 uppercase tracking-wider">
           Tasting Notes
         </p>
@@ -309,7 +309,7 @@ function TastingNoteBlock({ state }: { state: NoteState | undefined }) {
   const note = state.note;
   if (!note) return null;
   return (
-    <div className="bg-surface/50 rounded-lg p-3 border border-amber/20">
+    <div className="bg-cream rounded-md p-3 border border-line">
       <div className="flex items-center justify-between mb-1">
         <p className="text-xs text-amber font-semibold uppercase tracking-wider">
           Tasting Notes

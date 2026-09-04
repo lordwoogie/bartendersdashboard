@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { format } from "date-fns";
+import Image from "next/image";
 import type {
   SportsGame,
   CalendarEvent,
@@ -133,13 +134,14 @@ export function Dashboard() {
   const dateStr = format(now, "EEEE, MMMM d, yyyy");
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Holiday Banner — only shows on holidays, always at top */}
+    <div className="min-h-screen bg-paper-2">
+      {/* Holiday Banner — only shows on holidays, always at top. A flat
+          yellow block with purple type: the brand's "look here" pairing. */}
       {hasHolidays && (
-        <div className="bg-gradient-to-r from-copper/30 via-amber/20 to-copper/30 border-b border-amber/30">
+        <div className="bg-yellow text-purple">
           <div className="max-w-3xl mx-auto px-4 py-3 text-center">
             {holidays.map((h, i) => (
-              <div key={i} className="text-lg font-bold text-amber">
+              <div key={i} className="text-lg font-bold">
                 <span className="text-2xl mr-2">{h.emoji}</span>
                 {h.name}
               </div>
@@ -148,29 +150,36 @@ export function Dashboard() {
         </div>
       )}
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-card-border px-4 py-4 no-print">
+      {/* Header: the green brand bar with the Lively lockup */}
+      <header className="sticky top-0 z-50 bg-green text-paper px-4 py-4 no-print">
         <div className="max-w-3xl mx-auto">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div>
-                <h1 className="text-xl font-bold text-foreground tracking-tight">
-                  Daily Briefing
-                </h1>
-                <p className="text-sm text-muted mt-0.5">{dateStr}</p>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-4 min-w-0">
+              <Image
+                src="/brand/lockup-horizontal-long-white.svg"
+                alt="Lively Beerworks"
+                width={123}
+                height={40}
+                priority
+                unoptimized
+                className="h-10 w-auto shrink-0"
+              />
+              <div className="min-w-0">
+                <h1 className="text-xl font-bold tracking-tight leading-tight">Daily Briefing</h1>
+                <p className="text-sm text-paper/80 mt-0.5">{dateStr}</p>
               </div>
               {weather && (
-                <div className="bg-surface border border-card-border rounded-lg px-3 py-2 flex items-center gap-3">
+                <div className="bg-green-deep border-2 border-paper/20 rounded-md px-3 py-2 flex items-center gap-3">
                   <div className="text-center">
                     <div className="text-2xl leading-none">{weather.icon}</div>
-                    <div className="text-lg font-bold text-foreground mt-0.5">{weather.temp}°F</div>
-                    <div className="text-[10px] text-amber leading-tight mt-0.5">
+                    <div className="text-lg font-bold mt-0.5">{weather.temp}°F</div>
+                    <div className="text-[10px] font-bold text-yellow leading-tight mt-0.5">
                       H:{weather.high}° L:{weather.low}°
                     </div>
                   </div>
                   <div className="hidden sm:block max-w-[200px]">
-                    <p className="text-xs text-foreground font-medium">{weather.condition}</p>
-                    <p className="text-[10px] text-muted leading-snug mt-0.5 line-clamp-3">
+                    <p className="text-xs font-bold">{weather.condition}</p>
+                    <p className="text-[10px] text-paper/70 leading-snug mt-0.5 line-clamp-3">
                       {weather.description}
                     </p>
                   </div>
@@ -180,7 +189,7 @@ export function Dashboard() {
             <button
               onClick={fetchData}
               disabled={loading}
-              className="text-xs bg-surface hover:bg-card-border text-foreground px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 shrink-0"
+              className="text-xs font-bold border-2 border-paper/60 text-paper hover:bg-paper hover:text-green hover:border-paper px-3 py-1.5 rounded-md transition-colors duration-150 disabled:opacity-50 shrink-0"
             >
               {loading ? "..." : "Refresh"}
             </button>
@@ -202,7 +211,7 @@ export function Dashboard() {
               <a
                 key={link.href}
                 href={link.href}
-                className="rounded-lg border border-card-border bg-surface px-4 py-2 text-sm font-medium text-foreground hover:border-amber hover:text-amber transition-colors"
+                className="rounded-md border-2 border-paper/50 px-4 py-2 text-sm font-bold text-paper hover:bg-paper hover:text-green hover:border-paper transition-colors duration-150"
               >
                 {link.label}
               </a>

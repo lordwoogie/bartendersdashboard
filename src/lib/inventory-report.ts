@@ -5,6 +5,7 @@
 
 import type { InventoryEntry, CatalogBeer } from "@/lib/inventory";
 import { caseUnitLabel, normalizeBeerName } from "@/lib/inventory";
+import { repairCatalog } from "@/lib/catalog-repair";
 import { dateKeyInZone, formatTimeInZone } from "@/lib/timezone";
 
 // Resolve an inventory entry's EKOS item name from the catalog's ekosName
@@ -13,13 +14,26 @@ import { dateKeyInZone, formatTimeInZone } from "@/lib/timezone";
 export function makeEkosNameResolver(
   catalog: CatalogBeer[]
 ): (entry: InventoryEntry) => string {
+  // Same-named rows are disambiguated up front so every SKU stays reachable
+  // even if the stored catalog hasn't been repaired yet.
+  const { catalog: repaired } = repairCatalog(catalog);
   const caseByKey = new Map<string, string>(); // `${format}|${name}` -> ekosName
   const twelveByName = new Map<string, string>(); // name -> 12-pack ekosName
-  for (const b of catalog) {
+  // Bare base name -> ekosName, for entries logged before a beer's rows were
+  // split into "… 12oz"/"… 16oz". The 16oz case is the house default, so
+  // ambiguous bare names resolve to it.
+  const caseByBase = new Map<string, string>();
+  for (const b of repaired) {
     const n = normalizeBeerName(b.name);
     if (b.ekosName) caseByKey.set(`${b.format}|${n}`, b.ekosName);
-    if (b.ekosNameTwelvePack && (b.format === "can" || b.format === "bottle")) {
-      twelveByName.set(n, b.ekosNameTwelvePack);
+    if (b.format === "can" || b.format === "bottle") {
+      if (b.ekosNameTwelvePack) twelveByName.set(n, b.ekosNameTwelvePack);
+      if (b.ekosName) {
+        const m = n.match(/^(.+) (\d{1,2}oz)$/);
+        if (m && (m[2] === "16oz" || !caseByBase.has(m[1]))) {
+          caseByBase.set(m[1], b.ekosName);
+        }
+      }
     }
   }
   return (entry) => {
@@ -29,7 +43,12 @@ export function makeEkosNameResolver(
         const t = twelveByName.get(n);
         if (t) return t;
       }
-      return caseByKey.get(`can|${n}`) || caseByKey.get(`bottle|${n}`) || entry.beerName;
+      return (
+        caseByKey.get(`can|${n}`) ||
+        caseByKey.get(`bottle|${n}`) ||
+        caseByBase.get(n) ||
+        entry.beerName
+      );
     }
     // Kegs: EKOS names them "{base} (Keg - 1/2 bbl)" / "(Keg - 1/6 bbl)".
     // base is the catalog override (if any), else the tablet name; the size

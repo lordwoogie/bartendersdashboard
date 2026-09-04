@@ -92,16 +92,16 @@ export function AnnouncementPopup() {
     >
       <div className="absolute inset-0 bg-black/70" onClick={close} />
 
-      <div className="relative w-full max-w-md rounded-2xl border border-amber/50 bg-card-bg shadow-2xl">
-        <div className="flex items-start justify-between gap-3 border-b border-card-border px-4 py-3">
-          <h2 className="text-sm font-semibold text-amber uppercase tracking-wider">
+      <div className="relative w-full max-w-md rounded-xl border-2 border-ink bg-paper shadow-block">
+        <div className="flex items-start justify-between gap-3 bg-green text-paper px-4 py-3 rounded-t-[10px]">
+          <h2 className="eyebrow text-paper">
             📣 Heads up
           </h2>
           <button
             type="button"
             onClick={close}
             aria-label="Close"
-            className="shrink-0 h-9 w-9 rounded-lg border border-card-border bg-surface text-foreground text-lg leading-none hover:border-amber hover:text-amber transition-colors"
+            className="shrink-0 h-9 w-9 rounded-md border-2 border-paper/60 text-paper text-lg leading-none hover:bg-paper hover:text-green transition-colors"
           >
             ✕
           </button>
@@ -114,7 +114,7 @@ export function AnnouncementPopup() {
           <button
             type="button"
             onClick={close}
-            className="mt-5 w-full bg-surface border border-card-border hover:border-amber text-foreground font-medium py-2.5 rounded-lg transition-colors"
+            className="mt-5 w-full bg-green text-paper font-bold py-2.5 rounded-md hover:bg-green-deep transition-colors"
           >
             Got it
           </button>

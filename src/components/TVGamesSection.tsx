@@ -47,7 +47,7 @@ export function TVGamesSection({ games }: { games: SportsGame[] }) {
               key={game.id}
               className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
                 game.isPrimetime
-                  ? "bg-surface border border-amber/20"
+                  ? "bg-cream border border-green/25"
                   : "bg-surface/50"
               } ${game.isFavorite ? "border-l-2 border-l-copper" : ""}`}
             >
@@ -70,7 +70,7 @@ export function TVGamesSection({ games }: { games: SportsGame[] }) {
                 {game.isLive ? (
                   <div className="flex items-center gap-1">
                     <span className="animate-pulse-live w-2 h-2 bg-red-500 rounded-full" />
-                    <span className="text-sm font-bold text-white">
+                    <span className="text-sm font-bold text-ink">
                       {game.awayScore}-{game.homeScore}
                     </span>
                   </div>

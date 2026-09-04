@@ -19,7 +19,7 @@ export function ThunderSection({ game }: { game?: SportsGame }) {
   const isHome = game.homeTeam.toLowerCase().includes("thunder");
 
   return (
-    <div className="rounded-xl border-2 border-thunder-blue bg-gradient-to-r from-[#001f3f] to-[#003366] p-6 mb-6 relative overflow-hidden">
+    <div className="rounded-xl border-2 border-ink bg-[#00294f] shadow-block p-6 mb-6 relative overflow-hidden">
       {/* Subtle thunder bolt pattern */}
       <div className="absolute top-0 right-0 w-32 h-32 opacity-5 text-[8rem] leading-none pointer-events-none">
         ⚡
@@ -42,7 +42,7 @@ export function ThunderSection({ game }: { game?: SportsGame }) {
               ? `vs ${game.awayTeam}`
               : `@ ${game.homeTeam}`}
           </p>
-          <p className="text-gray-400 text-sm mt-1">
+          <p className="text-paper/60 text-sm mt-1">
             {isHome ? "Home" : "Away"} · {timeStr}
             {game.channel && ` · ${game.channel}`}
           </p>
@@ -58,7 +58,7 @@ export function ThunderSection({ game }: { game?: SportsGame }) {
                   : `${game.awayScore} - ${game.homeScore}`}
               </div>
               {game.isCompleted && (
-                <p className="text-gray-400 text-sm mt-1">Final</p>
+                <p className="text-paper/60 text-sm mt-1">Final</p>
               )}
             </div>
           )}

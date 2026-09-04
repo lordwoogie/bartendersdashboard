@@ -101,8 +101,15 @@
   },
   {
     "id": "seed-can-020",
-    "name": "Blonde Ale",
-    "format": "can"
+    "name": "Blonde Ale 12oz",
+    "format": "can",
+    "ekosName": "Blonde Ale (Case - 4x6 - 12oz - Can)"
+  },
+  {
+    "id": "seed-can-020-16",
+    "name": "Blonde Ale 16oz",
+    "format": "can",
+    "ekosName": "Blonde Ale (Case - 6x4 - 16oz - Can)"
   },
   {
     "id": "seed-can-021",
@@ -141,8 +148,15 @@
   },
   {
     "id": "seed-can-028",
-    "name": "Mexican Lager",
-    "format": "can"
+    "name": "Mexican Lager 12oz",
+    "format": "can",
+    "ekosName": "Mexican Lager (Case - 4x6 - 12oz - Can)"
+  },
+  {
+    "id": "seed-can-028-16",
+    "name": "Mexican Lager 16oz",
+    "format": "can",
+    "ekosName": "Mexican Lager (Case - 6x4 - 16oz - Can)"
   },
   {
     "id": "seed-can-029",

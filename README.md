@@ -16,7 +16,7 @@ Shows bartenders what's happening today and this week: Thunder games, TV sports,
 - **Print View** -- Ink-friendly daily sheet for behind the bar
 - **Daily Email** -- Morning briefing email at 7 AM CT via Vercel Cron
 - **Admin Panel** -- Manage holidays, sports priorities, email recipients, quick events
-- **Production Board** -- The brewery's week (canning, cellar, prep, brew, who's in / out), "needs to happen" lists, time-off requests, and the Crowder + canning-run logs. Everyone reads and checks off; the head brewer edits with a password
+- **Production Board** -- The brewery's week (canning, cellar, prep, brew, who's in / out), "needs to happen" lists, time-off requests, and the Crowder + canning-run logs. Everyone reads and checks off; the head brewer edits with a password (a packaging-run calculator sits beside the schedule in edit mode)
 
 ## Quick Start
 

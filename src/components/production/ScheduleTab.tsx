@@ -19,6 +19,7 @@ import {
 } from "@/lib/production";
 import type { ActionResult } from "@/lib/use-production";
 import { AddInline, TextEditor, btn } from "./shared";
+import { PackagingDrawer } from "./PackagingCalculator";
 
 // The week grid: one row per day (plus the "To Do" row for anything not
 // pinned to a day), one column per area of the brewery — the same layout as
@@ -65,6 +66,7 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
   const [showWeekend, setShowWeekend] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [noteDay, setNoteDay] = useState<string | null>(null);
+  const [calcOpen, setCalcOpen] = useState(false);
   // Phones show one day at a time (plus To Do) and open on today; "Week"
   // stacks all of them. Laptops always get the full grid.
   const [mobileDay, setMobileDay] = useState<string>(() =>
@@ -365,9 +367,14 @@ export function ScheduleTab({ data, editing, act, today, flash }: Props) {
               Show Sat / Sun
             </label>
           )}
+          <button type="button" onClick={() => setCalcOpen((o) => !o)} className={btn.secondary}>
+            {calcOpen ? "Hide calculator" : "Packaging calculator"}
+          </button>
           <span className="text-xs text-slate">Tap any item to edit, reorder, or delete it.</span>
         </div>
       )}
+
+      {editing && <PackagingDrawer open={calcOpen} onClose={() => setCalcOpen(false)} />}
 
       <div className="bg-paper border-2 border-line rounded-lg overflow-hidden">
         <div className={`hidden ${GRID} bg-cream text-[11px] uppercase tracking-wider text-slate font-bold`}>

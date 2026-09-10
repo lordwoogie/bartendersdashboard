@@ -215,7 +215,7 @@ export default function InventoryReportPage() {
             />
             <ReportGroup
               title="💀 Kegs OFF (blew)"
-              accent="text-orange-400"
+              accent="text-purple"
               entries={blew}
               onToggle={toggleEntered}
             />

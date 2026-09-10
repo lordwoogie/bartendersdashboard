@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { readData, writeData } from "@/lib/storage";
+import { readData, writeData, mutateData } from "@/lib/storage";
 import type { CatalogBeer } from "@/lib/inventory";
+import { repairCatalog } from "@/lib/catalog-repair";
 
 const CATALOG_DOC = "inventory-catalog.json";
 
@@ -14,7 +15,16 @@ function isAdmin(request: Request): boolean {
 
 // GET is public so the tablet picker can populate without login.
 export async function GET() {
-  const catalog = await readData<CatalogBeer[]>(CATALOG_DOC);
+  let catalog = await readData<CatalogBeer[]>(CATALOG_DOC);
+  // Same-named rows (12oz vs 16oz case of one beer) make the picker
+  // ambiguous and exports arbitrary — repair in place, persisting so the
+  // admin page and picker show the disambiguated names from then on.
+  if (repairCatalog(catalog).changed) {
+    catalog = await mutateData<CatalogBeer[]>(
+      CATALOG_DOC,
+      (cur) => repairCatalog(cur).catalog
+    );
+  }
   const sorted = [...catalog].sort((a, b) => a.name.localeCompare(b.name));
   return NextResponse.json({ catalog: sorted });
 }

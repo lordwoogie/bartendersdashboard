@@ -11,8 +11,10 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     display: "standalone",
     orientation: "any",
-    background_color: "#1a1410",
-    theme_color: "#1a1410",
+    // Lively paper ground behind the splash screen; Lively Green to match
+    // the header bar (same values as --paper-2 / --lively-green in globals.css).
+    background_color: "#f7f6f1",
+    theme_color: "#2b6d57",
     icons: [
       {
         src: "/icon-192.png",

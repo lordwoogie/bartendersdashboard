@@ -56,7 +56,7 @@ export function SuppliesSection() {
           where to read or leave one. */}
       <Link
         href="/notes"
-        className="block mb-6 rounded-xl border border-copper/40 bg-gradient-to-br from-card-bg to-surface p-4 transition-colors hover:border-amber/70 active:bg-surface"
+        className="block mb-6 rounded-xl border-2 border-green/35 bg-cream p-4 transition-colors hover:border-green active:bg-green-tint"
       >
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-amber uppercase tracking-wider">
@@ -92,7 +92,7 @@ export function SuppliesSection() {
 
       {/* Still-to-buy card */}
       {openBuy.length > 0 && (
-        <section className="mb-6 rounded-xl border border-copper/40 bg-gradient-to-br from-card-bg to-surface p-4">
+        <section className="mb-6 rounded-xl border border-line bg-paper p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-amber uppercase tracking-wider">
               Still to buy

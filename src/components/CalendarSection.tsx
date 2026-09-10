@@ -53,7 +53,7 @@ export function CalendarSection({ events }: { events: CalendarEvent[] }) {
           return (
             <div
               key={event.id}
-              className="rounded-lg bg-gradient-to-r from-surface to-surface/60 border border-copper/30 p-4"
+              className="rounded-lg bg-cream border border-line p-4"
             >
               <button
                 type="button"
@@ -65,7 +65,7 @@ export function CalendarSection({ events }: { events: CalendarEvent[] }) {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs bg-copper/20 text-copper px-1.5 py-0.5 rounded font-medium">
+                    <span className="text-xs bg-purple-tint text-purple px-1.5 py-0.5 rounded font-bold">
                       {dayLabel}
                     </span>
                   </div>
@@ -101,7 +101,7 @@ export function CalendarSection({ events }: { events: CalendarEvent[] }) {
               </button>
 
               {hasDetails && isOpen && (
-                <div className="mt-3 pt-3 border-t border-copper/20">
+                <div className="mt-3 pt-3 border-t border-line">
                   {event.description && (
                     <p className="text-sm text-muted/80 whitespace-pre-line leading-relaxed">
                       {event.description}
@@ -117,7 +117,7 @@ export function CalendarSection({ events }: { events: CalendarEvent[] }) {
                       href={event.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 mt-2 text-xs font-medium bg-amber/20 text-amber hover:bg-amber/30 px-3 py-1.5 rounded-lg transition-colors"
+                      className="inline-flex items-center gap-1 mt-2 text-xs font-medium bg-green-tint text-green hover:bg-green hover:text-paper px-3 py-1.5 rounded-md transition-colors"
                     >
                       🔗 More info
                     </a>

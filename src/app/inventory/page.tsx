@@ -412,7 +412,7 @@ export default function InventoryPage() {
                           </div>
                           <button
                             onClick={() => undo(e.id)}
-                            className="text-red-400 text-xs hover:text-red-300 shrink-0 mt-0.5"
+                            className="text-critical text-xs hover:text-critical/80 shrink-0 mt-0.5"
                           >
                             Undo
                           </button>

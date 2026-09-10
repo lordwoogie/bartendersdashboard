@@ -165,12 +165,12 @@ export function BookPage() {
       <header className="sticky top-0 z-50 border-b border-card-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="mx-auto max-w-3xl px-4 py-3 flex items-center justify-between">
           <BackToDashboard />
-          <h1 className="text-xl font-bold tracking-wide text-amber-500 uppercase">
+          <h1 className="text-xl font-bold tracking-wide text-green uppercase">
             The Book
           </h1>
           <button
             onClick={resetChecks}
-            className="text-xs text-amber-500/60 hover:text-amber-500 border border-amber-500/30 rounded px-2 py-1 transition-colors"
+            className="text-xs text-green/60 hover:text-green border border-green/30 rounded px-2 py-1 transition-colors"
           >
             Reset
           </button>
@@ -192,10 +192,10 @@ export function BookPage() {
                     flex-shrink-0 px-3 py-2 rounded-lg text-sm font-medium transition-all
                     ${
                       active
-                        ? "bg-amber-500 text-black"
+                        ? "bg-green text-paper"
                         : "text-foreground/60 hover:text-foreground hover:bg-card-bg"
                     }
-                    ${today && !active ? "ring-1 ring-amber-500/50" : ""}
+                    ${today && !active ? "ring-1 ring-green/50" : ""}
                   `}
                 >
                   {DAY_LABELS[day]}
@@ -213,11 +213,11 @@ export function BookPage() {
       <main className="mx-auto max-w-3xl px-4 py-6 space-y-6 pb-24">
         {/* Day Title */}
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-amber-500">
+          <h2 className="text-2xl font-bold text-green">
             {DAY_FULL_LABELS[selectedDay]}
           </h2>
           {isToday && (
-            <p className="text-xs text-amber-500/60 mt-1 uppercase tracking-widest">
+            <p className="text-xs text-green/60 mt-1 uppercase tracking-widest">
               Today
             </p>
           )}
@@ -286,8 +286,8 @@ export function BookPage() {
 
         {/* Today-complete banner */}
         {todayComplete && (
-          <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-center">
-            <p className="text-amber-400 font-semibold">
+          <div className="rounded-lg border border-green/40 bg-green/10 p-4 text-center">
+            <p className="text-green font-semibold">
               ✅ Book complete — logged for today
             </p>
           </div>
@@ -336,8 +336,8 @@ function Section({
   return (
     <section>
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-amber-500 text-lg">{icon}</span>
-        <h3 className="text-lg font-semibold text-amber-400 uppercase tracking-wider">
+        <span className="text-green text-lg">{icon}</span>
+        <h3 className="text-lg font-semibold text-green uppercase tracking-wider">
           {title}
         </h3>
         <div className="flex-1 border-t border-card-border ml-2" />
@@ -361,15 +361,15 @@ function SpecialBox({
   onToggle: (key: string) => void;
 }) {
   const borderColor =
-    variant === "opening" ? "border-amber-500/40" : "border-orange-600/40";
+    variant === "opening" ? "border-green/40" : "border-purple/40";
   const bgColor =
-    variant === "opening" ? "bg-amber-500/10" : "bg-orange-600/10";
+    variant === "opening" ? "bg-green/10" : "bg-purple/10";
   const accentColor =
-    variant === "opening" ? "text-amber-400" : "text-orange-400";
+    variant === "opening" ? "text-green" : "text-purple";
   const accentBorder =
-    variant === "opening" ? "border-amber-500" : "border-orange-600";
+    variant === "opening" ? "border-green" : "border-purple";
   const accentFill =
-    variant === "opening" ? "bg-amber-500" : "bg-orange-600";
+    variant === "opening" ? "bg-green" : "bg-purple";
 
   return (
     <button
@@ -391,7 +391,7 @@ function SpecialBox({
       >
         {checked && (
           <svg
-            className="w-3 h-3 text-black"
+            className="w-3 h-3 text-paper"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -438,7 +438,7 @@ function Checklist({
       <div className="flex items-center gap-2 mb-3">
         <div className="flex-1 h-1.5 bg-card-bg rounded-full overflow-hidden">
           <div
-            className="h-full bg-amber-500 rounded-full transition-all duration-300"
+            className="h-full bg-green rounded-full transition-all duration-300"
             style={{ width: `${total > 0 ? (completedCount / total) * 100 : 0}%` }}
           />
         </div>
@@ -469,14 +469,14 @@ function Checklist({
               flex-shrink-0 w-5 h-5 rounded border-2 mt-0.5 flex items-center justify-center transition-colors
               ${
                 isChecked
-                  ? "bg-amber-500 border-amber-500"
-                  : "border-amber-500/40"
+                  ? "bg-green border-green"
+                  : "border-green/40"
               }
             `}
             >
               {isChecked && (
                 <svg
-                  className="w-3 h-3 text-black"
+                  className="w-3 h-3 text-paper"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"

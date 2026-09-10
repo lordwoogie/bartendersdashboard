@@ -209,7 +209,7 @@ export default function AdminPage() {
           >
             {loading ? "..." : "Login"}
           </button>
-          {message && <p className="text-red-400 text-sm mt-2">{message}</p>}
+          {message && <p className="text-critical text-sm mt-2">{message}</p>}
         </div>
       </div>
     );
@@ -268,7 +268,7 @@ export default function AdminPage() {
                     setHolidays(holidays.filter((_, j) => j !== i));
                     flash("Holiday removed");
                   }}
-                  className="text-red-400 text-xs hover:text-red-300"
+                  className="text-critical text-xs hover:text-critical/80"
                 >
                   Remove
                 </button>
@@ -382,7 +382,7 @@ export default function AdminPage() {
                       setConfig(updated);
                       setTvDirty(true);
                     }}
-                    className="text-red-400 text-xs"
+                    className="text-critical text-xs"
                   >
                     Remove
                   </button>
@@ -457,7 +457,7 @@ export default function AdminPage() {
                         recipients: updated,
                       });
                     }}
-                    className="text-red-400 text-xs"
+                    className="text-critical text-xs"
                   >
                     Remove
                   </button>
@@ -565,7 +565,7 @@ export default function AdminPage() {
                           }
                           flash("Event removed");
                         }}
-                        className="text-red-400 text-xs hover:text-red-300"
+                        className="text-critical text-xs hover:text-critical/80"
                       >
                         Remove
                       </button>
@@ -743,7 +743,7 @@ export default function AdminPage() {
                         setCatalog(catalog.filter((x) => x.id !== b.id));
                         setCatalogDirty(true);
                       }}
-                      className="text-red-400 text-xs hover:text-red-300 shrink-0"
+                      className="text-critical text-xs hover:text-critical/80 shrink-0"
                     >
                       Remove
                     </button>
@@ -1032,7 +1032,7 @@ export default function AdminPage() {
                         setWines(wines.filter((_, j) => j !== i));
                         setWinesDirty(true);
                       }}
-                      className="mt-2 text-red-400 text-xs hover:text-red-300"
+                      className="mt-2 text-critical text-xs hover:text-critical/80"
                     >
                       Remove wine
                     </button>
@@ -1325,7 +1325,7 @@ export default function AdminPage() {
                       setManuals(manuals.filter((x) => x.id !== m.id));
                       setManualsDirty(true);
                     }}
-                    className="text-red-400 text-xs hover:text-red-300 shrink-0"
+                    className="text-critical text-xs hover:text-critical/80 shrink-0"
                   >
                     Remove
                   </button>

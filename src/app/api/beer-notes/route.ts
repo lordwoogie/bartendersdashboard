@@ -6,7 +6,7 @@ const DOC = "beer-notes.json";
 
 // Bump when the generation prompt changes meaningfully; cached AI notes from
 // older versions regenerate on next view. Manual notes are never regenerated.
-const PROMPT_VERSION = 3;
+const PROMPT_VERSION = 4;
 
 type NotesMap = Record<string, BeerNote>;
 
@@ -46,6 +46,10 @@ async function generateTastingNote(input: {
 4. Last line, on its own: "Try it if you like: ..." with 2–3 familiar reference points (well-known styles or flavors, not brand names).
 
 Rules: 3–5 sentences total plus the final line. Plain bar-talk language a customer immediately understands. Plain text only — no title, no heading, no markdown (**, #, etc.). Start directly with the first tasting sentence. No filler, no "this beer is", no marketing superlatives, don't repeat the style name verbatim, and stay true to what the style actually tastes like.
+
+Describe what IS in the glass. Never claim a beer lacks something ("no esters", "not fruity", "without any ...", "clean, with none of the ...") — a customer can't taste an absence, and guessing wrong about what a beer doesn't have is how these notes get called out from behind the bar.
+
+If the name or style calls out a particular yeast, barrel, adjunct, or process (kveik, brett, lactose, fruit, coffee, barrel-aged, dry-hopped), say what it actually contributes. Kveik specifically: a Norwegian farmhouse yeast fermented hot and fast that finishes without harsh alcohol bite but is expressive, not neutral — it lends fruity esters (orange and citrus, tropical, sometimes stone fruit) that sit alongside the hops rather than replacing them.
 
 ${facts}
 

@@ -100,7 +100,7 @@ export function PrintSheet() {
         >
           Print This Sheet
         </button>
-        <a href="/dashboard" className="text-sm text-gray-600 hover:text-black">
+        <a href="/" className="text-sm text-gray-600 hover:text-black">
           Back to Dashboard
         </a>
       </div>

@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Bar Dashboard",
     description:
       "Daily briefing, inventory logging, and duty checklists for the taproom.",
-    start_url: "/dashboard",
+    start_url: "/",
     display: "standalone",
     orientation: "any",
     // Lively paper ground behind the splash screen; Lively Green to match

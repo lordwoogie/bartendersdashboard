@@ -13,7 +13,7 @@ export function BackToDashboard({ tone = "paper" }: { tone?: "paper" | "green" }
   const onGreen = tone === "green";
   return (
     <Link
-      href="/"
+      href="/dashboard"
       aria-label="Back to dashboard"
       className="group inline-flex items-center gap-3 shrink-0"
     >

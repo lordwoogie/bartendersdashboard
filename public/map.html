@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+<style>
+  html, body, #map { margin: 0; height: 100%; width: 100%; background: #F3EEFA; }
+  @font-face { font-family: Platform; src: url('assets/fonts/Platform-Bold.otf'); font-weight: 700; }
+  .leaflet-tile { filter: grayscale(0.35) brightness(1.02); }
+  #tint { position: absolute; inset: 0; z-index: 450; pointer-events: none; background: #2E3080; mix-blend-mode: color; opacity: 0.45; }
+  .lb-home { display: flex; flex-direction: column; align-items: center; }
+  .lb-home .pin { width: 46px; height: 46px; border-radius: 50%; background: #2E3080; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(46,48,128,.45); display: flex; align-items: center; justify-content: center; }
+  .lb-home .pin img { width: 26px; height: 26px; }
+  .lb-home .tag, .lb-mark .tag { margin-top: 5px; background: #2E3080; color: #FFD10D; font: 700 12px/1 Platform, sans-serif; letter-spacing: .04em; padding: 6px 10px; border-radius: 999px; white-space: nowrap; box-shadow: 0 2px 6px rgba(46,48,128,.3); }
+  .lb-mark { display: flex; flex-direction: column; align-items: center; }
+  .lb-mark .dot { width: 14px; height: 14px; border-radius: 50%; background: #FC8773; border: 3px solid #2E3080; }
+  .lb-mark .tag { background: #FFFDF5; color: #2E3080; box-shadow: 0 1px 4px rgba(46,48,128,.25); }
+  .leaflet-control-zoom a { color: #2E3080 !important; }
+</style>
+</head>
+<body>
+<div id="map"><div id="tint"></div></div>
+<script>
+  const map = L.map('map', { scrollWheelZoom: false, zoomControl: true }).setView([35.4628, -97.5235], 15);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 19 }).addTo(map);
+  const home = L.divIcon({ className: '', html: '<div class="lb-home"><div class="pin"><img src="assets/logos/tree_white.svg" alt=""></div><div class="tag">Lively Beerworks</div></div>', iconSize: [46, 72], iconAnchor: [23, 23] });
+  L.marker([35.4615, -97.5308], { icon: home, zIndexOffset: 1000 }).addTo(map);
+  const landmarks = [
+    { name: 'Paycom Center', lat: 35.4634, lng: -97.5151 },
+    { name: 'Scissortail Park', lat: 35.4593, lng: -97.5205 },
+    { name: 'Myriad Gardens', lat: 35.4655, lng: -97.5184 },
+    { name: 'Bricktown', lat: 35.4654, lng: -97.5083 },
+  ];
+  for (const l of landmarks) {
+    const icon = L.divIcon({ className: '', html: '<div class="lb-mark"><div class="dot"></div><div class="tag">' + l.name + '</div></div>', iconSize: [14, 44], iconAnchor: [7, 7] });
+    L.marker([l.lat, l.lng], { icon }).addTo(map);
+  }
+</script>
+</body>
+</html>

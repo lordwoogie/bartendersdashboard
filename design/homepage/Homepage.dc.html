@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Lively Beerworks | Oklahoma City Brewery &amp; Taproom</title>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#2E3080"/><text x="50" y="64" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="40" fill="#FFD10D">LB</text></svg></template>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Homepage" description="Bold, flat-color Lively Beerworks marketing homepage" -->
+<helmet><script src="./ds-base.js"></script><script src="./image-slot.js"></script></helmet>
+<sc-if value="{{ showAgeGate }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;z-index:1000;background:var(--lively-purple);display:flex;align-items:center;justify-content:center;padding:24px">
+<div style="text-align:center;max-width:520px;color:#fff">
+<img src="assets/logos/tree_white.svg" alt="Lively Beerworks" style="height:72px;width:auto;display:block;margin:0 auto 24px" />
+<div style="font-weight:700;font-size:13px;letter-spacing:.24em;text-transform:uppercase;color:var(--lively-yellow)">Hold up a sec</div>
+<h1 style="font-family:var(--font-display);font-weight:700;font-size:clamp(38px,6vw,56px);line-height:1;letter-spacing:-.02em;margin:14px 0 0;color:#fff">Are you 21 or older?</h1>
+<sc-if value="{{ ageDenied }}" hint-placeholder-val="{{ false }}">
+<p style="font-size:17px;line-height:1.5;color:rgba(255,255,255,.9);margin:20px 0 0">Sorry — you have to be 21 to keep it Lively. Come back and see us in a few years.</p>
+</sc-if>
+<sc-if value="{{ ageNotDenied }}" hint-placeholder-val="{{ true }}">
+<p style="font-size:17px;line-height:1.5;color:rgba(255,255,255,.9);margin:20px 0 30px">You must be of legal drinking age to enter this site.</p>
+<div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+<x-import component-from-global-scope="LivelyBeerworksDesignSystem_1c279e.Button" variant="yellow" size="lg" shadow="{{ true }}" onClick="{{ confirmAge }}" hint-size="160px,54px">Yes, I'm 21+</x-import>
+<x-import component-from-global-scope="LivelyBeerworksDesignSystem_1c279e.Button" variant="outline" size="lg" dc-props="{{ heroOutlineStyle }}" onClick="{{ denyAge }}" hint-size="140px,54px">Not yet</x-import>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+<x-import component-from-global-scope="LivelyBeerworksDesignSystem_1c279e.Navbar" tree-base="assets/logos" links="{{ navLinks }}" cta="Visit the taproom" onClick="{{ navClick }}" onCta="{{ navCta }}" hint-size="100%,62px"></x-import>
+<section style="background:var(--lively-green);color:#fff;padding:84px 7vw 92px;position:relative;overflow:hidden">
+<sc-if value="{{ showWatermark }}" hint-placeholder-val="{{ true }}">
+<img src="assets/logos/tree_white.svg" alt="" style="position:absolute;right:-70px;top:50%;transform:translateY(-50%);width:400px;opacity:.12" />
+</sc-if>
+<div style="position:relative;max-width:780px">
+<div style="font-weight:700;font-size:13px;letter-spacing:.24em;text-transform:uppercase;color:var(--lively-yellow)">Proudly Brewed in Oklahoma City</div>
+<h1 style="font-family:var(--font-display);font-weight:700;font-size:clamp(48px,7vw,96px);line-height:.96;letter-spacing:-.02em;margin:18px 0 0;color:#fff">Drinkable beer you will love.</h1>
+<p style="font-size:20px;line-height:1.5;color:rgba(255,255,255,.92);max-width:540px;margin:22px 0 34px">A friendly space that feels like home. Time-honored brews for purists, newcomers and skeptics alike.</p>
+<div style="display:flex;gap:14px;flex-wrap:wrap">
+<x-import component-from-global-scope="LivelyBeerworksDesignSystem_1c279e.Button" as="a" href="#visit" variant="yellow" size="lg" shadow="{{ true }}" hint-size="200px,54px">Visit the taproom</x-import>
+<x-import component-from-global-scope="LivelyBeerworksDesignSystem_1c279e.Button" as="a" href="#beers" variant="outline" size="lg" dc-props="{{ heroOutlineStyle }}" hint-size="180px,54px">See the lineup</x-import>
+</div>
+</div>
+</section>
+<div style="display:flex;height:14px">
+<div style="flex:25;background:var(--lively-yellow)"></div>
+<div style="flex:25;background:var(--lively-pink)"></div>
+<div style="flex:25;background:var(--lively-green)"></div>
+<div style="flex:15;background:var(--lively-purple)"></div>
+<div style="flex:10;background:var(--lively-blue)"></div>
+</div>
+<section id="beers" style="padding:76px 7vw;background:var(--paper-2)">
+<div style="margin-bottom:36px">
+<div style="font-weight:700;font-size:13px;letter-spacing:.24em;text-transform:uppercase;color:var(--lively-green)">On Tap Now</div>
+<h2 style="font-family:var(--font-display);font-weight:700;font-size:46px;letter-spacing:-.02em;margin:10px 0 0;color:var(--ink)">The core lineup</h2>
+<a href="BeerFinder.dc.html" style="display:inline-block;margin-top:12px;font-size:15px;font-weight:700;color:var(--lively-green);text-decoration:none;border-bottom:2px solid var(--lively-green);padding-bottom:1px">Find it near you →</a>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px">
+<x-import component-from-global-scope="LivelyBeerworksDesignSystem_1c279e.BeerCard" name="India Pale Ale" beer-style="India Pale Ale" abv="6.5%" ibu="45" color="green" tree-base="assets/logos" description="A blend of East- and West-Coast IPA — an extremely fruit-forward aroma with a balanced bitterness for any IPA fan's palate." hint-size="100%,330px"></x-import>
+<div style="display:flex;flex-direction:column;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--line);background:#fff;transition:transform var(--dur-med) var(--ease-out),box-shadow var(--dur-med) var(--ease-out)" style-hover="transform:translateY(-4px);box-shadow:var(--shadow-md)">
+<div style="background:#FFAA2D;color:#FF5462;padding:22px 22px 20px;position:relative">
+<img src="assets/logos/tree_yellow.svg" alt="" style="position:absolute;top:18px;right:18px;width:40px;height:40px;opacity:.95" />
+<div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;opacity:.9">Fruited IPA</div>
+<div style="font-family:var(--font-display);font-weight:700;font-size:30px;line-height:1;letter-spacing:-0.02em;margin-top:8px;max-width:82%">Grapefruit IPA</div>
+</div>
+<div style="padding:16px 22px 22px;font-family:var(--font-body)">
+<div style="display:flex;gap:22px;margin-bottom:12px">
+<div><div style="font-family:var(--font-display);font-weight:700;font-size:22px;color:var(--ink);line-height:1">6.5%</div><div style="font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--slate);margin-top:4px;border-top:2px solid #FF5462;padding-top:4px;display:inline-block">ABV</div></div>
+<div><div style="font-family:var(--font-display);font-weight:700;font-size:22px;color:var(--ink);line-height:1">45</div><div style="font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--slate);margin-top:4px;border-top:2px solid #FF5462;padding-top:4px;display:inline-block">IBU</div></div>
+</div>
+<p style="margin:0;font-size:14px;color:var(--text-body);line-height:1.5">Our core IPA hit with a generous dose of grapefruit purée. Fruity, juicy and a touch sweeter — citrus and hops in harmony.</p>
+</div>
+</div>
+<x-import component-from-global-scope="LivelyBeerworksDesignSystem_1c279e.BeerCard" name="Amber Lager" beer-style="Amber Lager" abv="5.0%" ibu="15" color="amber" tree-base="assets/logos" description="A subtle malt sweetness up front and a crisp finish at the end. Full of flavor and easy to drink — made to be enjoyed by everyone." hint-size="100%,330px"></x-import>
+<x-import component-from-global-scope="LivelyBeerworksDesignSystem_1c279e.BeerCard" name="Mexican Lager" beer-style="Mexican Lager" abv="4.8%" ibu="8" color="mexican" tree-base="assets/logos" description="Crisp, refreshing, and if you close your eyes you'll almost hear the waves. An Oklahoma-brewed Mexican Lager for the long day." hint-size="100%,330px"></x-import>
+<div style="display:flex;flex-direction:column;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--line);background:#fff;transition:transform var(--dur-med) var(--ease-out),box-shadow var(--dur-med) var(--ease-out)" style-hover="transform:translateY(-4px);box-shadow:var(--shadow-md)">
+<div style="background:#479DD7;color:#FFF8E8;padding:22px 22px 20px;position:relative">
+<img src="assets/logos/cowboy_cold_logo_cream.png" alt="Cowboy Cold" style="position:absolute;top:16px;right:18px;width:60px;height:auto;opacity:.95" />
+<div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;opacity:.9">American Light Lager</div>
+<div style="font-family:var(--font-display);font-weight:700;font-size:30px;line-height:1;letter-spacing:-0.02em;margin-top:8px;max-width:82%">Cowboy Cold</div>
+</div>
+<div style="padding:16px 22px 22px;font-family:var(--font-body)">
+<div style="display:flex;gap:22px;margin-bottom:12px">
+<div><div style="font-family:var(--font-display);font-weight:700;font-size:22px;color:var(--ink);line-height:1">4.2%</div><div style="font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--slate);margin-top:4px;border-top:2px solid #DE3A26;padding-top:4px;display:inline-block">ABV</div></div>
+<div><div style="font-family:var(--font-display);font-weight:700;font-size:22px;color:var(--ink);line-height:1">10</div><div style="font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--slate);margin-top:4px;border-top:2px solid #DE3A26;padding-top:4px;display:inline-block">IBU</div></div>
+</div>
+<p style="margin:0;font-size:14px;color:var(--text-body);line-height:1.5">Beer flavored beer. It doesn't matter what the temperature is — this beer is good to go.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="story" style="display:grid;grid-template-columns:1fr 1.1fr;min-height:460px">
+<div style="background:var(--lively-pink);color:var(--lively-purple);padding:64px 6vw;display:flex;flex-direction:column;justify-content:center">
+<div style="font-weight:700;font-size:13px;letter-spacing:.24em;text-transform:uppercase">Our Story</div>
+<h2 style="font-family:var(--font-display);font-weight:700;font-size:42px;letter-spacing:-.02em;line-height:1.05;margin:14px 0 16px;color:var(--lively-purple)">From a love of beer and a love for our community.</h2>
+<p style="font-size:17px;line-height:1.6;max-width:460px;margin:0 0 14px">Lively Beerworks began in 2018, when two veterans of the Oklahoma City beer scene decided to build the brewery they'd always wanted to work at. Between them they brought the better part of two decades in the industry — years spent brewing, selling, and learning how the right brewery becomes a gathering place.</p>
+<p style="font-size:17px;line-height:1.6;max-width:460px;margin:0 0 14px">Patrick Lively, an OKC native who came to beer after stints in politics and teaching, spent nine years in the industry before branching out on his own; he partnered up to turn a shared love of the craft into something permanent. The taproom opened downtown at the end of 2019. From the start, the idea was to put down roots — in the city, in the community, and in the beer itself.</p>
+<p style="font-family:var(--font-display);font-weight:700;font-size:22px;line-height:1.3;max-width:460px;margin:0 0 26px">The goal then is the goal now: honest, crushable beer and a friendly space that feels like home.</p>
+<div><x-import component-from-global-scope="LivelyBeerworksDesignSystem_1c279e.Button" as="a" href="#visit" variant="purple" size="lg" shadow="{{ true }}" hint-size="170px,54px">Come see us</x-import></div>
+</div>
+<div style="background:center/cover url('./assets/imagery/taproom_exterior.jpg')"></div>
+</section>
+<section id="visit" style="padding:76px 7vw;background:var(--paper-2)">
+<div style="text-align:center;margin-bottom:38px">
+<div style="font-weight:700;font-size:13px;letter-spacing:.24em;text-transform:uppercase;color:var(--lively-green)">Visit Us</div>
+<h2 style="font-family:var(--font-display);font-weight:700;font-size:46px;letter-spacing:-.02em;margin:10px 0 0;color:var(--ink)">Come keep it Lively.</h2>
+</div>
+<div style="background:var(--lively-yellow);color:var(--lively-purple);padding:44px 40px;border-radius:var(--radius-lg);margin-bottom:28px">
+<div style="display:flex;flex-wrap:wrap;gap:44px;align-items:center;justify-content:space-between">
+<div style="max-width:520px">
+<div style="font-weight:700;font-size:13px;letter-spacing:.24em;text-transform:uppercase">At the Taproom</div>
+<h3 style="font-family:var(--font-display);font-weight:700;font-size:34px;letter-spacing:-.02em;line-height:1.05;margin:12px 0 12px;color:var(--lively-purple)">Always somethin' goin' on.</h3>
+<p style="font-size:17px;line-height:1.6;margin:0 0 26px">Live music, food trucks, trivia nights and community markets — plus the taproom is yours to book for private events.</p>
+<x-import component-from-global-scope="LivelyBeerworksDesignSystem_1c279e.Button" as="a" href="Events.dc.html" variant="purple" size="lg" shadow="{{ true }}" hint-size="220px,54px">See the full calendar</x-import>
+</div>
+<div style="width:min(620px,100%)">
+<div style="position:relative;border:2px solid var(--lively-purple);border-radius:var(--radius-lg);overflow:hidden;background:#fff;box-shadow:6px 6px 0 var(--lively-purple)">
+<div style="overflow:hidden">
+<div style="display:flex;transition:transform .35s cubic-bezier(0.16,1,0.3,1);transform:{{ trackX }}">
+<sc-if value="{{ hasFeed }}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{ feedImgs }}" as="post" hint-placeholder-count="3">
+<a href="{{ post.link }}" target="_blank" aria-label="Instagram post" style="flex:0 0 33.3333%;aspect-ratio:1/1;display:block;border-right:2px solid var(--lively-purple);background-position:center;background-size:cover;background-image:{{ post.bg }}"></a>
+</sc-for>
+</sc-if>
+<sc-if value="{{ noFeed }}" hint-placeholder-val="{{ true }}">
+<div style="flex:0 0 33.3333%;aspect-ratio:1/1;border-right:2px solid var(--lively-purple)"><image-slot id="ig-1" shape="rect" placeholder="Photo 1"></image-slot></div>
+<div style="flex:0 0 33.3333%;aspect-ratio:1/1;border-right:2px solid var(--lively-purple)"><image-slot id="ig-2" shape="rect" placeholder="Photo 2"></image-slot></div>
+<div style="flex:0 0 33.3333%;aspect-ratio:1/1"><image-slot id="ig-3" shape="rect" placeholder="Photo 3"></image-slot></div>
+</sc-if>
+</div>
+</div>
+<sc-if value="{{ showArrows }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ prevSlide }}" aria-label="Previous" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;background:var(--lively-yellow);color:var(--lively-purple);font-weight:700;font-size:18px;line-height:1">‹</button>
+<button onClick="{{ nextSlide }}" aria-label="Next" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;background:var(--lively-yellow);color:var(--lively-purple);font-weight:700;font-size:18px;line-height:1">›</button>
+</sc-if>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px">
+<a href="https://www.instagram.com/livelybeerworks/" target="_blank" style="color:var(--lively-purple);font-weight:700;font-size:14px;text-decoration:none;border-bottom:2px solid var(--lively-purple);padding-bottom:1px">Follow @LivelyBeerworks</a>
+<div style="display:flex;gap:8px">
+<sc-for list="{{ dots }}" as="dot" hint-placeholder-count="3">
+<button onClick="{{ dot.go }}" aria-label="Go to slide" style="width:10px;height:10px;border-radius:50%;border:2px solid var(--lively-purple);cursor:pointer;padding:0;background:{{ dot.fill }}"></button>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1.2fr;gap:28px;align-items:stretch">
+<div style="border:2px solid var(--ink);border-radius:var(--radius-lg);overflow:hidden;background:#fff">
+<div style="background:var(--lively-yellow);color:var(--lively-purple);font-weight:700;font-size:13px;letter-spacing:.16em;text-transform:uppercase;padding:14px 20px">Taproom Hours</div>
+<sc-for list="{{ hours }}" as="row" hint-placeholder-count="7">
+<div style="display:flex;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--line);font-size:15px">
+<span style="font-weight:700;color:var(--ink)">{{ row.day }}</span>
+<span style="color:var(--ink-soft)">{{ row.time }}</span>
+</div>
+</sc-for>
+<div style="padding:16px 20px;border-top:1px solid var(--line);font-size:15px;color:var(--ink)">
+<strong>815 SW 2nd St, Oklahoma City, OK 73109</strong><br />
+One mile west of the Paycom Center — in the big purple building.
+</div>
+</div>
+<sc-if value="{{ showMap }}" hint-placeholder-val="{{ true }}">
+<div style="border:2px solid var(--ink);border-radius:var(--radius-lg);overflow:hidden;min-height:380px;background:var(--blue-050)">{{ mapFrame }}</div>
+</sc-if>
+</div>
+</section>
+<footer style="background:var(--lively-purple);color:#fff;padding:56px 7vw 36px">
+<div style="display:flex;flex-wrap:wrap;gap:40px;justify-content:space-between;align-items:flex-start">
+<div style="max-width:340px">
+<img src="assets/logos/lockup_horizontal_long_white.svg" alt="Lively Beerworks" style="height:38px;width:auto;display:block;margin-bottom:16px" />
+<p style="color:rgba(255,255,255,.8);font-size:14px;line-height:1.6;margin:0">Passionately crafted beer for the gathered enjoyment of purists, newcomers and skeptics alike. Proudly brewed in Oklahoma City.</p>
+</div>
+<div>
+<div style="color:var(--lively-yellow);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:12px">Visit</div>
+<div style="font-size:14px;line-height:1.9;color:rgba(255,255,255,.9)">815 SW 2nd St<br />Oklahoma City, OK 73109<br />The big purple building.</div>
+</div>
+<div>
+<div style="color:var(--lively-yellow);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:12px">Follow</div>
+<div style="font-size:14px;line-height:1.9;color:rgba(255,255,255,.9)"><a href="#" style="color:rgba(255,255,255,.9);text-decoration:none">@LivelyBeerworks</a><br /><a href="#" style="color:rgba(255,255,255,.9);text-decoration:none">LivelyBeerworks.com</a></div>
+</div>
+</div>
+<div style="margin-top:40px;padding-top:20px;border-top:1px solid rgba(255,255,255,.2);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:13px;color:rgba(255,255,255,.7)">
+<span>© 2026 Lively Beerworks</span>
+<span style="color:var(--lively-yellow);font-weight:700">Keep it Lively™</span>
+</div>
+</footer>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;instagramFeedUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://feeds.behold.so/mnVHvHgGdILD3s3vGCqG&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Instagram carousel&quot;},&quot;previewAgeGate&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Age gate&quot;},&quot;showMap&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sections&quot;},&quot;showWatermark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sections&quot;}}">
+class Component extends DCLogic {
+  state = {
+    ageVerified: typeof localStorage !== "undefined" && localStorage.getItem("lb-age-verified") === "yes",
+    ageDenied: false,
+    slide: 0,
+    feed: null,
+  };
+  componentDidMount() { this.loadFeed(); }
+  componentDidUpdate(prevProps) { if (prevProps.instagramFeedUrl !== this.props.instagramFeedUrl) this.loadFeed(); }
+  loadFeed() {
+    const url = (this.props.instagramFeedUrl ?? "https://feeds.behold.so/mnVHvHgGdILD3s3vGCqG").trim();
+    if (!url) { this.setState({ feed: null }); return; }
+    fetch(url).then(r => r.json()).then(data => {
+      const posts = Array.isArray(data) ? data : (data.posts || data.media || []);
+      const imgs = posts.slice(0, 9).map(p => ({
+        src: p.sizes && p.sizes.medium ? p.sizes.medium.mediaUrl : (p.mediaType === "VIDEO" ? (p.thumbnailUrl || p.mediaUrl) : (p.mediaUrl || p.thumbnailUrl || p.url)),
+        link: p.permalink || "https://www.instagram.com/livelybeerworks/",
+      })).filter(p => p.src).map(p => ({ ...p, bg: "url('" + p.src + "')" }));
+      this.setState({ feed: imgs.length ? imgs : null });
+    }).catch(() => this.setState({ feed: null }));
+  }
+  renderVals() {
+    const forceGate = this.props.previewAgeGate ?? false;
+    const routes = { Beer: "#beers", Visit: "Events.dc.html", Story: "#story", "Private events": "PrivateEvents.dc.html", "Find Beer": "BeerFinder.dc.html" };
+    const maxSlide = Math.max(0, (this.state.feed ? this.state.feed.length : 3) - 3);
+    return {
+      navLinks: ["Beer", "Visit", "Find Beer", "Private events"],
+      navClick: (e) => {
+        const a = e.target.closest("a, img");
+        if (!a) return;
+        e.preventDefault();
+        const dest = a.tagName === "IMG" ? "#top" : routes[a.textContent.trim()];
+        if (!dest) return;
+        if (dest.startsWith("#")) {
+          const el = dest === "#top" ? document.body : document.querySelector(dest);
+          if (el) window.scrollTo({ top: dest === "#top" ? 0 : el.getBoundingClientRect().top + window.scrollY, behavior: "smooth" });
+        } else { window.location.href = dest; }
+      },
+      navCta: () => {
+        const el = document.querySelector("#visit");
+        if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY, behavior: "smooth" });
+      },
+      showAgeGate: forceGate || !this.state.ageVerified,
+      ageDenied: this.state.ageDenied,
+      ageNotDenied: !this.state.ageDenied,
+      confirmAge: () => {
+        localStorage.setItem("lb-age-verified", "yes");
+        this.setState({ ageVerified: true });
+      },
+      denyAge: () => this.setState({ ageDenied: true }),
+      showMap: this.props.showMap ?? true,
+      showWatermark: this.props.showWatermark ?? true,
+      trackX: "translateX(-" + Math.min(this.state.slide, maxSlide) * 33.3333 + "%)",
+      hasFeed: !!this.state.feed,
+      noFeed: !this.state.feed,
+      feedImgs: this.state.feed || [],
+      showArrows: maxSlide > 0,
+      prevSlide: () => this.setState(s => ({ slide: Math.max(0, Math.min(s.slide, maxSlide) - 1) })),
+      nextSlide: () => this.setState(s => ({ slide: Math.min(maxSlide, s.slide + 1) })),
+      dots: Array.from({ length: maxSlide + 1 }, (_, i) => ({
+        go: () => this.setState({ slide: i }),
+        fill: Math.min(this.state.slide, maxSlide) === i ? "var(--lively-purple)" : "transparent",
+      })),
+      heroOutlineStyle: { style: { color: "#fff", borderColor: "#fff" } },
+      mapFrame: React.createElement("iframe", {
+        src: "map.html",
+        title: "Taproom map",
+        style: { width: "100%", height: "100%", minHeight: "380px", border: 0, display: "block" },
+      }),
+      hours: [
+        { day: "Mon", time: "12 – 10 pm" }, { day: "Tue", time: "12 – 10 pm" },
+        { day: "Wed", time: "12 – 10 pm" }, { day: "Thu", time: "12 – 10 pm" },
+        { day: "Fri", time: "12 – 10 pm" }, { day: "Sat", time: "12 – 10 pm" },
+        { day: "Sun", time: "12 – 10 pm" },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

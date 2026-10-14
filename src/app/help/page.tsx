@@ -42,6 +42,16 @@ const GUIDE = [
       "Beer List and Wine List have descriptions — tap any beer for tasting notes.",
     ],
   },
+  {
+    icon: "🏀",
+    title: "Thunder games — getting them on the TVs",
+    lines: [
+      "Switch the box under the Apple TV to Input 2, then use the cable box to tune to KSBI.",
+      "Not on KSBI? The game is on NBC, ABC, or ESPN — check the cable box first.",
+      "Still nothing? It's a streaming game: Peacock or Prime Video on the Apple TV.",
+      "What's On TV on the dashboard lists the day's games and the channel each is on.",
+    ],
+  },
 ];
 
 export default function HelpPage() {

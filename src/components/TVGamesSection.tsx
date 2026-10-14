@@ -1,6 +1,7 @@
 "use client";
 
 import type { SportsGame } from "@/lib/types";
+import { classifyChannel, watchLabel } from "@/lib/broadcast";
 import { format } from "date-fns";
 
 const SPORT_ICONS: Record<string, string> = {
@@ -77,8 +78,24 @@ export function TVGamesSection({ games }: { games: SportsGame[] }) {
                 ) : (
                   <p className="text-sm text-foreground">{time}</p>
                 )}
-                {game.channel && (
+                {game.channel ? (
                   <p className="text-xs text-amber font-medium">{game.channel}</p>
+                ) : (
+                  <p className="text-xs text-muted">
+                    {game.isThunder ? "No listing — try KSBI" : "Channel TBD"}
+                  </p>
+                )}
+                {watchLabel(game.channel) && (
+                  <p
+                    className={`text-[10px] font-bold uppercase tracking-wider ${
+                      classifyChannel(game.channel) === "streaming"
+                        ? "text-purple"
+                        : "text-slate"
+                    }`}
+                  >
+                    {classifyChannel(game.channel) === "streaming" ? "▶ " : "📺 "}
+                    {watchLabel(game.channel)}
+                  </p>
                 )}
               </div>
               {game.isPrimetime && (

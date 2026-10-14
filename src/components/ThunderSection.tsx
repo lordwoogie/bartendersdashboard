@@ -1,6 +1,7 @@
 "use client";
 
 import type { SportsGame } from "@/lib/types";
+import { classifyChannel } from "@/lib/broadcast";
 import { format } from "date-fns";
 
 export function ThunderSection({ game }: { game?: SportsGame }) {
@@ -45,6 +46,14 @@ export function ThunderSection({ game }: { game?: SportsGame }) {
           <p className="text-paper/60 text-sm mt-1">
             {isHome ? "Home" : "Away"} · {timeStr}
             {game.channel && ` · ${game.channel}`}
+          </p>
+          {/* Which box to use — the question staff ask every tip-off. */}
+          <p className="text-xs font-bold uppercase tracking-wider text-yellow mt-1.5">
+            {classifyChannel(game.channel) === "streaming"
+              ? `▶ Apple TV — ${game.channel}`
+              : classifyChannel(game.channel) === "cable"
+                ? "📺 Cable box — Input 2"
+                : "📺 No listing — try KSBI on the cable box"}
           </p>
         </div>
 
